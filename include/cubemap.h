@@ -1,10 +1,10 @@
 #ifndef CUBEMAP_H
 #define CUBEMAP_H
 
+#include "glad/glad.h"
 #include <array>
 #include <string_view>
 #include "OpenGLObjects/TEX.h"
-#include "glad/glad.h"
 
 class Cubemap {
 public:

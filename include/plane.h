@@ -1,9 +1,9 @@
 #ifndef PLANE_H
 #define PLANE_H
 
+#include "glad/glad.h"
 #include "vertexarray.h"
 #include "glm/glm.hpp"
-#include "glad/glad.h"
 
 class Plane {
 public:
