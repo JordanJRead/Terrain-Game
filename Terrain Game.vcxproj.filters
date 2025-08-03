@@ -75,6 +75,12 @@
     <ClCompile Include="src\waterparamsbuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="include\gpuplane.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gpuplane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="libraries\glfw3dll.lib" />

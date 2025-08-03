@@ -5,7 +5,7 @@
 #include "glm/glm.hpp"
 #include "vertexarray.h"
 #include "terrainimagegenerator.h"
-#include "plane.h"
+#include "gpuplane.h"
 #include <array>
 #include <string>
 #include <string_view>
@@ -20,7 +20,6 @@
 #include <iostream>
 #include "cubemap.h"
 #include "cubevertices.h"
-#include <array>
 
 constexpr int ImageCount{ 4 };
 //template <int ImageCount>
@@ -273,7 +272,7 @@ public:
 				if (isVisible) {
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
 					bool highQuality{ !(chunkDist > mVertexQualityDropoffDistance) };
-					Plane& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
+					GPUPlane& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
 
 					mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
 					mTerrainShader.setFloat("planeWorldWidth", mChunkWidth);
@@ -365,8 +364,8 @@ private:
 	float mDayTime;
 	//glm::vec3 mDirToLight{ -0.008373, 0.089878, 0.995917 };
 
-	Plane mLowQualityPlane;
-	Plane mHighQualityPlane;
+	GPUPlane mLowQualityPlane;
+	GPUPlane mHighQualityPlane;
 
 	float mVertexQualityDropoffDistance;
 	float mShellQualityDropoffDistance;
