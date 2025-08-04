@@ -238,7 +238,7 @@ public:
 		float maxChunkHeight{ getMaxHeight() };
 
 		float minChunkHeight{ getMinHeight() };
-
+		std::cout << getHeightAtPoint({ camera.getPosition().x, camera.getPosition().z }) << "\n";
 		glm::vec3 cameraForward{ camera.getForward() };
 		// For each chunk
  		for (int x{ -mChunkCount / 2 }; x <= mChunkCount / 2; ++x) {
@@ -331,6 +331,46 @@ public:
 
 	void toggleUI() {
 		mIsUIVisible = !mIsUIVisible;
+	}
+
+	float quintic(float x) {
+		return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
+	}
+
+	float getHeightAtPoint(const glm::vec2& worldPos) {
+		glm::vec2 pos = worldPos / mArtisticParams.getTerrainScale();
+		float mountain = perlin(pos * mTerrainParams.getMountainFrequency(), 0);
+
+		mountain = pow(mountain, mTerrainParams.getMountainExponent());
+
+		mountain = mountain * (1 - mTerrainParams.getAntiFlatFactor()) + mTerrainParams.getAntiFlatFactor();
+
+		float offset = perlin(pos * mTerrainParams.getDipScale(), 1);
+
+		offset = quintic(offset);
+
+		offset *= mTerrainParams.getDipStrength();
+
+		float terrainHeight = 0;
+
+		float amplitude = mTerrainParams.getInitialAmplitude();
+		float spread = 1;
+
+		for (int i = 0; i < mTerrainParams.getOctaveCount(); ++i) {
+			glm::vec2 samplePos = pos * spread;
+			float perlinData = perlin(samplePos, 0);
+
+			terrainHeight += amplitude * perlinData;
+
+			amplitude *= mTerrainParams.getAmplitudeDecay();
+			spread *= mTerrainParams.getSpreadFactor();
+		}
+
+		float finalOutput = 0;
+		finalOutput = terrainHeight * mountain;
+
+		finalOutput += offset;
+		return finalOutput;
 	}
 
 private:
@@ -481,6 +521,110 @@ private:
 	glm::vec3 getDirToSun() {
 		float theta{ mDayTime * glm::pi<float>() };
 		return glm::vec3{ glm::cos(theta), glm::sin(theta), 0 };
+	}
+	int getClosestInt(float x) {
+		return int(round(x) + 0.1 * (x < 0 ? -1 : 1));
+	}
+
+	int max(int x, int y) {
+		return x > y ? x : y;
+	}
+
+	unsigned int rand(unsigned int n) {
+		unsigned int state = n * 747796405u + 2891336453u;
+		unsigned int word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+		word = (word >> 22u) ^ word;
+		return word;
+	}
+
+	float randToFloat(unsigned int n) {
+		return float(n) / 4294967296.0;
+	}
+
+	unsigned int labelPoint(int x, int y) {
+		if (x == 0 && y == 0)
+			return 0;
+
+		int n = max(abs(x), abs(y));
+		int width = 2 * n + 1;
+		int startingIndex = (width - 2) * (width - 2);
+
+		if (n == y) { // top row
+			return startingIndex + x + n;
+		}
+		if (n == -y) { // bottom row
+			return startingIndex + width + x + n;
+		}
+		if (n == x) { // right col
+			return startingIndex + width * 2 + y - 1 + n;
+		}
+		if (n == -x) { // right col
+			return startingIndex + width * 2 + width - 2 + y - 1 + n;
+		}
+		return 0;
+	}
+
+	glm::vec2 randUnitVector(float randNum) {
+		float theta = 2 * 3.14159 * randNum;
+		return glm::normalize(glm::vec2(cos(theta), sin(theta)));
+	}
+
+	glm::vec2 quinticInterpolation(glm::vec2 t) {
+		return t * t * t * (t * (t * glm::vec2(6) - glm::vec2(15)) + glm::vec2(10));
+	}
+
+	glm::vec2 quinticDerivative(glm::vec2 t) {
+		return glm::vec2(30) * t * t * (t * (t - glm::vec2(2)) + glm::vec2(1));
+	}
+
+	float perlin(const glm::vec2& pos, int reroll) {
+		int x0 = getClosestInt(floor(pos.x));
+		int x1 = getClosestInt(ceil(pos.x));
+		int y0 = getClosestInt(floor(pos.y));
+		int y1 = getClosestInt(ceil(pos.y));
+
+		glm::vec2 p00 = glm::vec2(x0, y0);
+
+		glm::vec2 relPoint = pos - p00;
+
+		unsigned int rui00 = rand(labelPoint(x0, y0));
+		unsigned int rui10 = rand(labelPoint(x1, y0));
+		unsigned int rui01 = rand(labelPoint(x0, y1));
+		unsigned int rui11 = rand(labelPoint(x1, y1));
+
+		for (int i = 0; i < reroll; ++i) {
+			rui00 = rand(rui00);
+			rui10 = rand(rui10);
+			rui01 = rand(rui01);
+			rui11 = rand(rui11);
+		}
+
+		float r00 = randToFloat(rui00);
+		float r10 = randToFloat(rui10);
+		float r01 = randToFloat(rui01);
+		float r11 = randToFloat(rui11);
+
+		glm::vec2 g00 = randUnitVector(r00);
+		glm::vec2 g10 = randUnitVector(r10);
+		glm::vec2 g01 = randUnitVector(r01);
+		glm::vec2 g11 = randUnitVector(r11);
+
+		glm::vec2 v00 = relPoint;
+		glm::vec2 v11 = relPoint - glm::vec2(1, 1);
+		glm::vec2 v10 = relPoint - glm::vec2(1, 0);
+		glm::vec2 v01 = relPoint - glm::vec2(0, 1);
+
+		float d00 = glm::dot(v00, g00);
+		float d10 = glm::dot(v10, g10);
+		float d01 = glm::dot(v01, g01);
+		float d11 = glm::dot(v11, g11);
+
+		// From https://iquilezles.org/articles/gradientnoise/ and Acerola's github
+		glm::vec2 u = quinticInterpolation(relPoint);
+		glm::vec2 du = quinticDerivative(relPoint);
+		float noise = d00 + u.x * (d10 - d00) + u.y * (d01 - d00) + u.x * u.y * (d00 - d10 - d01 + d11);
+		noise = noise / 1.414 + 0.5;
+		return noise;
 	}
 };
 
