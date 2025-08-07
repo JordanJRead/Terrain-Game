@@ -39,6 +39,12 @@ public:
 	int getOctaveCount() { return mOctaveCount.mShader; }
 	float getInitialAmplitude() { return mInitialAmplitude.mShader; }
 	float getAmplitudeDecay() { return mAmplitudeDecay.mShader; }
+	float getSpreadFactor() { return mSpreadFactor.mShader; }
+	float getMountainFrequency() { return mMountainFrequency.mShader; }
+	float getMountainExponent() { return mMountainExponent.mShader; }
+	float getAntiFlatFactor() { return mAntiFlatFactor.mShader; }
+	float getDipScale() { return mDipScale.mShader; }
+	float getDipStrength() { return mDipStrength.mShader; }
 
 private:
 	BUF mBUF;
