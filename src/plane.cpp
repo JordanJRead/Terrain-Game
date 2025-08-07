@@ -8,6 +8,7 @@
 Plane::Plane(int verticesPerEdge)
 	: mVerticesPerEdge{ verticesPerEdge }
 	, mFloatsPerVertex{ 2 }
+	, mWidth{ 1 }
 {
 	int vertexCount{ mVerticesPerEdge * mVerticesPerEdge };
 
@@ -57,6 +58,7 @@ Plane::Plane(const Plane& basePlane, const glm::vec3 worldPos, float scale, std:
 	, mIndexCount{ basePlane.getIndexCount() }
 	, mFloatsPerVertex{ 3 }
 	, mIndices{ basePlane.getIndices() }
+	, mWidth{ scale }
 {
 	assert(basePlane.getFloatsPerVertex() == 2);
 
@@ -65,32 +67,18 @@ Plane::Plane(const Plane& basePlane, const glm::vec3 worldPos, float scale, std:
 	mVertices.reserve(vertexCount * mFloatsPerVertex);
 
 	const std::vector<float>& baseVertexData{ basePlane.getVertices() };
-	glm::vec2 flatStepWorldPos;
+	glm::vec3 flatStepWorldPos{ getClosestWorldVertexPos(worldPos) };
 
 	for (int baseVertexI{ 0 }; baseVertexI < baseVertexData.size() - 1; baseVertexI += 2) {
 		float xValue{ baseVertexData[baseVertexI] };
 		float zValue{ baseVertexData[baseVertexI + 1] };
-		xValue *= scale; // preserve step size????
+		xValue *= scale;
 		xValue += flatStepWorldPos.x;
 		zValue *= scale;
-		zValue += flatStepWorldPos.y;
+		zValue += flatStepWorldPos.z;
 		float yValue = heightFunction({ xValue, zValue });
-	}
-
-	for (int baseVertexI{ 0 }; baseVertexI < baseVertexData.size(); ++baseVertexI) {
-		bool isX{ baseVertexI % 2 == 0 };
-		float value{ baseVertexData[baseVertexI] };
-		value *= scale;
-		value += isX ? flatStepWorldPos.x : flatStepWorldPos.y;
-		if (isX) {
-			float zValue{ baseVertexData[baseVertexI] };
-			value *= scale;
-			value += isX ? flatStepWorldPos.x : flatStepWorldPos.y;
-			mVertices.push_back(value);
-			mVertices.push_back(heightFunction({ baseVertexData[baseVertexI], baseVertexData[baseVertexI + 1] })); // add y
-		}
-		else { // z coord
-			mVertices.push_back(baseVertexData[baseVertexI]);
-		}
+		mVertices.push_back(xValue);
+		mVertices.push_back(yValue);
+		mVertices.push_back(zValue);
 	}
 }
