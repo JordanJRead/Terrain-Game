@@ -18,6 +18,7 @@ private:
 	Camera mCamera;
 	TerrainRenderer mTerrainRenderer;
 	GLFWwindow* mWindow;
+	Shader mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
 	bool mIsCursorHidden{ true };
 
 	static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {

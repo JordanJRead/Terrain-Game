@@ -36,15 +36,15 @@ public:
 	}
 	void renderUI();
 	bool updateGPU(bool force);
-	int getOctaveCount() { return mOctaveCount.mShader; }
-	float getInitialAmplitude() { return mInitialAmplitude.mShader; }
-	float getAmplitudeDecay() { return mAmplitudeDecay.mShader; }
-	float getSpreadFactor() { return mSpreadFactor.mShader; }
-	float getMountainFrequency() { return mMountainFrequency.mShader; }
-	float getMountainExponent() { return mMountainExponent.mShader; }
-	float getAntiFlatFactor() { return mAntiFlatFactor.mShader; }
-	float getDipScale() { return mDipScale.mShader; }
-	float getDipStrength() { return mDipStrength.mShader; }
+	int getOctaveCount() const { return mOctaveCount.mShader; }
+	float getInitialAmplitude() const { return mInitialAmplitude.mShader; }
+	float getAmplitudeDecay() const { return mAmplitudeDecay.mShader; }
+	float getSpreadFactor() const { return mSpreadFactor.mShader; }
+	float getMountainFrequency() const { return mMountainFrequency.mShader; }
+	float getMountainExponent() const { return mMountainExponent.mShader; }
+	float getAntiFlatFactor() const { return mAntiFlatFactor.mShader; }
+	float getDipScale() const { return mDipScale.mShader; }
+	float getDipStrength() const { return mDipStrength.mShader; }
 
 private:
 	BUF mBUF;

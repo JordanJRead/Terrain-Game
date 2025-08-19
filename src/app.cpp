@@ -2,7 +2,6 @@
 #include <vector>
 #include "vertexarray.h"
 #include <iostream>
-#include "plane.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -12,6 +11,8 @@
 #include "colourbuffer.h"
 #include <array>
 #include "glm/glm.hpp"
+#include "planephysics.h"
+#include "planegpu.h"
 
 App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	: mCamera{ screenWidth, screenHeight, {0, 20, 0} } // x = 2883548 for farlands
@@ -46,8 +47,6 @@ void App::loop() {
 	bool wireModeGUI{ false };
 	bool displayGridGUI{ true };
 
-	Plane worldGridPlane{ 2 };
-
 	glfwSwapInterval(0);
 
 	double startTime{ glfwGetTime() };
@@ -75,6 +74,18 @@ void App::loop() {
 
 		// Terrain
 		mTerrainRenderer.render(mCamera, displayDeltaTime, (float)glfwGetTime());
+
+		// Physics
+		PlanePhysics physicsPlane{ 10, mCamera.getPosition(), 5, mTerrainRenderer };
+		// Debug physics plane
+		//PlaneGPU gpuPlane{ physicsPlane };
+		//mPhysicsShader.use();
+		//mPhysicsShader.setMatrix4("view", mCamera.getViewMatrix());
+		//mPhysicsShader.setMatrix4("proj", mCamera.getProjectionMatrix());
+		//gpuPlane.useVertexArray();
+		//glDisable(GL_DEPTH_TEST);
+		//glDrawElements(GL_TRIANGLES, gpuPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
+		//glEnable(GL_DEPTH_TEST);
 
 		glfwSwapBuffers(mWindow);
 		glfwPollEvents();
