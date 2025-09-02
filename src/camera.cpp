@@ -2,6 +2,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "GLFW/glfw3.h"
+#include "physics.h"
+#include "planephysics.h"
 
 Camera::Camera(int screenWidth, int screenHeight, const glm::vec3& position, float speed, float sens)
 	: mPosition{ position }
@@ -58,7 +60,7 @@ glm::vec3 Camera::getForward() const {
 	};
 }
 
-void Camera::move(GLFWwindow* window, float deltaTime) {
+void Camera::move(GLFWwindow* window, float deltaTime, const PlanePhysics& physicsPlane) {
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
 		mSpeed += 100 * deltaTime;
 	}
@@ -96,5 +98,6 @@ void Camera::move(GLFWwindow* window, float deltaTime) {
 	}
  	if (glm::length(move) != 0)
 		move = glm::normalize(move);
-	mPosition += move * mSpeed * deltaTime;
+	const glm::vec3 displacement{ move * mSpeed * deltaTime };
+	mPosition = Physics::move(mPosition, glm::vec3{ 1, 2, 1 }, displacement, physicsPlane);
 }

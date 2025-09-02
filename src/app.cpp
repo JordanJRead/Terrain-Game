@@ -31,6 +31,8 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	//glFrontFace(GL_CW);
 	glClearColor(0.5f, 0.5f, 0.5f, 1);
 }
 
@@ -64,17 +66,6 @@ void App::loop() {
 		deltaTime = glfwGetTime() - prevFrame;
 		prevFrame = glfwGetTime();
 
-		/// Input
-		handleInput();
-		mCamera.move(mWindow, (float)deltaTime);
-
-		/// Rendering
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Terrain
-		mTerrainRenderer.render(mCamera, displayDeltaTime, (float)glfwGetTime());
-
 		// Physics
 		PlanePhysics physicsPlane{ 10, mCamera.getPosition(), 5, mTerrainRenderer };
 		// Debug physics plane
@@ -86,6 +77,17 @@ void App::loop() {
 		//glDisable(GL_DEPTH_TEST);
 		//glDrawElements(GL_TRIANGLES, gpuPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
 		//glEnable(GL_DEPTH_TEST);
+
+		/// Input
+		handleInput();
+		mCamera.move(mWindow, (float)deltaTime, physicsPlane);
+
+		/// Rendering
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Terrain
+		mTerrainRenderer.render(mCamera, displayDeltaTime, (float)glfwGetTime());
 
 		glfwSwapBuffers(mWindow);
 		glfwPollEvents();

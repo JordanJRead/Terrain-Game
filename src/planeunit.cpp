@@ -36,8 +36,8 @@ PlaneUnit::PlaneUnit(int verticesPerEdge)
 			continue;
 
 		mIndices.push_back(vertexI);
-		mIndices.push_back(vertexI + 1);
 		mIndices.push_back(vertexI + mVerticesPerEdge);
+		mIndices.push_back(vertexI + 1);
 
 		mIndices.push_back(vertexI + 1);
 		mIndices.push_back(vertexI + mVerticesPerEdge);
