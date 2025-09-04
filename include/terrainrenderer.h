@@ -97,7 +97,7 @@ public:
 		};
 
 		std::vector<unsigned int> indices{
-			0, 1, 2, 1, 2, 3
+			0, 1, 2, 2, 1, 3
 		};
 
 		std::vector<int> attribs{
