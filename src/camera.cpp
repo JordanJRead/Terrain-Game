@@ -99,5 +99,5 @@ void Camera::move(GLFWwindow* window, float deltaTime, const PlanePhysics& physi
  	if (glm::length(move) != 0)
 		move = glm::normalize(move);
 	const glm::vec3 displacement{ move * mSpeed * deltaTime };
-	mPosition = Physics::move(mPosition, glm::vec3{ 1, 2, 1 }, displacement, physicsPlane);
+	mPosition = Physics::move(mPosition, glm::vec3{ 1, 1, 1 }, displacement, physicsPlane);
 }
