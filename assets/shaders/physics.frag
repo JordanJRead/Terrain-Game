@@ -1,6 +1,6 @@
 #version 430 core
 
-in vec3 fragColor;
+in flat vec3 fragColor;
 out vec4 FragColor;
 
 void main() {

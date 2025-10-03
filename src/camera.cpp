@@ -60,7 +60,7 @@ glm::vec3 Camera::getForward() const {
 	};
 }
 
-void Camera::move(GLFWwindow* window, float deltaTime, const PlanePhysics& physicsPlane) {
+void Camera::move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlane) {
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
 		mSpeed += 100 * deltaTime;
 	}
@@ -100,4 +100,10 @@ void Camera::move(GLFWwindow* window, float deltaTime, const PlanePhysics& physi
 		move = glm::normalize(move);
 	const glm::vec3 displacement{ move * mSpeed * deltaTime };
 	mPosition = Physics::move(mPosition, glm::vec3{ 1, 1, 1 }, displacement, physicsPlane);
+
+	// TESTING
+	//physicsPlane.mWidth = 1;
+	//physicsPlane.mVertexData = { {2, 0, 3, 2, 0, -3, 5, 0, 0} };
+	//physicsPlane.mIndices = { {0, 2, 1} };
+	//mPosition = Physics::move({ 1.8, 1, 0 }, glm::vec3{ 1, 1, 1 }, {0, -2 * 0.020204, 0}, physicsPlane);
 }

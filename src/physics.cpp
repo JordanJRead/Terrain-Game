@@ -6,6 +6,7 @@
 #include <cmath>
 #include <array>
 #include <algorithm>
+#include <iostream>
 
 double signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, const glm::vec3& planePoint) {
 	return glm::dot(planeNormal, (pos - planePoint));
@@ -13,17 +14,35 @@ double signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, con
 
 double areaOfTriangle(const std::array<glm::vec3, 3>& trianglePoints) {
 	return 0.5 * glm::length(glm::cross(trianglePoints[1] - trianglePoints[0], trianglePoints[2] - trianglePoints[0]));
-} 
+}
 
 // https://stackoverflow.com/a/37552406
-bool isPointInTriangle(const glm::vec3& pos, const std::array<glm::vec3, 3>& trianglePoints) {
-	double s = areaOfTriangle(trianglePoints);
-	double a = areaOfTriangle({ trianglePoints[1], pos, trianglePoints[2] }) / s;
-	double b = areaOfTriangle({ pos, trianglePoints[0], trianglePoints[2] }) / s;
-	double c = areaOfTriangle({ pos, trianglePoints[0], trianglePoints[1] }) / s;
-	return 0 <= a && a <= 1
-		&& 0 <= b && b <= 1
-		&& 0 <= c && c <= 1;
+//bool isPointInTriangle(const glm::vec3& pos, const std::array<glm::vec3, 3>& trianglePoints) {
+//	double s = areaOfTriangle(trianglePoints);
+//	double a = areaOfTriangle({ trianglePoints[1], pos, trianglePoints[2] }) / s;
+//	double b = areaOfTriangle({ pos, trianglePoints[0], trianglePoints[2] }) / s;
+//	double c = areaOfTriangle({ pos, trianglePoints[0], trianglePoints[1] }) / s;
+//	return 0 <= a && a <= 1
+//		&& 0 <= b && b <= 1
+//		&& 0 <= c && c <= 1;
+//}
+
+bool isPointInTriangle(const glm::vec3& point,
+	const glm::vec3& pa, const glm::vec3& pb, const glm::vec3& pc)
+{
+	glm::vec3 e10 = pb - pa;
+	glm::vec3 e20 = pc - pa;
+	float a = glm::dot(e10, e10);
+	float b = glm::dot(e10, e20);
+	float c = glm::dot(e20, e20);
+	float ac_bb = (a * c) - (b * b);
+	glm::vec3 vp(point.x - pa.x, point.y - pa.y, point.z - pa.z);
+	float d = glm::dot(vp, e10);
+	float e = glm::dot(vp, e20);
+	float x = (d * c) - (e * b);
+	float y = (e * a) - (d * b);
+	float z = x + y - ac_bb;
+	return ((((int)z) & ~(((int)x) | ((int)y))) & 0x80000000);
 }
 
 std::optional<double> getSmallestQuadratic(double a, double b, double c) {
@@ -56,15 +75,22 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 	double normalDotDisplacement{ glm::dot(planeNormal, displacement) };
 	double distFromPlane{ signedDistFromPlane(spherePosition, planeNormal, trianglePoints[0])};
 
+	// Moving in wrong direction
+	if (glm::dot(planeNormal, glm::normalize(displacement)) > 0) {
+		std::cerr << "1: " << 2 << "\n";
+		return Physics::CollisionData{ 2, glm::vec3 {0, 0, 0} }; // No collision
+	}
+
 	float t0; // Time when sphere is on front side of plane
 	float t1; // Time when sphere is on back  side of plane
 
 	if (normalDotDisplacement == 0) { // Moving parallel to plane
-		if (distFromPlane == 1) { // Always colliding
+		if (std::abs(distFromPlane) <= 1) { // Always colliding
 			t0 = 0;
 			t1 = 1;
 		}
 		else {
+			std::cerr << "2: " << 2 << "\n";
 			return Physics::CollisionData{ 2, glm::vec3 {0, 0, 0} }; // No collision
 		}
 	}
@@ -73,9 +99,19 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 		t1 = (-1 - distFromPlane) / (normalDotDisplacement);
 	}
 
+	if ((t0 < 0 && t1 < 0) || (t0 > 1 && t1 > 1)) {
+	//if ((t0 < 0 || t0 > 1) && (t1 < 0 || t1 > 1)) {
+		std::cerr << "3: " << 2 << "\n";
+		return Physics::CollisionData{ 2, glm::vec3 {0, 0, 0} }; // No collision
+	}
+
+	t0 = fmax(t0, 0);
+	t1 = fmin(t0, 1);
+
 	// Collision happens inside triangle
 	glm::vec3 planeIntersectionPoint{ spherePosition + displacement * t0 - planeNormal };
-	if (isPointInTriangle(planeIntersectionPoint, trianglePoints)) {
+	if (isPointInTriangle(planeIntersectionPoint, trianglePoints[0], trianglePoints[1], trianglePoints[2])) {
+		std::cerr << "4: " << t0 << " " << planeNormal.x << " " << planeNormal.y << " " << planeNormal.z << " " << "\n";
 		return { t0, planeIntersectionPoint };
 	}
 
@@ -110,7 +146,7 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 
 		std::optional<double> x1 = getSmallestQuadratic(a, b, c);
 
-		if (!x1) {
+		if (!x1 || x1 < 0 || x1 > 1) {
 			edgeTValues[edgeI] = 2;
 			continue;
 		}
@@ -129,15 +165,19 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 	std::pair<size_t, double> minEdge{ getMinOfArray(edgeTValues) };
 
 	if (minVertex.second < minEdge.second) {
+		std::cerr << "5: " << minVertex.second << "\n";
 		return { minVertex.second, trianglePoints[minVertex.first] };
 	}
 	else {
+		std::cerr << "6: " << minEdge.second << "\n";
 		return { minEdge.second, edgeCollisionPositions[minEdge.first] };
 	}
 }
  
-
 glm::vec3 Physics::move(const glm::vec3& capsulePos, const glm::vec3& capsuleScales, const glm::vec3& displacement, const PlanePhysics& physicsPlane, int maxRecursionDepth) {
+	if (glm::length(displacement) == 0)
+		return capsulePos;
+
 	const std::vector<float>& vertexData{ physicsPlane.getVertexData() };
 	const std::vector<unsigned int>& vertexIndices{ physicsPlane.getIndices() };
 
@@ -176,17 +216,25 @@ glm::vec3 Physics::move(const glm::vec3& capsulePos, const glm::vec3& capsuleSca
 		if (smallestT == 2) // Default impossible value for t
 			break;
 
-		glm::vec3 eDesiredDestination{ ePosition + displacement };
+		glm::vec3 eDesiredDestination{ ePosition + eDisplacement };
 
 		// Collision response
 		ePosition += eDisplacement * (float)smallestT;
+
 		glm::vec3 eSlidingPlanePoint{ closestCollisionPosition };
 		glm::vec3 eSlidingPlaneNormal{ glm::normalize(ePosition - closestCollisionPosition) };
-		double eDesiredDestinationDistanceFromSlidingPlane{ signedDistFromPlane(eDesiredDestination, eSlidingPlaneNormal, eSlidingPlanePoint) };
-		glm::vec3 eNewDestination{ eDesiredDestination + (float)eDesiredDestinationDistanceFromSlidingPlane * eSlidingPlaneNormal };
 
-		//eDisplacement = eNewDestination - ePosition;
-		ePosition += 0.01f * eSlidingPlaneNormal; 
+		double distCutOff = 1 - std::abs(signedDistFromPlane(eDesiredDestination, eSlidingPlaneNormal, eSlidingPlanePoint));
+
+		float offset = 0.00001f;
+
+		glm::vec3 eNewDesiredDestination{ eDesiredDestination + eSlidingPlaneNormal * (float)distCutOff + offset * eSlidingPlaneNormal };
+		ePosition += offset * eSlidingPlaneNormal;
+		eDisplacement = eNewDesiredDestination - ePosition;
+
+		if (glm::length(eDisplacement) > 10) {
+			int x = 1;
+		}
 	}
 
 	return (ePosition + eDisplacement) * capsuleScales;

@@ -11,7 +11,7 @@ class Camera {
 public:
 	Camera(int screenWidth, int screenHeight, const glm::vec3& position = { 0, 0, 0 }, float speed = 10, float sens = 0.005f);
 	void mouseCallback(GLFWwindow* window, double xPos, double yPos, bool isCursorHidden);
-	void move(GLFWwindow* window, float deltaTime, const PlanePhysics& physicsPlane);
+	void move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlane);
 	glm::mat4 getViewMatrix() const;
 	glm::mat4 getProjectionMatrix() const;
 	glm::vec3 getPosition() const { return mPosition; }

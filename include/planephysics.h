@@ -15,11 +15,11 @@ public:
 	float getStepSize() const { return (1.0 / (mVerticesPerEdge - 1)) * mWidth; }
 	const std::vector<float>& getVertexData() const { return mVertexData; }
 	const std::vector<unsigned int>& getIndices() const { return mIndices; }
-
-private:
 	float mWidth;
 	std::vector<unsigned int> mIndices;
 	std::vector<float> mVertexData;
+
+private:
 };
 
 #endif

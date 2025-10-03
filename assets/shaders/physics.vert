@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec3 vWorldPos;
 
-out vec3 fragColor;
+out flat vec3 fragColor;
 
 uniform mat4 view;
 uniform mat4 proj;
@@ -20,5 +20,5 @@ float randToFloat(uint n) {
 
 void main() {
 	gl_Position = proj * view * vec4(vWorldPos, 1);
-	fragColor = vec3(randToFloat(rand(gl_VertexID)), randToFloat(rand(gl_VertexID * 10)), randToFloat(rand(gl_VertexID * 20)));
+	fragColor = vec3(randToFloat(rand(gl_VertexID / 3)), randToFloat(rand(gl_VertexID / 3)), randToFloat(rand(gl_VertexID / 3)));
 }

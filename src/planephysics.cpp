@@ -2,6 +2,10 @@
 #include "planeunit.h"
 #include "terrainrenderer.h"
 
+int getClosestInt(float x) {
+	return int(round(x) + 0.1 * (x < 0 ? -1 : 1));
+}
+
 PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float width, const TerrainRenderer& terrainRenderer)
 	: PlaneI{ verticesPerEdge }
 	, mWidth{ width }
@@ -35,6 +39,6 @@ PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float
 glm::vec3 PlanePhysics::getClosestWorldVertexPos(const glm::vec3 pos) {
 	float stepSize{ getStepSize() };
 	glm::vec3 stepSizesAway = pos / stepSize;
-	stepSizesAway = glm::vec3{ (int)stepSizesAway.x, (int)stepSizesAway.y, (int)stepSizesAway.z };
+	stepSizesAway = glm::vec3{ getClosestInt(stepSizesAway.x), getClosestInt(stepSizesAway.y), getClosestInt(stepSizesAway.z) };
 	return stepSizesAway * stepSize;
 }
