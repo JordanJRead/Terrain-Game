@@ -85,14 +85,14 @@ void App::loop() {
 
 
 		// Debug physics plane
-		PlaneGPU gpuPlane{ physicsPlane };
-		mPhysicsShader.use();
-		mPhysicsShader.setMatrix4("view", mCamera.getViewMatrix());
-		mPhysicsShader.setMatrix4("proj", mCamera.getProjectionMatrix());
-		gpuPlane.useVertexArray();
-		glDisable(GL_DEPTH_TEST);
-		glDrawElements(GL_TRIANGLES, gpuPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
-		glEnable(GL_DEPTH_TEST);
+		//PlaneGPU gpuPlane{ physicsPlane };
+		//mPhysicsShader.use();
+		//mPhysicsShader.setMatrix4("view", mCamera.getViewMatrix());
+		//mPhysicsShader.setMatrix4("proj", mCamera.getProjectionMatrix());
+		//gpuPlane.useVertexArray();
+		//glDisable(GL_DEPTH_TEST);
+		//glDrawElements(GL_TRIANGLES, gpuPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
+		//glEnable(GL_DEPTH_TEST);
 
 		glfwSwapBuffers(mWindow);
 		glfwPollEvents();

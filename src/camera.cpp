@@ -18,11 +18,11 @@ void Camera::mouseCallback(GLFWwindow* window, double xPos, double yPos, bool is
 	static float pi{ 3.1415926535897932384626433832795 };
 
 	if (!isCursorHidden) {
-		isFirstLook = true;
+		mIsFirstLook = true;
 		return;
 	}
-	if (isFirstLook) {
-		isFirstLook = false;
+	if (mIsFirstLook) {
+		mIsFirstLook = false;
 		mPrevX = xPos;
 		mPrevY = yPos;
 		return;
@@ -74,15 +74,28 @@ void Camera::move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlan
 
 	glm::vec3 move{ 0, 0, 0 };
 	glm::vec3 forward{ getForward() };
+
+	glm::vec3 flatForward{ forward.x, 0, forward.z };
+	flatForward = glm::normalize(flatForward);
+
 	glm::vec3 left{ forward.x, 0, forward.z };
 	left = glm::normalize(left);
 	left = glm::rotate(glm::identity<glm::mat4>(), glm::radians(90.0f), glm::vec3{0, 1, 0}) * glm::vec4{left.x, left.y, left.z, 1};
 
+	if (mJumpCooldown > 0)
+		mJumpCooldown -= deltaTime;
+
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		move += forward;
+		if (mIsFreecam)
+			move += forward;
+		else
+			move += flatForward;
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		move -= forward;
+		if (mIsFreecam)
+			move -= forward;
+		else
+			move -= flatForward;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
 		move += left;
@@ -91,19 +104,19 @@ void Camera::move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlan
 		move -= left;
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		move += glm::vec3 { 0, 1, 0 };
+		if (mIsFreecam)
+			move += glm::vec3{ 0, 1, 0 };
+		else if (mJumpCooldown <= 0 && mPhysicsObject.isGrounded()) {
+			mPhysicsObject.incrementGravityVelocity(4);
+			mJumpCooldown = 0.2;
+		}
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
-		move -= glm::vec3{ 0, 1, 0 };
+		if (mIsFreecam)
+			move -= glm::vec3{ 0, 1, 0 };
 	}
  	if (glm::length(move) != 0)
 		move = glm::normalize(move);
 	const glm::vec3 displacement{ move * mSpeed * deltaTime };
-	mPosition = Physics::move(mPosition, glm::vec3{ 1, 1, 1 }, displacement, physicsPlane);
-
-	// TESTING
-	//physicsPlane.mWidth = 1;
-	//physicsPlane.mVertexData = { {2, 0, 3, 2, 0, -3, 5, 0, 0} };
-	//physicsPlane.mIndices = { {0, 2, 1} };
-	//mPosition = Physics::move({ 1.8, 1, 0 }, glm::vec3{ 1, 1, 1 }, {0, -2 * 0.020204, 0}, physicsPlane);
+	mPosition = mPhysicsObject.move(mPosition, displacement, physicsPlane, deltaTime);
 }

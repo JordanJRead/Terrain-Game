@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "GLFW/glfw3.h"
 #include <iostream>
+#include <physicsobject.h>
 
 class PlanePhysics;
 
@@ -20,13 +21,19 @@ public:
 private:
 	float mPitch{ 0 }; // In radians
 	float mYaw{ 0 }; // In radians
-	float mSpeed;
 	float mSens;
-	glm::vec3 mPosition;
 	float mAspectRatio;
 	float mPrevX{ 0 };
 	float mPrevY{ 0 };
-	bool isFirstLook{ true };
+	bool mIsFirstLook{ true };
+
+	glm::vec3 mPosition;
+
+	float mSpeed;
+	bool mIsFreecam{ false };
+	double mJumpCooldown{ 0 };
+
+	PhysicsObject mPhysicsObject{};
 };
 
 #endif

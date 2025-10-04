@@ -16,17 +16,6 @@ double areaOfTriangle(const std::array<glm::vec3, 3>& trianglePoints) {
 	return 0.5 * glm::length(glm::cross(trianglePoints[1] - trianglePoints[0], trianglePoints[2] - trianglePoints[0]));
 }
 
-// https://stackoverflow.com/a/37552406
-//bool isPointInTriangle(const glm::vec3& pos, const std::array<glm::vec3, 3>& trianglePoints) {
-//	double s = areaOfTriangle(trianglePoints);
-//	double a = areaOfTriangle({ trianglePoints[1], pos, trianglePoints[2] }) / s;
-//	double b = areaOfTriangle({ pos, trianglePoints[0], trianglePoints[2] }) / s;
-//	double c = areaOfTriangle({ pos, trianglePoints[0], trianglePoints[1] }) / s;
-//	return 0 <= a && a <= 1
-//		&& 0 <= b && b <= 1
-//		&& 0 <= c && c <= 1;
-//}
-
 bool isPointInTriangle(const glm::vec3& point,
 	const glm::vec3& pa, const glm::vec3& pb, const glm::vec3& pc)
 {
@@ -77,7 +66,7 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 
 	// Moving in wrong direction
 	if (glm::dot(planeNormal, glm::normalize(displacement)) > 0) {
-		std::cerr << "1: " << 2 << "\n";
+		//std::cerr << "1: " << 2 << "\n";
 		return Physics::CollisionData{ 2, glm::vec3 {0, 0, 0} }; // No collision
 	}
 
@@ -90,7 +79,7 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 			t1 = 1;
 		}
 		else {
-			std::cerr << "2: " << 2 << "\n";
+			//std::cerr << "2: " << 2 << "\n";
 			return Physics::CollisionData{ 2, glm::vec3 {0, 0, 0} }; // No collision
 		}
 	}
@@ -101,7 +90,7 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 
 	if ((t0 < 0 && t1 < 0) || (t0 > 1 && t1 > 1)) {
 	//if ((t0 < 0 || t0 > 1) && (t1 < 0 || t1 > 1)) {
-		std::cerr << "3: " << 2 << "\n";
+		//std::cerr << "3: " << 2 << "\n";
 		return Physics::CollisionData{ 2, glm::vec3 {0, 0, 0} }; // No collision
 	}
 
@@ -111,7 +100,7 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 	// Collision happens inside triangle
 	glm::vec3 planeIntersectionPoint{ spherePosition + displacement * t0 - planeNormal };
 	if (isPointInTriangle(planeIntersectionPoint, trianglePoints[0], trianglePoints[1], trianglePoints[2])) {
-		std::cerr << "4: " << t0 << " " << planeNormal.x << " " << planeNormal.y << " " << planeNormal.z << " " << "\n";
+		//std::cerr << "4: " << t0 << " " << planeNormal.x << " " << planeNormal.y << " " << planeNormal.z << " " << "\n";
 		return { t0, planeIntersectionPoint };
 	}
 
@@ -165,11 +154,11 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 	std::pair<size_t, double> minEdge{ getMinOfArray(edgeTValues) };
 
 	if (minVertex.second < minEdge.second) {
-		std::cerr << "5: " << minVertex.second << "\n";
+		//std::cerr << "5: " << minVertex.second << "\n";
 		return { minVertex.second, trianglePoints[minVertex.first] };
 	}
 	else {
-		std::cerr << "6: " << minEdge.second << "\n";
+		//std::cerr << "6: " << minEdge.second << "\n";
 		return { minEdge.second, edgeCollisionPositions[minEdge.first] };
 	}
 }

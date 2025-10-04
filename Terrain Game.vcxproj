@@ -152,6 +152,7 @@
     <ClCompile Include="src\cubemap.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\physics.cpp" />
+    <ClCompile Include="src\physicsobject.cpp" />
     <ClCompile Include="src\planegpu.cpp" />
     <ClCompile Include="src\imgui.cpp" />
     <ClCompile Include="src\imgui_demo.cpp" />
@@ -173,6 +174,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\physics.h" />
+    <ClInclude Include="include\physicsobject.h" />
     <ClInclude Include="include\planei.h" />
     <ClInclude Include="include\planephysics.h" />
     <ClInclude Include="include\planeunit.h" />
