@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="include\planegpu.h" />
+    <ClCompile Include="include\uimanager.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\app.cpp" />
     <ClCompile Include="src\artisticparamsbuffer.cpp" />
