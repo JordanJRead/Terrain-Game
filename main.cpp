@@ -16,17 +16,17 @@ int main() {
 	int screenWidth{ 1920 };
 	int screenHeight{ 1080 };
 
-	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "DirtJam", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "TerrainGame", NULL, NULL);
 	if (window == NULL)
 	{
-		std::cout << "Failed to create GLFW window" << std::endl;
+		std::cerr << "Failed to create GLFW window" << "\n";
 		glfwTerminate();
 	}
 	glfwMakeContextCurrent(window);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
+		std::cerr << "Failed to initialize GLAD" << "\n";
 		return -1;
 	}
 

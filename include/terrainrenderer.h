@@ -5,7 +5,7 @@
 #include "glm/glm.hpp"
 #include "vertexarray.h"
 #include "terrainimagegenerator.h"
-#include "gpuplane.h"
+#include "planegpu.h"
 #include <array>
 #include <string>
 #include <string_view>
@@ -97,7 +97,7 @@ public:
 		};
 
 		std::vector<unsigned int> indices{
-			0, 1, 2, 1, 2, 3
+			0, 1, 2, 2, 1, 3
 		};
 
 		std::vector<int> attribs{
@@ -237,14 +237,14 @@ public:
 		float maxChunkHeight{ getMaxHeight() };
 
 		float minChunkHeight{ getMinHeight() };
-		std::cout << getHeightAtPoint({ camera.getPosition().x, camera.getPosition().z }) << "\n";
 		glm::vec3 cameraForward{ camera.getForward() };
 		// For each chunk
  		for (int x{ -mChunkCount / 2 }; x <= mChunkCount / 2; ++x) {
 			for (int z{ -mChunkCount / 2 }; z <= mChunkCount / 2; ++z) {
 
 				mTerrainShader.use();
-				glm::vec3 chunkPos{ getClosestWorldVertexPos(camera.getPosition()) - glm::vec3(x * mChunkWidth, 0, z * mChunkWidth) };
+				//glm::vec3 chunkPos{ getClosestWorldVertexPos(camera.getPosition()) - glm::vec3(x * mChunkWidth, 0, z * mChunkWidth) };
+				glm::vec3 chunkPos{ mLowQualityPlane.getClosestWorldVertexPos(camera.getPosition(), mChunkWidth) - glm::vec3(x * mChunkWidth, 0, z * mChunkWidth) };
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - mChunkWidth / 2.0, chunkPos.x + mChunkWidth / 2.0 };
@@ -272,7 +272,7 @@ public:
 				if (isVisible) {
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
 					bool highQuality{ !(chunkDist > mVertexQualityDropoffDistance) };
-					GPUPlane& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
+					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
 
 					mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
 					mTerrainShader.setFloat("planeWorldWidth", mChunkWidth);
@@ -321,22 +321,15 @@ public:
 		return stepSizesAway * stepSize;
 	}
 
-	glm::vec3 getClosestWorldVertexPos(const glm::vec3 pos) {
-		float stepSize{ mLowQualityPlane.getStepSize() * mChunkWidth };
-		glm::vec3 stepSizesAway = pos / stepSize;
-		stepSizesAway = glm::vec3{ (int)stepSizesAway.x, (int)stepSizesAway.y, (int)stepSizesAway.z };
-		return stepSizesAway * stepSize;
-	}
-
 	void toggleUI() {
 		mIsUIVisible = !mIsUIVisible;
 	}
 
-	float quintic(float x) {
+	static float quintic(float x) {
 		return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
 	}
 
-	float getHeightAtPoint(const glm::vec2& worldPos) {
+	float getHeightAtPoint(const glm::vec2& worldPos) const {
 		glm::vec2 pos = worldPos / mArtisticParams.getTerrainScale();
 		float mountain = perlin(pos * mTerrainParams.getMountainFrequency(), 0);
 
@@ -404,8 +397,8 @@ private:
 	float mDayTime;
 	//glm::vec3 mDirToLight{ -0.008373, 0.089878, 0.995917 };
 
-	GPUPlane mLowQualityPlane;
-	GPUPlane mHighQualityPlane;
+	PlaneGPU mLowQualityPlane;
+	PlaneGPU mHighQualityPlane;
 
 	float mVertexQualityDropoffDistance;
 	float mShellQualityDropoffDistance;
@@ -521,26 +514,26 @@ private:
 		float theta{ mDayTime * glm::pi<float>() };
 		return glm::vec3{ glm::cos(theta), glm::sin(theta), 0 };
 	}
-	int getClosestInt(float x) {
+	static int getClosestInt(float x) {
 		return int(round(x) + 0.1 * (x < 0 ? -1 : 1));
 	}
 
-	int max(int x, int y) {
+	static int max(int x, int y) {
 		return x > y ? x : y;
 	}
 
-	unsigned int rand(unsigned int n) {
+	static unsigned int rand(unsigned int n) {
 		unsigned int state = n * 747796405u + 2891336453u;
 		unsigned int word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
 		word = (word >> 22u) ^ word;
 		return word;
 	}
 
-	float randToFloat(unsigned int n) {
+	static float randToFloat(unsigned int n) {
 		return float(n) / 4294967296.0;
 	}
 
-	unsigned int labelPoint(int x, int y) {
+	static unsigned int labelPoint(int x, int y) {
 		if (x == 0 && y == 0)
 			return 0;
 
@@ -563,20 +556,20 @@ private:
 		return 0;
 	}
 
-	glm::vec2 randUnitVector(float randNum) {
+	static glm::vec2 randUnitVector(float randNum) {
 		float theta = 2 * 3.14159 * randNum;
 		return glm::normalize(glm::vec2(cos(theta), sin(theta)));
 	}
 
-	glm::vec2 quinticInterpolation(glm::vec2 t) {
+	static glm::vec2 quinticInterpolation(glm::vec2 t) {
 		return t * t * t * (t * (t * glm::vec2(6) - glm::vec2(15)) + glm::vec2(10));
 	}
 
-	glm::vec2 quinticDerivative(glm::vec2 t) {
+	static glm::vec2 quinticDerivative(glm::vec2 t) {
 		return glm::vec2(30) * t * t * (t * (t - glm::vec2(2)) + glm::vec2(1));
 	}
 
-	float perlin(const glm::vec2& pos, int reroll) {
+	static float perlin(const glm::vec2& pos, int reroll) {
 		int x0 = getClosestInt(floor(pos.x));
 		int x1 = getClosestInt(ceil(pos.x));
 		int y0 = getClosestInt(floor(pos.y));

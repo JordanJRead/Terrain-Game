@@ -2,7 +2,6 @@
 #include <vector>
 #include "vertexarray.h"
 #include <iostream>
-#include "plane.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -12,6 +11,8 @@
 #include "colourbuffer.h"
 #include <array>
 #include "glm/glm.hpp"
+#include "planephysics.h"
+#include "planegpu.h"
 
 App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	: mCamera{ screenWidth, screenHeight, {0, 20, 0} } // x = 2883548 for farlands
@@ -30,12 +31,17 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_CULL_FACE);
+	//glFrontFace(GL_CW);
 	glClearColor(0.5f, 0.5f, 0.5f, 1);
 }
 
 void App::handleInput() {
 	if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(mWindow, 1);
+	}
+	if (glfwGetKey(mWindow, GLFW_KEY_R) == GLFW_PRESS) {
+		int x = 0;
 	}
 }
 
@@ -45,8 +51,6 @@ void App::loop() {
 
 	bool wireModeGUI{ false };
 	bool displayGridGUI{ true };
-
-	Plane worldGridPlane{ 2 };
 
 	glfwSwapInterval(0);
 
@@ -65,9 +69,12 @@ void App::loop() {
 		deltaTime = glfwGetTime() - prevFrame;
 		prevFrame = glfwGetTime();
 
+		// Physics
+		PlanePhysics physicsPlane{ 7, mCamera.getPosition(), 10, mTerrainRenderer};
+
 		/// Input
 		handleInput();
-		mCamera.move(mWindow, (float)deltaTime);
+		mCamera.move(mWindow, (float)deltaTime, physicsPlane);
 
 		/// Rendering
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -75,6 +82,17 @@ void App::loop() {
 
 		// Terrain
 		mTerrainRenderer.render(mCamera, displayDeltaTime, (float)glfwGetTime());
+
+
+		// Debug physics plane
+		//PlaneGPU gpuPlane{ physicsPlane };
+		//mPhysicsShader.use();
+		//mPhysicsShader.setMatrix4("view", mCamera.getViewMatrix());
+		//mPhysicsShader.setMatrix4("proj", mCamera.getProjectionMatrix());
+		//gpuPlane.useVertexArray();
+		//glDisable(GL_DEPTH_TEST);
+		//glDrawElements(GL_TRIANGLES, gpuPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
+		//glEnable(GL_DEPTH_TEST);
 
 		glfwSwapBuffers(mWindow);
 		glfwPollEvents();
