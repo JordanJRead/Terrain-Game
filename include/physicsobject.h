@@ -17,11 +17,6 @@ public:
 	double mGravityVelocity{ 0 };
 	glm::vec3 mCapsuleScales{ 0.3, 1, 0.3 };
 	int mMaxRecursionDepth{ 10 };
-
-private:
-	static bool floatEqual(float x, float y, float tol = 0.001) {
-		return x - y < tol;
-	}
 };
 
 #endif
