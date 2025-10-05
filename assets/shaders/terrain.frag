@@ -156,7 +156,7 @@ void main() {
 
 	// Lighting
 	float diffuse = max(0, dot(dirToLight, normal));
-	float ambient = 0.2;
+	float ambient = 0.03;
 	vec3 viewDir = normalize(cameraPos - groundWorldPos);
 	vec3 halfWay = normalize(viewDir + dirToLight);
 	float spec = isShell ? 0 : pow(max(dot(normal, halfWay), 0), specExp);
@@ -202,7 +202,7 @@ void main() {
 		if (!shallowEnough || randNum < shellCutoff || wet > 0)
 			discard;
 			
-		albedo = shellAlbedo + shellAlbedo * shellProgress * 0.1;
+		albedo = shellAlbedo + shellAlbedo * shellProgress * 0.2;
 	}
 
 	vec3 litAlbedo = (diffuse + ambient) * albedo + spec * sunColour;

@@ -16,7 +16,25 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	, mScreenWidth{ screenWidth }
 	, mScreenHeight{ screenHeight }
 	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition(), std::array<glm::vec2, 4> {glm::vec2{0}, glm::vec2{0}, glm::vec2{0}}, mUIManager }
+	, mFramebuffer{ screenWidth, screenHeight }
 {
+	std::vector<float> vertexData{
+	-1, -1,
+	 1, -1,
+	-1,  1,
+	 1,  1
+	};
+
+	std::vector<unsigned int> indices{
+		0, 1, 2, 2, 1, 3
+	};
+
+	std::vector<int> attribs{
+		2
+	};
+
+	mScreenQuad.create(vertexData, indices, attribs);
+
 	glfwSetWindowUserPointer(mWindow, this);
 	glfwSetCursorPosCallback(mWindow, mouseCallback);
 	glfwSetKeyCallback(mWindow, keyCallback);
@@ -64,14 +82,23 @@ void App::loop() {
 		mCamera.move(mWindow, (float)deltaTime, physicsPlane);
 
 		/// Rendering
+		mFramebuffer.bind();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Terrain
-		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mUIManager);
+		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mUIManager, mFramebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		mGammaShader.use();
+		mFramebuffer.bindTexture(0);
+		mScreenQuad.use();
+		glDisable(GL_DEPTH_TEST);
+		glDrawElements(GL_TRIANGLES, mScreenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);
+		glEnable(GL_DEPTH_TEST);
+
 		if (mIsUIVisible)
 			mUIManager.render(deltaTime);
-
 
 		// Debug physics plane
 		//PlaneGPU gpuPlane{ physicsPlane };

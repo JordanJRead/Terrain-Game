@@ -16,7 +16,7 @@ private:
 		friend UIManager;
 
 	public:
-		UIElement(const T& data) : mData{ data } {}
+		UIElement(const T& data) : mData{ data }, mOldData{ data } {}
 		const T& data() const { return mData; }
 		bool hasChanged() const { return mHasChanged; }
 
@@ -244,11 +244,11 @@ public:
 	UIElement<float> mDayTime{ 0.5 };
 
 	// Colours
-	UIElement<glm::vec3> mDirtColour    { {110 / 255.0, 82  / 255.0, 59  / 255.0} };
-	UIElement<glm::vec3> mMountainColour{ {102 / 255.0, 102 / 255.0, 102 / 255.0} };
-	UIElement<glm::vec3> mGrassColour   { {0   / 255.0, 128 / 255.0, 0   / 255.0} };
+	UIElement<glm::vec3> mDirtColour    { {40 / 255.0, 21 / 255.0, 10  / 255.0} };
+	UIElement<glm::vec3> mMountainColour{ {34 / 255.0, 34 / 255.0, 34 / 255.0} };
+	UIElement<glm::vec3> mGrassColour   { {0   / 255.0, 56 / 255.0, 0   / 255.0} };
 	UIElement<glm::vec3> mSnowColour    { {255 / 255.0, 255 / 255.0, 255 / 255.0} };
-	UIElement<glm::vec3> mWaterColour   { {0   / 255.0, 26  / 255.0, 128 / 255.0} };
+	UIElement<glm::vec3> mWaterColour   { {0   / 255.0, 1.7  / 255.0, 56 / 255.0} };
 	UIElement<glm::vec3> mSunColour     { {255 / 255.0, 255 / 255.0, 255 / 255.0} };
 
 	// Terrain Parameters
@@ -293,7 +293,6 @@ public:
 	UIElement<float> mShellBaseCutoff{ 0.2 };
 	UIElement<float> mSnowHeight{ 36 };
 	UIElement<float> mSeaFoam{ 0.4 };
-
 };
 
 #endif

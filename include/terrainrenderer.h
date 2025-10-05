@@ -22,6 +22,7 @@
 #include "cubevertices.h"
 #include "uimanager.h"
 #include "mathhelper.h"
+#include "framebuffer.h"
 
 constexpr int ImageCount{ 4 };
 //template <int ImageCount>
@@ -123,7 +124,7 @@ public:
 		mSkyboxShader.setVector3("dirToLight", dirToSun);
 	}
 
-	void render(const Camera& camera, float time, const UIManager& uiManager) {
+	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer& framebuffer) {
 		bool hasTerrainChanged{ mTerrainParams.updateGPU(uiManager, false) };
 		mArtisticParams.updateGPU(uiManager, false);
 		mWaterParams.updateGPU(uiManager, false);
@@ -194,6 +195,8 @@ public:
 		}
 
 		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
+
+		framebuffer.bind();
 		// Render skybox
 		mSkyboxShader.use();
 		mSkyboxShader.setMatrix4("view", camera.getViewMatrix()); // TODO make these just buffers

@@ -147,6 +147,7 @@
     <ClCompile Include="include\uimanager.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\app.cpp" />
+    <ClCompile Include="src\framebuffer.cpp" />
     <ClCompile Include="src\mathhelper.cpp" />
     <ClCompile Include="src\paramsbufferartistic.cpp" />
     <ClCompile Include="src\camera.cpp" />
@@ -175,7 +176,9 @@
     <Library Include="libraries\glfw3dll.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\framebuffer.h" />
     <ClInclude Include="include\mathhelper.h" />
+    <ClInclude Include="include\OpenGLObjects\RBO.h" />
     <ClInclude Include="include\physics.h" />
     <ClInclude Include="include\physicsobject.h" />
     <ClInclude Include="include\planei.h" />

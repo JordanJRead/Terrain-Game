@@ -20,6 +20,6 @@ Cubemap::Cubemap(const std::array<std::string_view, 6>& filePaths) {
 			std::cerr << "ERROR OPENING CUBEMAP IMAGE " << filePaths[i] << "\n";
 		}
 
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, w, h, 0, c == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_SRGB, w, h, 0, c == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 }

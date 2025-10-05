@@ -7,6 +7,8 @@
 #include "imgui_impl_glfw.h"
 #include "terrainrenderer.h"
 #include "uimanager.h"
+#include "framebuffer.h"
+#include "vertexarray.h"
 
 class App {
 public:
@@ -22,6 +24,9 @@ private:
 	TerrainRenderer mTerrainRenderer;
 	GLFWwindow* mWindow;
 	Shader mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
+	Shader mGammaShader{ "assets/shaders/gamma.vert", "assets/shaders/gamma.frag" };
+	Framebuffer mFramebuffer;
+	VertexArray mScreenQuad;
 	bool mIsCursorHidden{ true };
 
 	static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
