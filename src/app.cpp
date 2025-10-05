@@ -57,7 +57,7 @@ void App::loop() {
 		prevFrame = glfwGetTime();
 
 		// Physics
-		PlanePhysics physicsPlane{ 7, mCamera.getPosition(), 10, mTerrainRenderer, mUIManager};
+		PlanePhysics physicsPlane{ 20, mCamera.getPosition(), 10, mTerrainRenderer, mUIManager};
 
 		/// Input
 		handleInput();
@@ -69,7 +69,8 @@ void App::loop() {
 
 		// Terrain
 		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mUIManager);
-		mUIManager.render(deltaTime);
+		if (mIsUIVisible)
+			mUIManager.render(deltaTime);
 
 
 		// Debug physics plane
