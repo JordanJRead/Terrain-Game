@@ -1,12 +1,10 @@
 #include "planephysics.h"
 #include "planeunit.h"
 #include "terrainrenderer.h"
+#include "mathhelper.h"
+#include "uimanager.h"
 
-int getClosestInt(float x) {
-	return int(round(x) + 0.1 * (x < 0 ? -1 : 1));
-}
-
-PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float width, const TerrainRenderer& terrainRenderer)
+PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float width, const TerrainRenderer& terrainRenderer, const UIManager& uiManager)
 	: PlaneI{ verticesPerEdge }
 	, mWidth{ width }
 {
@@ -29,7 +27,7 @@ PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float
 		xValue += flatStepWorldPos.x;
 		zValue *= mWidth;
 		zValue += flatStepWorldPos.z;
-		float yValue = terrainRenderer.getHeightAtPoint({ xValue, zValue });
+		float yValue = terrainRenderer.getHeightAtPoint({ xValue, zValue }, uiManager);
 		mVertexData.push_back(xValue);
 		mVertexData.push_back(yValue);
 		mVertexData.push_back(zValue);
@@ -37,8 +35,5 @@ PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float
 }
 
 glm::vec3 PlanePhysics::getClosestWorldVertexPos(const glm::vec3 pos) {
-	float stepSize{ getStepSize() };
-	glm::vec3 stepSizesAway = pos / stepSize;
-	stepSizesAway = glm::vec3{ getClosestInt(stepSizesAway.x), getClosestInt(stepSizesAway.y), getClosestInt(stepSizesAway.z) };
-	return stepSizesAway * stepSize;
+	return MathHelper::getClosestWorldStepPosition(pos, getStepSize());
 }

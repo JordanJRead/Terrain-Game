@@ -144,11 +144,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="include\planegpu.h" />
+    <ClCompile Include="include\uimanager.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\app.cpp" />
-    <ClCompile Include="src\artisticparamsbuffer.cpp" />
+    <ClCompile Include="src\mathhelper.cpp" />
+    <ClCompile Include="src\paramsbufferartistic.cpp" />
     <ClCompile Include="src\camera.cpp" />
-    <ClCompile Include="src\colourbuffer.cpp" />
+    <ClCompile Include="src\paramsbuffercolour.cpp" />
     <ClCompile Include="src\cubemap.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\physics.cpp" />
@@ -165,14 +167,15 @@
     <ClCompile Include="src\planeunit.cpp" />
     <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\terrainimagegenerator.cpp" />
-    <ClCompile Include="src\terrainparamsbuffer.cpp" />
+    <ClCompile Include="src\paramsbufferterrain.cpp" />
     <ClCompile Include="src\vertexarray.cpp" />
-    <ClCompile Include="src\waterparamsbuffer.cpp" />
+    <ClCompile Include="src\paramsbufferwater.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="libraries\glfw3dll.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\mathhelper.h" />
     <ClInclude Include="include\physics.h" />
     <ClInclude Include="include\physicsobject.h" />
     <ClInclude Include="include\planei.h" />

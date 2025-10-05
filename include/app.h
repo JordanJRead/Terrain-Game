@@ -6,6 +6,7 @@
 #include "GLFW/glfw3.h"
 #include "imgui_impl_glfw.h"
 #include "terrainrenderer.h"
+#include "uimanager.h"
 
 class App {
 public:
@@ -15,7 +16,9 @@ public:
 private:
 	int mScreenWidth;
 	int mScreenHeight;
+	bool mIsUIVisible{ true };
 	Camera mCamera;
+	UIManager mUIManager;
 	TerrainRenderer mTerrainRenderer;
 	GLFWwindow* mWindow;
 	Shader mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
@@ -38,7 +41,7 @@ private:
 		}
 
 		if (key == GLFW_KEY_H && action == GLFW_PRESS) {
-			app.mTerrainRenderer.toggleUI();
+			app.mIsUIVisible = !app.mIsUIVisible;
 		}
 	}
 	void handleInput();

@@ -3,6 +3,7 @@
 #include "planegpu.h"
 #include "planeunit.h"
 #include <iostream>
+#include "mathhelper.h"
 
 PlaneGPU::PlaneGPU(int verticesPerEdge)
 	: PlaneI{ verticesPerEdge }
@@ -27,8 +28,5 @@ void PlaneGPU::rebuild(int verticesPerEdge) {
 }
 
 glm::vec3 PlaneGPU::getClosestWorldVertexPos(const glm::vec3 pos, float scale) {
-	float stepSize{ getStepSize(scale) };
-	glm::vec3 stepSizesAway = pos / stepSize;
-	stepSizesAway = glm::vec3{ (int)stepSizesAway.x, (int)stepSizesAway.y, (int)stepSizesAway.z };
-	return stepSizesAway * stepSize;
+	return MathHelper::getClosestWorldStepPosition(pos, getStepSize(scale));
 }

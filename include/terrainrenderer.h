@@ -9,10 +9,10 @@
 #include <array>
 #include <string>
 #include <string_view>
-#include "artisticparamsbuffer.h"
-#include "terrainparamsbuffer.h"
-#include "waterparamsbuffer.h"
-#include "colourbuffer.h"
+#include "paramsbufferartistic.h"
+#include "paramsbufferterrain.h"
+#include "paramsbufferwater.h"
+#include "paramsbuffercolour.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -20,29 +20,24 @@
 #include <iostream>
 #include "cubemap.h"
 #include "cubevertices.h"
+#include "uimanager.h"
+#include "mathhelper.h"
 
 constexpr int ImageCount{ 4 };
 //template <int ImageCount>
 
 class TerrainRenderer {
 public:
-	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos,
-		int chunkWidth, int chunkCount, const ArtisticParamsData& artistParams, const TerrainParamsData& terrainParams, const WaterParamsData& waterParams, const ColourBufferData& colours,
-		std::array<int, ImageCount> imagePixelDims, std::array<float, ImageCount> imageWorldSizes, std::array<glm::vec2, ImageCount> imageWorldPositions,
-		int lowQualityPlaneVerticesPerEdge, int highQualityPlaneVerticesPerEdgeScale, float vertexQualityDropoffDistance, float shellQualityDropoffDistance, float waterHeight, float dayTime)
-		: mChunkWidth{ chunkWidth }
-		, mChunkCount{ chunkCount }
+	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos, std::array<glm::vec2, ImageCount> imageWorldPositions, const UIManager& uiManager)
 		
-		, mArtisticParams{ artistParams }
-		, mTerrainParams{ terrainParams }
-		, mWaterParams{ waterParams }
-		, mColours{ colours }
+		: mArtisticParams{ uiManager }
+		, mTerrainParams{ uiManager }
+		, mWaterParams{ uiManager }
+		, mColours{ uiManager }
 
-		, mLowQualityPlaneVerticesPerEdge{ lowQualityPlaneVerticesPerEdge }
-		, mHighQualityPlaneVerticesPerEdgeScale{ highQualityPlaneVerticesPerEdgeScale }
 
-		, mLowQualityPlane{ mLowQualityPlaneVerticesPerEdge }
-		, mHighQualityPlane{ mHighQualityPlaneVerticesPerEdgeScale }
+		, mLowQualityPlane{ uiManager.mLowQualityPlaneVertices.data() }
+		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() }
 
 		, mTerrainImageShader{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
 		, mTerrainShader{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
@@ -50,20 +45,13 @@ public:
 		, mSkyboxShader{ "assets/shaders/skybox.vert", "assets/shaders/skybox.frag" }
 
 		, mImageWorldPositions{ imageWorldPositions }
-		, mImagePixelDims{ imagePixelDims }
-		, mImageWorldSizes{ imageWorldSizes }
-
-		, mVertexQualityDropoffDistance{ vertexQualityDropoffDistance }
-		, mShellQualityDropoffDistance{ shellQualityDropoffDistance }
 
 		, mImages{ {
-			{mImagePixelDims[0], mImageWorldSizes[0], screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 0)},
-			{mImagePixelDims[1], mImageWorldSizes[1], screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 1)},
-			{mImagePixelDims[2], mImageWorldSizes[2], screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 2)},
-			{mImagePixelDims[3], mImageWorldSizes[3], screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 3)}
+			{uiManager.mImagePixelDimensions[0].data(), uiManager.mImageWorldSizes[0].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 0, uiManager)},
+			{uiManager.mImagePixelDimensions[1].data(), uiManager.mImageWorldSizes[1].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 1, uiManager)},
+			{uiManager.mImagePixelDimensions[2].data(), uiManager.mImageWorldSizes[2].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 2, uiManager)},
+			{uiManager.mImagePixelDimensions[3].data(), uiManager.mImageWorldSizes[3].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 3, uiManager)}
 		} }
-
-		, mWaterHeight{ waterHeight }
 
 		, mDaySkybox{ {
 				"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_2_Left+X.png",
@@ -87,7 +75,6 @@ public:
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_0_Front+Z.png",
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_1_Back-Z.png"
 			} }
-		, mDayTime{ dayTime }
 	{
 		std::vector<float> vertexData{
 		-1, -1,
@@ -107,7 +94,7 @@ public:
 		mScreenQuad.create(vertexData, indices, attribs);
 
 		// Set shader uniforms
-		glm::vec3 dirToSun{ getDirToSun() };
+		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
 		mWaterShader.use();
 		mWaterShader.setInt("skybox", 7);
 		mWaterShader.setVector3("dirToLight", dirToSun);
@@ -120,12 +107,12 @@ public:
 
 			mTerrainShader.use();
 			mTerrainShader.setInt("images[" + indexString + "]", i);
-			mTerrainShader.setFloat("imageScales[" + indexString + "]", mImageWorldSizes[i]);
+			mTerrainShader.setFloat("imageScales[" + indexString + "]", uiManager.mImageWorldSizes[i].data());
 			mTerrainShader.setVector2("imagePositions[" + indexString + "]", mImageWorldPositions[i]);
-
+			// TODO 2 of these?
 			mWaterShader.use();
 			mWaterShader.setInt("images[" + indexString + "]", i);
-			mWaterShader.setFloat("imageScales[" + indexString + "]", mImageWorldSizes[i]);
+			mWaterShader.setFloat("imageScales[" + indexString + "]", uiManager.mImageWorldSizes[i].data());
 			mWaterShader.setVector2("imagePositions[" + indexString + "]", mImageWorldPositions[i]);
 
 			mImages[i].updateTexture(mScreenQuad, mTerrainImageShader);
@@ -136,19 +123,19 @@ public:
 		mSkyboxShader.setVector3("dirToLight", dirToSun);
 	}
 
-	void render(const Camera& camera, double displayDeltaTime, float time) {
-		bool hasTerrainChanged{ mTerrainParams.updateGPU(false) };
-		mArtisticParams.updateGPU(false);
-		mWaterParams.updateGPU(false);
-		mColours.updateGPU(false);
+	void render(const Camera& camera, float time, const UIManager& uiManager) {
+		bool hasTerrainChanged{ mTerrainParams.updateGPU(uiManager, false) };
+		mArtisticParams.updateGPU(uiManager, false);
+		mWaterParams.updateGPU(uiManager, false);
+		mColours.updateGPU(uiManager, false);
 		mTerrainShader.use();
 
 		// Update plane types
-		if (mLowQualityPlaneVerticesPerEdge != mLowQualityPlane.getVerticesPerEdge()) {
-			mLowQualityPlane.rebuild(mLowQualityPlaneVerticesPerEdge);
+		if (uiManager.mLowQualityPlaneVertices.hasChanged()) {
+			mLowQualityPlane.rebuild(uiManager.mLowQualityPlaneVertices.data());
 		}
 
-		int highQualityVerticesPerEdge{ mHighQualityPlaneVerticesPerEdgeScale * (mLowQualityPlaneVerticesPerEdge - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this
+		int highQualityVerticesPerEdge{ uiManager.mHighQualityPlaneQualityScale.data() * (uiManager.mLowQualityPlaneVertices.data() - 1) + 1}; // We want the distance between vertices to be multiples of each other, so we do this
 		if (highQualityVerticesPerEdge != mHighQualityPlane.getVerticesPerEdge()) {
 			mHighQualityPlane.rebuild(highQualityVerticesPerEdge);
 		}
@@ -157,10 +144,10 @@ public:
 		for (int i{ 0 }; i < ImageCount; ++i) {
 
 			// Move images along with the player
-			glm::vec2 scaledCameraPos{ glm::vec2(camera.getPosition().x, camera.getPosition().z) / mArtisticParams.getTerrainScale() };
+			glm::vec2 scaledCameraPos{ glm::vec2(camera.getPosition().x, camera.getPosition().z) / uiManager.mTerrainScale.data() };
 			double cameraDistFromImageCenter{ glm::length(scaledCameraPos - mImageWorldPositions[i]) };
-			if (cameraDistFromImageCenter * 2 > 0.2 * mImageWorldSizes[i]) { // If near edge of image, update image
-				glm::vec3 pixelPosition{ getClosestWorldPixelPos(camera.getPosition() / mArtisticParams.getTerrainScale(), i)};
+			if (cameraDistFromImageCenter * 2 > 0.2 * uiManager.mImageWorldSizes[i].data()) { // If near edge of image, update image
+				glm::vec3 pixelPosition{ getClosestWorldPixelPos(camera.getPosition() / uiManager.mTerrainScale.data(), i, uiManager)};
 				mImageWorldPositions[i] = glm::vec2(pixelPosition.x, pixelPosition.z);
 			}
 
@@ -169,21 +156,21 @@ public:
 			bool hasImageChanged{ false };
 
 			// GUI
-			if (mImages[i].getWorldSize() != mImageWorldSizes[i]) {
-				mImages[i].setWorldSize(mImageWorldSizes[i]);
+			if (uiManager.mImageWorldSizes[i].hasChanged()) {
+				mImages[i].setWorldSize(uiManager.mImageWorldSizes[i].data());
 
 				mTerrainShader.use();
-				mTerrainShader.setFloat("imageScales[" + indexString + "]", mImageWorldSizes[i]);
+				mTerrainShader.setFloat("imageScales[" + indexString + "]", uiManager.mImageWorldSizes[i].data());
 
 				mWaterShader.use();
-				mWaterShader.setFloat("imageScales[" + indexString + "]", mImageWorldSizes[i]);
+				mWaterShader.setFloat("imageScales[" + indexString + "]", uiManager.mImageWorldSizes[i].data());
 
 				hasImageChanged = true;
 			}
 
 			// GUI
-			if (mImages[i].getPixelDim() != mImagePixelDims[i]) {
-				mImages[i].updatePixelDim(mImagePixelDims[i]);
+			if (uiManager.mImagePixelDimensions[i].hasChanged()) {
+				mImages[i].updatePixelDim(uiManager.mImagePixelDimensions[i].data());
 				hasImageChanged = true;
 			}
 
@@ -206,10 +193,10 @@ public:
 			}
 		}
 
-		glm::vec3 dirToSun{ getDirToSun() };
+		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
 		// Render skybox
 		mSkyboxShader.use();
-		mSkyboxShader.setMatrix4("view", camera.getViewMatrix());
+		mSkyboxShader.setMatrix4("view", camera.getViewMatrix()); // TODO make these just buffers
 		mSkyboxShader.setMatrix4("proj", camera.getProjectionMatrix());
 		mSkyboxShader.setVector3("dirToLight", dirToSun);
 		mDaySkybox.bindTexture(7);
@@ -222,7 +209,7 @@ public:
 		mTerrainShader.setMatrix4("view", camera.getViewMatrix());
 		mTerrainShader.setMatrix4("proj", camera.getProjectionMatrix());
 		mTerrainShader.setVector3("cameraPos", camera.getPosition());
-		mTerrainShader.setFloat("waterHeight", mWaterHeight);
+		mTerrainShader.setFloat("waterHeight", uiManager.mWaterHeight.data());
 		mTerrainShader.setVector3("dirToLight", dirToSun);
 		mWaterShader.use();
 		mWaterShader.setMatrix4("view", camera.getViewMatrix());
@@ -234,22 +221,24 @@ public:
 			mImages[i].bindImage(i);
 		}
 
-		float maxChunkHeight{ getMaxHeight() };
+		float maxChunkHeight{ getMaxHeight(uiManager) };
 
-		float minChunkHeight{ getMinHeight() };
+		float minChunkHeight{ getMinHeight(uiManager) };
 		glm::vec3 cameraForward{ camera.getForward() };
 		// For each chunk
- 		for (int x{ -mChunkCount / 2 }; x <= mChunkCount / 2; ++x) {
-			for (int z{ -mChunkCount / 2 }; z <= mChunkCount / 2; ++z) {
+		int chunkCount{ uiManager.mChunkCount.data() };
+		float chunkWidth{ uiManager.mChunkWidth.data() };
+ 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
+			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
 
 				mTerrainShader.use();
 				//glm::vec3 chunkPos{ getClosestWorldVertexPos(camera.getPosition()) - glm::vec3(x * mChunkWidth, 0, z * mChunkWidth) };
-				glm::vec3 chunkPos{ mLowQualityPlane.getClosestWorldVertexPos(camera.getPosition(), mChunkWidth) - glm::vec3(x * mChunkWidth, 0, z * mChunkWidth) };
+				glm::vec3 chunkPos{ mLowQualityPlane.getClosestWorldVertexPos(camera.getPosition(), chunkWidth) - glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
 				// Frustum culling
-				std::array<float, 2> xVals{ chunkPos.x - mChunkWidth / 2.0, chunkPos.x + mChunkWidth / 2.0 };
-				std::array<float, 2> yVals{ minChunkHeight - mChunkWidth / 2.0, maxChunkHeight + mChunkWidth / 2.0 };
-				std::array<float, 2> zVals{ chunkPos.z - mChunkWidth / 2.0, chunkPos.z + mChunkWidth / 2.0 };
+				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
+				std::array<float, 2> yVals{ minChunkHeight - chunkWidth / 2.0, maxChunkHeight + chunkWidth / 2.0 };
+				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0, chunkPos.z + chunkWidth / 2.0 };
 
 				bool isVisible{ false };
 				for (float x : xVals) {
@@ -271,91 +260,83 @@ public:
 
 				if (isVisible) {
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
-					bool highQuality{ !(chunkDist > mVertexQualityDropoffDistance) };
+					bool highQuality{ !(chunkDist > uiManager.mVertexLODDistance.data()) };
 					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
 
 					mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
-					mTerrainShader.setFloat("planeWorldWidth", mChunkWidth);
+					mTerrainShader.setFloat("planeWorldWidth", chunkWidth);
 
 					currPlane.useVertexArray();
 
 					// LOD shell count
-					int shellCount{ mArtisticParams.getShellCount() };
-					if (chunkDist > mShellQualityDropoffDistance * 4) {
-						shellCount = mArtisticParams.getShellCount() > 3 ? 3 : mArtisticParams.getShellCount();
-						mArtisticParams.forceShaderShellCount(shellCount);
+					int newShellCount{ uiManager.mShellCount.data() };
+					int oldShellCount{ uiManager.mShellCount.data() };
+					float shellLODDistance{ uiManager.mShellLODDistance.data() };
+					if (chunkDist > shellLODDistance * 4) {
+						newShellCount = oldShellCount > 3 ? 3 : oldShellCount;
+						mArtisticParams.forceShaderShellCount(newShellCount);
 					}
-					if (chunkDist > mShellQualityDropoffDistance * 2) {
-						shellCount = mArtisticParams.getShellCount() > 7 ? 7 : mArtisticParams.getShellCount();
-						mArtisticParams.forceShaderShellCount(shellCount);
+					if (chunkDist > shellLODDistance * 2) {
+						newShellCount = oldShellCount > 7 ? 7 : oldShellCount;
+						mArtisticParams.forceShaderShellCount(newShellCount);
 					}
-					else if (chunkDist > mShellQualityDropoffDistance) {
-						shellCount = mArtisticParams.getShellCount() > 10 ? 10 : mArtisticParams.getShellCount();
-						mArtisticParams.forceShaderShellCount(shellCount);
+					else if (chunkDist > shellLODDistance) {
+						newShellCount = oldShellCount > 10 ? 10 : oldShellCount;
+						mArtisticParams.forceShaderShellCount(newShellCount);
 					}
 
 					// Draw terrain
 					// glInstanceID is 1 greater than the shellIndex (base terrain is -1 shell index, first shell is 0 shell index)
-					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, shellCount + 1); // Draw each shell plus the base terrain
+					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
 					// I could do each of the plane qualities in one instanced call, but for some reason it is slightly slower
 
 					// Draw water
 					mWaterShader.use();
-					mWaterShader.setVector3("planePos", { chunkPos.x, mWaterHeight, chunkPos.z });
-					mWaterShader.setFloat("planeWorldWidth", mChunkWidth);
+					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z});
+					mWaterShader.setFloat("planeWorldWidth", chunkWidth);
 					glDrawElements(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
 
-					mArtisticParams.fixShellCount();
+					mArtisticParams.fixShellCount(uiManager);
 				}
 			}
 		}
-
-		if (mIsUIVisible)
-			renderUI(displayDeltaTime);
 	}
 
-	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex) {
-		float stepSize{ mImageWorldSizes[imageIndex] / mImagePixelDims[imageIndex] * mArtisticParams.getTerrainScale() };
-		glm::vec3 stepSizesAway = pos / stepSize;
-		stepSizesAway = glm::vec3{ (int)stepSizesAway.x, (int)stepSizesAway.y, (int)stepSizesAway.z };
-		return stepSizesAway * stepSize;
-	}
-
-	void toggleUI() {
-		mIsUIVisible = !mIsUIVisible;
+	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
+		return MathHelper::getClosestWorldStepPosition(pos, uiManager.mImageWorldSizes[imageIndex].data() / uiManager.mImagePixelDimensions[imageIndex].data() * uiManager.mTerrainScale.data());
 	}
 
 	static float quintic(float x) {
 		return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
 	}
 
-	float getHeightAtPoint(const glm::vec2& worldPos) const {
-		glm::vec2 pos = worldPos / mArtisticParams.getTerrainScale();
-		float mountain = perlin(pos * mTerrainParams.getMountainFrequency(), 0);
+	float getHeightAtPoint(const glm::vec2& worldPos, const UIManager& uiManager) const {
+		glm::vec2 pos = worldPos / uiManager.mTerrainScale.data();
+		float mountain = MathHelper::perlin(pos * uiManager.mMountainFrequency.data(), 0);
 
-		mountain = pow(mountain, mTerrainParams.getMountainExponent());
+		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
-		mountain = mountain * (1 - mTerrainParams.getAntiFlatFactor()) + mTerrainParams.getAntiFlatFactor();
+		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
-		float offset = perlin(pos * mTerrainParams.getDipScale(), 1);
+		float offset = MathHelper::perlin(pos * uiManager.mDipFrequency.data(), 1);
 
 		offset = quintic(offset);
 
-		offset *= mTerrainParams.getDipStrength();
+		offset *= uiManager.mDipStrength.data();
 
 		float terrainHeight = 0;
 
-		float amplitude = mTerrainParams.getInitialAmplitude();
+		float amplitude = uiManager.mTerrainAmplitude.data();
 		float spread = 1;
 
-		for (int i = 0; i < mTerrainParams.getOctaveCount(); ++i) {
+		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
 			glm::vec2 samplePos = pos * spread;
-			float perlinData = perlin(samplePos, 0);
+			float perlinData = MathHelper::perlin(samplePos, 0);
 
 			terrainHeight += amplitude * perlinData;
 
-			amplitude *= mTerrainParams.getAmplitudeDecay();
-			spread *= mTerrainParams.getSpreadFactor();
+			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
+			spread *= uiManager.mTerrainSpreadFactor.data();
 		}
 
 		float finalOutput = 0;
@@ -368,24 +349,12 @@ public:
 private:
 	// The chunk collection consists of a square of chunkCount * chunkCount chunks, each having a width of chunkWidth
 
-	// The chunks will go from high to low quality, while the far chunks will all be low quality?
-	int mChunkWidth;
-	int mChunkCount;
-
-	ArtisticParamsBuffer mArtisticParams;
-	TerrainParamsBuffer mTerrainParams;
-	WaterParamsBuffer mWaterParams;
-	ColourBuffer mColours;
-	bool mIsUIVisible{ true };
-
-	std::array<int, ImageCount> mImagePixelDims;
-	std::array<float, ImageCount> mImageWorldSizes;
+	ParamsBufferArtistic mArtisticParams;
+	ParamsBufferTerrain mTerrainParams;
+	ParamsBufferWater mWaterParams;
+	ParamsBufferColour mColours;
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
-
-	int mLowQualityPlaneVerticesPerEdge;
-	int mHighQualityPlaneVerticesPerEdgeScale;
-	float mWaterHeight;
 
 	Shader mTerrainImageShader;
 	Shader mTerrainShader;
@@ -394,59 +363,14 @@ private:
 	Cubemap mDaySkybox;
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
-	float mDayTime;
 	//glm::vec3 mDirToLight{ -0.008373, 0.089878, 0.995917 };
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mHighQualityPlane;
 
-	float mVertexQualityDropoffDistance;
-	float mShellQualityDropoffDistance;
-
 	VertexArray mScreenQuad;
 
-	void renderUI(double displayDeltaTime) {
-
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-		ImGui::Begin("FPS");
-		ImGui::LabelText(std::to_string(1 / displayDeltaTime).c_str(), "");
-		ImGui::End();
-
-		mArtisticParams.renderUI();
-		mTerrainParams.renderUI();
-		mWaterParams.renderUI();
-		mColours.renderUI();
-
-		ImGui::Begin("Plane Chunking");
-		ImGui::DragInt("Width", &mChunkWidth, 1, 1, 100);
-		ImGui::DragInt("Count", &mChunkCount, 1, 1, 100);
-		ImGui::DragInt("Low quality plane vertices", &mLowQualityPlaneVerticesPerEdge, 1, 2, 1000);
-		ImGui::DragInt("High quality plane quality scale", &mHighQualityPlaneVerticesPerEdgeScale, 1, 2, 1000);
-		ImGui::DragFloat("Vertex LOD dist", &mVertexQualityDropoffDistance, 1, 1, 1000);
-		ImGui::DragFloat("Shell LOD dist", &mShellQualityDropoffDistance, 1, 1, 1000);
-		ImGui::DragFloat("Water height", &mWaterHeight, 0.1);
-		ImGui::End();
-
-		ImGui::Begin("Day");
-		ImGui::DragFloat("Day time", &mDayTime, 0.001, 0.1, 0.9);
-		ImGui::End();
-
-		ImGui::Begin("Terrain Images");
-		for (int i{ 0 }; i < ImageCount; ++i) {
-			std::string indexString{ std::to_string(i + 1) };
-			ImGui::DragFloat(("World size " + indexString).c_str(), &mImageWorldSizes[i], 1, 1, 100000);
-			ImGui::InputInt(("Pixel quality " + indexString).c_str(), &mImagePixelDims[i], 100, 1000);
-		}
-		ImGui::End();
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	}
-
-	float getMaxHeight() {
+	float getMaxHeight(const UIManager& uiManager) {
 		glm::vec3 mountain = { 1, 0, 0 };
 
 		mountain.x *= mountain.x;
@@ -461,14 +385,14 @@ private:
 
 		glm::vec3 terrainInfo = { 0, 0, 0 };
 
-		float amplitude = mTerrainParams.getInitialAmplitude();
+		float amplitude = uiManager.mTerrainAmplitude.data();
 
-		for (int i{ 0 }; i < mTerrainParams.getOctaveCount(); ++i) {
+		for (int i{ 0 }; i < uiManager.mTerrainOctaveCount.data(); ++i) {
 			glm::vec3 perlinData = { 1, 0, 0 };
 
 			terrainInfo.x += amplitude * perlinData.x;
 
-			amplitude *= mTerrainParams.getAmplitudeDecay();
+			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
 		}
 
 		glm::vec3 finalOutput = { 0, 0, 0 };
@@ -478,7 +402,7 @@ private:
 		return finalOutput.x;
 	}
 
-	float getMinHeight() {
+	float getMinHeight(const UIManager& uiManager) {
 		glm::vec3 mountain = { 0, 0, 0 };
 
 		mountain.x *= mountain.x;
@@ -493,14 +417,14 @@ private:
 
 		glm::vec3 terrainInfo = { 0, 0, 0 };
 
-		float amplitude = mTerrainParams.getInitialAmplitude();
+		float amplitude = uiManager.mTerrainAmplitude.data();
 
-		for (int i{ 0 }; i < mTerrainParams.getOctaveCount(); ++i) {
+		for (int i{ 0 }; i < uiManager.mTerrainOctaveCount.data(); ++i) {
 			glm::vec3 perlinData = { 0, 0, 0 };
 
 			terrainInfo.x += amplitude * perlinData.x;
 
-			amplitude *= mTerrainParams.getAmplitudeDecay();
+			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
 		}
 
 		glm::vec3 finalOutput = { 0, 0, 0 };
@@ -508,115 +432,6 @@ private:
 
 		finalOutput.x += offset.x;
 		return finalOutput.x;
-	}
-
-	glm::vec3 getDirToSun() {
-		float theta{ mDayTime * glm::pi<float>() };
-		return glm::vec3{ glm::cos(theta), glm::sin(theta), 0 };
-	}
-	static int getClosestInt(float x) {
-		return int(round(x) + 0.1 * (x < 0 ? -1 : 1));
-	}
-
-	static int max(int x, int y) {
-		return x > y ? x : y;
-	}
-
-	static unsigned int rand(unsigned int n) {
-		unsigned int state = n * 747796405u + 2891336453u;
-		unsigned int word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-		word = (word >> 22u) ^ word;
-		return word;
-	}
-
-	static float randToFloat(unsigned int n) {
-		return float(n) / 4294967296.0;
-	}
-
-	static unsigned int labelPoint(int x, int y) {
-		if (x == 0 && y == 0)
-			return 0;
-
-		int n = max(abs(x), abs(y));
-		int width = 2 * n + 1;
-		int startingIndex = (width - 2) * (width - 2);
-
-		if (n == y) { // top row
-			return startingIndex + x + n;
-		}
-		if (n == -y) { // bottom row
-			return startingIndex + width + x + n;
-		}
-		if (n == x) { // right col
-			return startingIndex + width * 2 + y - 1 + n;
-		}
-		if (n == -x) { // right col
-			return startingIndex + width * 2 + width - 2 + y - 1 + n;
-		}
-		return 0;
-	}
-
-	static glm::vec2 randUnitVector(float randNum) {
-		float theta = 2 * 3.14159 * randNum;
-		return glm::normalize(glm::vec2(cos(theta), sin(theta)));
-	}
-
-	static glm::vec2 quinticInterpolation(glm::vec2 t) {
-		return t * t * t * (t * (t * glm::vec2(6) - glm::vec2(15)) + glm::vec2(10));
-	}
-
-	static glm::vec2 quinticDerivative(glm::vec2 t) {
-		return glm::vec2(30) * t * t * (t * (t - glm::vec2(2)) + glm::vec2(1));
-	}
-
-	static float perlin(const glm::vec2& pos, int reroll) {
-		int x0 = getClosestInt(floor(pos.x));
-		int x1 = getClosestInt(ceil(pos.x));
-		int y0 = getClosestInt(floor(pos.y));
-		int y1 = getClosestInt(ceil(pos.y));
-
-		glm::vec2 p00 = glm::vec2(x0, y0);
-
-		glm::vec2 relPoint = pos - p00;
-
-		unsigned int rui00 = rand(labelPoint(x0, y0));
-		unsigned int rui10 = rand(labelPoint(x1, y0));
-		unsigned int rui01 = rand(labelPoint(x0, y1));
-		unsigned int rui11 = rand(labelPoint(x1, y1));
-
-		for (int i = 0; i < reroll; ++i) {
-			rui00 = rand(rui00);
-			rui10 = rand(rui10);
-			rui01 = rand(rui01);
-			rui11 = rand(rui11);
-		}
-
-		float r00 = randToFloat(rui00);
-		float r10 = randToFloat(rui10);
-		float r01 = randToFloat(rui01);
-		float r11 = randToFloat(rui11);
-
-		glm::vec2 g00 = randUnitVector(r00);
-		glm::vec2 g10 = randUnitVector(r10);
-		glm::vec2 g01 = randUnitVector(r01);
-		glm::vec2 g11 = randUnitVector(r11);
-
-		glm::vec2 v00 = relPoint;
-		glm::vec2 v11 = relPoint - glm::vec2(1, 1);
-		glm::vec2 v10 = relPoint - glm::vec2(1, 0);
-		glm::vec2 v01 = relPoint - glm::vec2(0, 1);
-
-		float d00 = glm::dot(v00, g00);
-		float d10 = glm::dot(v10, g10);
-		float d01 = glm::dot(v01, g01);
-		float d11 = glm::dot(v11, g11);
-
-		// From https://iquilezles.org/articles/gradientnoise/ and Acerola's github
-		glm::vec2 u = quinticInterpolation(relPoint);
-		glm::vec2 du = quinticDerivative(relPoint);
-		float noise = d00 + u.x * (d10 - d00) + u.y * (d01 - d00) + u.x * u.y * (d00 - d10 - d01 + d11);
-		noise = noise / 1.414 + 0.5;
-		return noise;
 	}
 };
 

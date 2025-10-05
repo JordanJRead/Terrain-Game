@@ -7,62 +7,14 @@
 #include <array>
 #include <algorithm>
 #include <iostream>
-
-double signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, const glm::vec3& planePoint) {
-	return glm::dot(planeNormal, (pos - planePoint));
-}
-
-double areaOfTriangle(const std::array<glm::vec3, 3>& trianglePoints) {
-	return 0.5 * glm::length(glm::cross(trianglePoints[1] - trianglePoints[0], trianglePoints[2] - trianglePoints[0]));
-}
-
-bool isPointInTriangle(const glm::vec3& point,
-	const glm::vec3& pa, const glm::vec3& pb, const glm::vec3& pc)
-{
-	glm::vec3 e10 = pb - pa;
-	glm::vec3 e20 = pc - pa;
-	float a = glm::dot(e10, e10);
-	float b = glm::dot(e10, e20);
-	float c = glm::dot(e20, e20);
-	float ac_bb = (a * c) - (b * b);
-	glm::vec3 vp(point.x - pa.x, point.y - pa.y, point.z - pa.z);
-	float d = glm::dot(vp, e10);
-	float e = glm::dot(vp, e20);
-	float x = (d * c) - (e * b);
-	float y = (e * a) - (d * b);
-	float z = x + y - ac_bb;
-	return ((((int)z) & ~(((int)x) | ((int)y))) & 0x80000000);
-}
-
-std::optional<double> getSmallestQuadratic(double a, double b, double c) {
-	double disc{ b * b - 4 * a * c };
-	if (disc < 0) {
-		return std::nullopt;
-	}
-	double x1 = (-b + std::sqrt(disc)) / (2 * a);
-	double x2 = (-b - std::sqrt(disc)) / (2 * a);
-	return std::min(x1, x2);
-}
-
-template <size_t N>
-std::pair<size_t, double> getMinOfArray(const std::array<double, N>& arr) {
-	double min{ arr[0] };
-	size_t minI{ 0 };
-	for (int i{ 1 }; i < N; ++i) {
-		if (arr[i] < min) {
-			min = arr[i];
-			minI = i;
-		}
-	}
-	return { minI, min };
-}
+#include "mathhelper.h"
 
 // https://www.peroxide.dk/papers/collision/collision.pdf
 Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition, const glm::vec3& displacement, const std::array<glm::vec3, 3>& trianglePoints) {
 	glm::vec3 planeNormal{ glm::cross(trianglePoints[1] - trianglePoints[0], trianglePoints[2] - trianglePoints[0]) };
 	planeNormal = glm::normalize(planeNormal);
 	double normalDotDisplacement{ glm::dot(planeNormal, displacement) };
-	double distFromPlane{ signedDistFromPlane(spherePosition, planeNormal, trianglePoints[0])};
+	double distFromPlane{ MathHelper::signedDistFromPlane(spherePosition, planeNormal, trianglePoints[0])};
 
 	// Moving in wrong direction
 	if (glm::dot(planeNormal, glm::normalize(displacement)) > 0) {
@@ -99,7 +51,7 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 
 	// Collision happens inside triangle
 	glm::vec3 planeIntersectionPoint{ spherePosition + displacement * t0 - planeNormal };
-	if (isPointInTriangle(planeIntersectionPoint, trianglePoints[0], trianglePoints[1], trianglePoints[2])) {
+	if (MathHelper::isPointInTriangle(planeIntersectionPoint, trianglePoints[0], trianglePoints[1], trianglePoints[2])) {
 		//std::cerr << "4: " << t0 << " " << planeNormal.x << " " << planeNormal.y << " " << planeNormal.z << " " << "\n";
 		return { t0, planeIntersectionPoint };
 	}
@@ -111,7 +63,7 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 		double a{ glm::dot(displacement, displacement) };
 		double b{ 2 * glm::dot(displacement, (spherePosition - trianglePoints[vertexI])) };
 		double c{ glm::dot(trianglePoints[vertexI] - spherePosition, trianglePoints[vertexI] - spherePosition) - 1 };
-		std::optional<double> collisionT{ getSmallestQuadratic(a, b, c) };
+		std::optional<double> collisionT{ MathHelper::getSmallestQuadratic(a, b, c) };
 		if (collisionT && 0 <= collisionT.value() && collisionT.value() <= 1)
 			vertexTValues[vertexI] = collisionT.value();
 		else
@@ -133,7 +85,7 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 		double b = glm::dot(edge, edge) * 2 * (glm::dot(displacement, spherePosToVertex)) - 2 * (glm::dot(edge, displacement) * glm::dot(edge, spherePosToVertex));
 		double c = glm::dot(edge, edge) * (1 - glm::dot(spherePosToVertex, spherePosToVertex)) + glm::dot(edge, spherePosToVertex) * glm::dot(edge, spherePosToVertex);
 
-		std::optional<double> x1 = getSmallestQuadratic(a, b, c);
+		std::optional<double> x1 = MathHelper::getSmallestQuadratic(a, b, c);
 
 		if (!x1 || x1 < 0 || x1 > 1) {
 			edgeTValues[edgeI] = 2;
@@ -150,8 +102,8 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 	}
 
 	// Find smallest out of edges and vertices
-	std::pair<size_t, double> minVertex{ getMinOfArray(vertexTValues) };
-	std::pair<size_t, double> minEdge{ getMinOfArray(edgeTValues) };
+	std::pair<size_t, double> minVertex{ MathHelper::getMinOfArray(vertexTValues) };
+	std::pair<size_t, double> minEdge{ MathHelper::getMinOfArray(edgeTValues) };
 
 	if (minVertex.second < minEdge.second) {
 		//std::cerr << "5: " << minVertex.second << "\n";
@@ -213,7 +165,7 @@ glm::vec3 Physics::move(const glm::vec3& capsulePos, const glm::vec3& capsuleSca
 		glm::vec3 eSlidingPlanePoint{ closestCollisionPosition };
 		glm::vec3 eSlidingPlaneNormal{ glm::normalize(ePosition - closestCollisionPosition) };
 
-		double distCutOff = 1 - std::abs(signedDistFromPlane(eDesiredDestination, eSlidingPlaneNormal, eSlidingPlanePoint));
+		double distCutOff = 1 - std::abs(MathHelper::signedDistFromPlane(eDesiredDestination, eSlidingPlaneNormal, eSlidingPlanePoint));
 
 		float offset = 0.00001f;
 
