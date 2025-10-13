@@ -48,6 +48,10 @@ private:
 		if (key == GLFW_KEY_H && action == GLFW_PRESS) {
 			app.mIsUIVisible = !app.mIsUIVisible;
 		}
+
+		if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+			app.mCamera.toggleFreecam();
+		}
 	}
 	void handleInput();
 };
