@@ -321,11 +321,11 @@ public:
 
 		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
-		float offset = MathHelper::perlin(pos * uiManager.mDipFrequency.data(), 1);
+		float offset = MathHelper::perlin(pos * uiManager.mRiverFrequency.data(), 1);
 
 		offset = quintic(offset);
 
-		offset *= uiManager.mDipStrength.data();
+		offset *= uiManager.mRiverStrength.data();
 
 		float terrainHeight = 0;
 

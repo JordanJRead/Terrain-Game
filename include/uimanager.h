@@ -111,11 +111,14 @@ public:
 		ImGui::DragFloat("Anti flat factor", mAntiFlatFactor.getDataPtr(), 0.001, 0, 1);
 		mAntiFlatFactor.update();
 
-		ImGui::DragFloat("Dip frequency", mDipFrequency.getDataPtr(), 0.001, 0, 2);
-		mDipFrequency.update();
+		ImGui::DragFloat("River frequency", mRiverFrequency.getDataPtr(), 0.001, 0, 2);
+		mRiverFrequency.update();
 
-		ImGui::DragFloat("Dip strength", mDipStrength.getDataPtr(), 1, 0, 1000);
-		mDipStrength.update();
+		ImGui::DragFloat("River strength", mRiverStrength.getDataPtr(), 1, 0, 1000);
+		mRiverStrength.update();
+
+		ImGui::DragFloat("River exponent", mRiverExponent.getDataPtr(), 1, 0, 1000);
+		mRiverExponent.update();
 
 		ImGui::End();
 
@@ -259,8 +262,9 @@ public:
 	UIElement<float> mMountainFrequency         { 0.2 };
 	UIElement<float> mMountainExponent          { 4 };
 	UIElement<float> mAntiFlatFactor            { 0.04 };
-	UIElement<float> mDipFrequency              { 0.08 };
-	UIElement<float> mDipStrength               { 20 };
+	UIElement<float> mRiverFrequency              { 0.05 };
+	UIElement<float> mRiverStrength               { 20 };
+	UIElement<float> mRiverExponent{ 32 };
 
 	// Plane Chunking
 	UIElement<float> mChunkWidth{ 16 };
@@ -269,7 +273,7 @@ public:
 	UIElement<int>    mHighQualityPlaneQualityScale{ 6 };
 	UIElement<float> mVertexLODDistance{ 110 };
 	UIElement<float> mShellLODDistance{ 60 };
-	UIElement<float> mWaterHeight{ -8.5 };
+	UIElement<float> mWaterHeight{ -1.5 };
 
 	// Water Parameters
 	UIElement<int>   mWaterWaveCount{ 24 };

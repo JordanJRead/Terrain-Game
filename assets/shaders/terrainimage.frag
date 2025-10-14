@@ -5,7 +5,7 @@ in vec2 latticePos;
 out vec4 OutTerrainData;
 
 layout(std140, binding = 0) uniform terrainParams {
-	uniform int octaveCount;
+	uniform int   octaveCount;
 	uniform float initialAmplitude;
 	uniform float amplitudeDecay;
 	uniform float spreadFactor;
@@ -13,8 +13,9 @@ layout(std140, binding = 0) uniform terrainParams {
 	uniform float mountainFrequency;
 	uniform float mountainExponent;
 	uniform float antiFlatFactor;
-	uniform float dipScale;
-	uniform float dipStrength;
+	uniform float riverScale;
+	uniform float riverStrength;
+	uniform float riverExponent;
 };
 
 uniform float scale;
@@ -142,32 +143,24 @@ vec4 getTerrainInfo(vec2 pos) {
 	mountain.yz = (1 - antiFlatFactor) * mountain.yz;
 	mountain.x = mountain.x * (1 - antiFlatFactor) + antiFlatFactor;
 
-	// Water dips
-	vec3 offset = perlin(pos * dipScale, 1);
+	// Rivers
+	vec3 river = perlin(pos * riverScale, 1);
 
-	// NEW
-	offset *= 2;
-	offset.x -= 1;
-	offset.yz *= sign(offset.x);
-	offset.x = abs(offset.x);
-	//TODO see which one is better?
-	offset.x = 1 - offset.x;
-	offset.yz *= -1;
+	river *= 2;
+	river.x -= 1;
+	river.yz *= sign(river.x);
+	river.x = abs(river.x);
+	river.x = 1 - river.x;
+	river.yz *= -1;
 	
-	offset.yz *= 2 * offset.x;
-	offset.x = offset.x * offset.x;
-	offset.yz *= 2 * offset.x;
-	offset.x = offset.x * offset.x;
-	// /NEW
+	river.yz = riverExponent * pow(river.x, riverExponent - 1) * river.yz;
+	river.x = pow(river.x, riverExponent);
 
-	// OLD
-	//offset.yz *= dquintic(offset.x);
-	//offset.x = quintic(offset.x);
-	// /OLD
-
-	offset.yz *= scale;
-	offset.yz *= dipScale;
-	offset *= dipStrength;
+	river.yz *= scale;
+	river.yz *= riverScale;
+	river *= riverStrength;
+	river.yz = river.yz * (mountain.x * 5 + 1) + 5 * mountain.yz * river.x;
+	river.x *= (mountain.x * 5 + 1);
 
 	vec3 terrainInfo = vec3(0, 0, 0);
 
@@ -190,8 +183,8 @@ vec4 getTerrainInfo(vec2 pos) {
 	finalOutput.x = terrainInfo.x * mountain.x;
 	finalOutput.yz = terrainInfo.x * mountain.yz + mountain.x * terrainInfo.yz;
 
-	finalOutput.x -= offset.x; // +=
-	finalOutput.yz -= offset.yz; // +=
+	finalOutput.x -= river.x;
+	finalOutput.yz -= river.yz;
 	return vec4(finalOutput, mountain);
 }
 
