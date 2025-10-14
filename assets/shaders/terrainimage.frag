@@ -142,11 +142,29 @@ vec4 getTerrainInfo(vec2 pos) {
 	mountain.yz = (1 - antiFlatFactor) * mountain.yz;
 	mountain.x = mountain.x * (1 - antiFlatFactor) + antiFlatFactor;
 
+	// Water dips
 	vec3 offset = perlin(pos * dipScale, 1);
+
+	// NEW
+	offset *= 2;
+	offset.x -= 1;
+	offset.yz *= sign(offset.x);
+	offset.x = abs(offset.x);
+	//TODO see which one is better?
+	offset.x = 1 - offset.x;
+	offset.yz *= -1;
 	
-	offset.yz *= dquintic(offset.x);
-	offset.x = quintic(offset.x);
-	
+	offset.yz *= 2 * offset.x;
+	offset.x = offset.x * offset.x;
+	offset.yz *= 2 * offset.x;
+	offset.x = offset.x * offset.x;
+	// /NEW
+
+	// OLD
+	//offset.yz *= dquintic(offset.x);
+	//offset.x = quintic(offset.x);
+	// /OLD
+
 	offset.yz *= scale;
 	offset.yz *= dipScale;
 	offset *= dipStrength;
@@ -172,8 +190,8 @@ vec4 getTerrainInfo(vec2 pos) {
 	finalOutput.x = terrainInfo.x * mountain.x;
 	finalOutput.yz = terrainInfo.x * mountain.yz + mountain.x * terrainInfo.yz;
 
-	finalOutput.x += offset.x;
-	finalOutput.yz += offset.yz;
+	finalOutput.x -= offset.x; // +=
+	finalOutput.yz -= offset.yz; // +=
 	return vec4(finalOutput, mountain);
 }
 

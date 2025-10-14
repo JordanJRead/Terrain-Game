@@ -268,8 +268,8 @@ public:
 	UIElement<int>    mLowQualityPlaneVertices{ 20 };
 	UIElement<int>    mHighQualityPlaneQualityScale{ 6 };
 	UIElement<float> mVertexLODDistance{ 110 };
-	UIElement<float> mShellLODDistance{ 45 };
-	UIElement<float> mWaterHeight{ 8.3 };
+	UIElement<float> mShellLODDistance{ 60 };
+	UIElement<float> mWaterHeight{ -8.5 };
 
 	// Water Parameters
 	UIElement<int>   mWaterWaveCount{ 24 };
@@ -286,7 +286,7 @@ public:
 	UIElement<float> mViewDistance{ 328 };
 	UIElement<float> mFogEncroachment{ 68 };
 	UIElement<float> mColourDotCutoff{ 0.875 };
-	UIElement<int>    mShellCount{ 12 };
+	UIElement<int>    mShellCount{ 60 };
 	UIElement<float> mShellMaxHeight{ 0.117 };
 	UIElement<float> mShellDetail{ 100 };
 	UIElement<float> mShellMaxCutoff{ 1 };
