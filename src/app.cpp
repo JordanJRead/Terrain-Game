@@ -73,7 +73,7 @@ void App::loop() {
 
 		deltaTime = glfwGetTime() - prevFrame;
 		prevFrame = glfwGetTime();
-
+		//-385 1703 - cool thing
 		// Physics
 		PlanePhysics physicsPlane{ 20, mCamera.getPosition(), 10, mTerrainRenderer, mUIManager};
 
