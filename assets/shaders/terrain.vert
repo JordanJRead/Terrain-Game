@@ -20,14 +20,19 @@ layout(std140, binding = 1) uniform ArtisticParams {
 	uniform float terrainScale;
 	uniform float maxViewDistance;
 	uniform float fogEncroach;
-	uniform float colorDotCutoff;
+	uniform float grassDotCutoff;
+	uniform float snowDotCutoff;
 	uniform int shellCount;
 	uniform float shellMaxHeight;
-	uniform float shellDetail;
+	uniform float grassNoiseScale;
+	uniform float snowNoiseScale;
 	uniform float shellMaxCutoff;
 	uniform float shellBaseCutoff;
 	uniform float snowHeight;
 	uniform float seafoamStrength;
+	uniform float snowLineNoiseScale;
+	uniform float snowLineNoiseAmplitude;
+	uniform float mountainSnowCutoff;
 };
 
 // Per frame
@@ -37,6 +42,7 @@ uniform mat4 proj;
 // Per plane
 uniform float planeWorldWidth;
 uniform vec3 planePos;
+uniform int instanceID;
 out flat int shellIndex;
 
 vec4 getTerrainInfo(vec2 worldPos) {
@@ -58,9 +64,9 @@ void main() {
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos);
 	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
 	worldPos.y += terrainInfo.x;
-	
+
 	groundWorldPos = worldPos.xyz;
-	shellIndex = gl_InstanceID - 1;
+	shellIndex = shellCount - 1 - instanceID; // -1 to shellCount - 1, in reverse order to minimize overdraw
 	if (shellIndex >= 0) {
 		float shellProgress = float(shellIndex + 1) / shellCount;
 		worldPos.xyz += normal * shellProgress * shellMaxHeight;

@@ -20,14 +20,19 @@ layout(std140, binding = 1) uniform ArtisticParams {
 	uniform float terrainScale;
 	uniform float maxViewDistance;
 	uniform float fogEncroach;
-	uniform float colorDotCutoff;
+	uniform float grassDotCutoff;
+	uniform float snowDotCutoff;
 	uniform int shellCount;
 	uniform float shellMaxHeight;
-	uniform float shellDetail;
+	uniform float grassNoiseScale;
+	uniform float snowNoiseScale;
 	uniform float shellMaxCutoff;
 	uniform float shellBaseCutoff;
 	uniform float snowHeight;
 	uniform float seafoamStrength;
+	uniform float snowLineNoiseScale;
+	uniform float snowLineNoiseAmplitude;
+	uniform float mountainSnowCutoff;
 };
 
 layout(std140, binding = 2) uniform WaterParams {

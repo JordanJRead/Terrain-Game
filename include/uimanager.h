@@ -61,8 +61,11 @@ public:
 		ImGui::DragFloat("Fog encroachment", mFogEncroachment.getDataPtr(), 1, 0, int(mViewDistance.data()));
 		mFogEncroachment.update();
 
-		ImGui::DragFloat("Color dot cutoff", mColourDotCutoff.getDataPtr(), 0.005, 0, 1);
-		mColourDotCutoff.update();
+		ImGui::DragFloat("Grass dot cutoff", mGrassDotCutoff.getDataPtr(), 0.005, 0, 1);
+		mGrassDotCutoff.update();
+
+		ImGui::DragFloat("Snow dot cutoff", mSnowDotCutoff.getDataPtr(), 0.005, 0, 1);
+		mSnowDotCutoff.update();
 
 		ImGui::DragInt("Shell count", mShellCount.getDataPtr(), 0.1, 0, 256);
 		mShellCount.update();
@@ -70,8 +73,11 @@ public:
 		ImGui::DragFloat("Shell max height", mShellMaxHeight.getDataPtr(), 0.001, 0, 10);
 		mShellMaxHeight.update();
 
-		ImGui::DragFloat("Shell detail", mShellDetail.getDataPtr(), 1, 1, 1000);
-		mShellDetail.update();
+		ImGui::DragFloat("Grass noise scale", mGrassNoiseScale.getDataPtr(), 1, 1, 1000);
+		mGrassNoiseScale.update();
+
+		//ImGui::DragFloat("Snow noise scale", mSnowNoiseScale.getDataPtr(), 1, 1, 1000);
+		//mSnowNoiseScale.update();
 
 		ImGui::DragFloat("Shell max cutoff", mShellMaxCutoff.getDataPtr(), 0.01, 0, 1);
 		mShellMaxCutoff.update();
@@ -84,6 +90,15 @@ public:
 
 		ImGui::DragFloat("Seafoam", mSeaFoam.getDataPtr(), 0.01, 0, 10);
 		mSeaFoam.update();
+
+		ImGui::DragFloat("Snow line noise scale", mSnowLineNoiseScale.getDataPtr(), 0.001, 0, 100);
+		mSnowLineNoiseScale.update();
+
+		ImGui::DragFloat("Snow line noise amplitude", mSnowLineNoiseAmplitude.getDataPtr(), 0.01, 0, 10);
+		mSnowLineNoiseAmplitude.update();
+
+		ImGui::DragFloat("Mountain snow cutoff", mMountainSnowCutoff.getDataPtr(), 0.01, 0, 10);
+		mMountainSnowCutoff.update();
 
 		ImGui::End();
 
@@ -240,7 +255,7 @@ public:
 		UIElement<int>{ 2500 },
 		UIElement<int>{ 2500 },
 		UIElement<int>{ 2500 },
-		UIElement<int>{ 2500 }
+		UIElement<int>{ 5000 }
 	};
 
 	// Day
@@ -289,14 +304,19 @@ public:
 	UIElement<float> mTerrainScale{ 22 };
 	UIElement<float> mViewDistance{ 328 };
 	UIElement<float> mFogEncroachment{ 68 };
-	UIElement<float> mColourDotCutoff{ 0.875 };
-	UIElement<int>    mShellCount{ 60 };
+	UIElement<float> mGrassDotCutoff{ 0.875 };
+	UIElement<float> mSnowDotCutoff{ 0.3 };
+	UIElement<int>   mShellCount{ 30 };
 	UIElement<float> mShellMaxHeight{ 0.117 };
-	UIElement<float> mShellDetail{ 100 };
+	UIElement<float> mGrassNoiseScale{ 100 };
+	UIElement<float> mSnowNoiseScale{ 1 };
 	UIElement<float> mShellMaxCutoff{ 1 };
 	UIElement<float> mShellBaseCutoff{ 0.2 };
-	UIElement<float> mSnowHeight{ 36 };
+	UIElement<float> mSnowHeight{ 28 };
 	UIElement<float> mSeaFoam{ 0.4 };
+	UIElement<float> mSnowLineNoiseScale{ 0.3 };
+	UIElement<float> mSnowLineNoiseAmplitude{ 2.75 };
+	UIElement<float> mMountainSnowCutoff{ 0.9 };
 };
 
 #endif

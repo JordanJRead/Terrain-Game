@@ -290,7 +290,10 @@ public:
 
 					// Draw terrain
 					// glInstanceID is 1 greater than the shellIndex (base terrain is -1 shell index, first shell is 0 shell index)
-					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
+					for (int i{ 0 }; i <= newShellCount; ++i) {
+						mTerrainShader.setInt("instanceID", i);
+						glDrawElements(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
+					}
 					// I could do each of the plane qualities in one instanced call, but for some reason it is slightly slower
 
 					// Draw water
@@ -314,6 +317,7 @@ public:
 	}
 
 	float getHeightAtPoint(const glm::vec2& worldPos, const UIManager& uiManager) const {
+
 		glm::vec2 pos = worldPos / uiManager.mTerrainScale.data();
 		float mountain = MathHelper::perlin(pos * uiManager.mMountainFrequency.data(), 0);
 
@@ -321,11 +325,18 @@ public:
 
 		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
-		float offset = MathHelper::perlin(pos * uiManager.mRiverFrequency.data(), 1);
+		// Rivers
+		float river = MathHelper::perlin(pos * uiManager.mRiverFrequency.data() , 1);
 
-		offset = quintic(offset);
+		river *= 2;
+		river -= 1;
+		river = abs(river);
+		river = 1 - river;
 
-		offset *= uiManager.mRiverStrength.data();
+		river = pow(river, uiManager.mRiverExponent.data());
+
+		river *= uiManager.mRiverStrength.data();
+		river *= (mountain * 5 + 1);
 
 		float terrainHeight = 0;
 
@@ -345,7 +356,7 @@ public:
 		float finalOutput = 0;
 		finalOutput = terrainHeight * mountain;
 
-		finalOutput += offset;
+		finalOutput -= river;
 		return finalOutput;
 	}
 

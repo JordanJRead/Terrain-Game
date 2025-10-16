@@ -31,8 +31,14 @@ void ParamsBufferArtistic::updateGPU(const UIManager& uiManager, bool force) {
 	offset += size;
 
 	size = sizeof(float);
-	if (uiManager.mColourDotCutoff.hasChanged() || force) {
-		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mColourDotCutoff.data());
+	if (uiManager.mGrassDotCutoff.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mGrassDotCutoff.data());
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mSnowDotCutoff.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mSnowDotCutoff.data());
 	}
 	offset += size;
 
@@ -49,8 +55,14 @@ void ParamsBufferArtistic::updateGPU(const UIManager& uiManager, bool force) {
 	offset += size;
 
 	size = sizeof(float);
-	if (uiManager.mShellDetail.hasChanged() || force) {
-		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mShellDetail.data());
+	if (uiManager.mGrassNoiseScale.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mGrassNoiseScale.data());
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mSnowNoiseScale.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mSnowNoiseScale.data());
 	}
 	offset += size;
 
@@ -75,6 +87,24 @@ void ParamsBufferArtistic::updateGPU(const UIManager& uiManager, bool force) {
 	size = sizeof(float);
 	if (uiManager.mSeaFoam.hasChanged() || force) {
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mSeaFoam.data());
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mSnowLineNoiseScale.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mSnowLineNoiseScale.data());
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mSnowLineNoiseAmplitude.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mSnowLineNoiseAmplitude.data());
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mMountainSnowCutoff.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mMountainSnowCutoff.data());
 	}
 	offset += size;
 }
