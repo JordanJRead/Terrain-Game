@@ -317,7 +317,6 @@ public:
 	}
 
 	float getHeightAtPoint(const glm::vec2& worldPos, const UIManager& uiManager) const {
-
 		glm::vec2 pos = worldPos / uiManager.mTerrainScale.data();
 		float mountain = MathHelper::perlin(pos * uiManager.mMountainFrequency.data(), 0);
 
