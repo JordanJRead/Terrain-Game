@@ -22,7 +22,7 @@ layout(std140, binding = 1) uniform ArtisticParams {
 	uniform float fogEncroach;
 	uniform float grassDotCutoff;
 	uniform float snowDotCutoff;
-	uniform int shellCount;
+	uniform int   shellCount;
 	uniform float shellMaxHeight;
 	uniform float grassNoiseScale;
 	uniform float snowNoiseScale;
@@ -33,6 +33,8 @@ layout(std140, binding = 1) uniform ArtisticParams {
 	uniform float snowLineNoiseScale;
 	uniform float snowLineNoiseAmplitude;
 	uniform float mountainSnowCutoff;
+	uniform float snowLineEase;
+	uniform float shellAmbientOcclusion;
 };
 
 layout(std140, binding = 2) uniform WaterParams {
@@ -183,12 +185,24 @@ vec3 getWaterHeight(vec2 pos) {
 	return waterInfo / amplitudeSum * initialAmplitude;
 }
 
-vec4 getTerrainInfo(vec2 worldPos) {
+vec2 unpackFloats(float v) {
+	return unpackHalf2x16(floatBitsToUint(v));
+}
+
+vec4 getTerrainInfo(vec2 worldPos, bool smoothTerrain) {
 	for (int i = 0; i < IMAGECOUNT; ++i) {
 		vec2 sampleCoord = ((worldPos / terrainScale - imagePositions[i]) / imageScales[i]) + vec2(0.5);
 		
 		if (!(sampleCoord.x > 1 || sampleCoord.x < 0 || sampleCoord.y > 1 || sampleCoord.y < 0)) {
 			vec4 terrainInfo = texture(images[i], sampleCoord);
+			if (smoothTerrain) {
+				terrainInfo.y = unpackFloats(terrainInfo.y).y;
+				terrainInfo.z = unpackFloats(terrainInfo.z).y;
+			}
+			else {
+				terrainInfo.y = unpackFloats(terrainInfo.y).x;
+				terrainInfo.z = unpackFloats(terrainInfo.z).x; // ?
+			}
 			terrainInfo.yz /= imageScales[i] * terrainScale;
 			return terrainInfo;
 		}
@@ -204,7 +218,7 @@ void main() {
 	// Water
 	vec2 flatWorldPos = worldPos3.xz;
 	vec3 waterInfo = getWaterHeight(flatWorldPos);
-	vec4 terrainInfo = getTerrainInfo(flatWorldPos);
+	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 
 	// Lighting
 	vec3 normal = normalize(vec3(-waterInfo.y, 1, -waterInfo.z));

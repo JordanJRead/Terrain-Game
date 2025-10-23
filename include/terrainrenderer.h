@@ -38,7 +38,8 @@ public:
 
 
 		, mLowQualityPlane{ uiManager.mLowQualityPlaneVertices.data() }
-		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() }
+		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() } // ?
+		, mReallyLowQualityPlane{ 2 }
 
 		, mTerrainImageShader{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
 		, mTerrainShader{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
@@ -298,9 +299,10 @@ public:
 
 					// Draw water
 					mWaterShader.use();
+					mReallyLowQualityPlane.useVertexArray();
 					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z});
 					mWaterShader.setFloat("planeWorldWidth", chunkWidth);
-					glDrawElements(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
+					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
 
 					mArtisticParams.fixShellCount(uiManager);
 				}
@@ -380,6 +382,7 @@ private:
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mHighQualityPlane;
+	PlaneGPU mReallyLowQualityPlane;
 
 	VertexArray mScreenQuad;
 

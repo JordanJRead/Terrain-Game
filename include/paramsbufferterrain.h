@@ -9,7 +9,7 @@ class ParamsBufferTerrain {
 public:
 	ParamsBufferTerrain(const UIManager& uiManager) {
 		glBindBuffer(GL_UNIFORM_BUFFER, mBUF);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(int) + 9 * sizeof(float), nullptr, GL_STATIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(int) + 9 * sizeof(float), nullptr, GL_STATIC_DRAW);
 		glBindBufferBase(GL_UNIFORM_BUFFER, 0, mBUF);
 		updateGPU(uiManager, true);
 	}

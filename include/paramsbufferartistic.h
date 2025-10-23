@@ -8,7 +8,7 @@ class ParamsBufferArtistic {
 public:
 	ParamsBufferArtistic(const UIManager& uiManager) {
 		glBindBuffer(GL_UNIFORM_BUFFER, mBUF);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(int) + 15 * sizeof(float), nullptr, GL_STATIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(int) + 17 * sizeof(float), nullptr, GL_STATIC_DRAW);
 		glBindBufferBase(GL_UNIFORM_BUFFER, 1, mBUF);
 		updateGPU(uiManager, true);
 	}

@@ -32,7 +32,7 @@ private:
 	};
 
 public:
-	void render(double deltaTime) {
+	void render(double deltaTime, bool visible = true) {
 		double currTime{ glfwGetTime() };
 		double currTimeFrac{ currTime - (long)currTime };
 		if (currTimeFrac < mPrevTimeFrac) {
@@ -44,197 +44,209 @@ public:
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// FPS
-		ImGui::Begin("FPS");
-		ImGui::LabelText(std::to_string(1 / mDisplayDeltaTime).c_str(), "");
-		ImGui::End();
+		if (visible) {
 
-		// Artistic Parameters
-		ImGui::Begin("Artistic Parameters");
+			// FPS
+			ImGui::Begin("FPS");
+			ImGui::LabelText(std::to_string(1 / mDisplayDeltaTime).c_str(), "");
+			ImGui::End();
 
-		ImGui::DragFloat("Terrain scale", mTerrainScale.getDataPtr());
-		mTerrainScale.update();
+			// Artistic Parameters
+			ImGui::Begin("Artistic Parameters");
 
-		ImGui::DragFloat("View distance", mViewDistance.getDataPtr(), 1, 0, 1000);
-		mViewDistance.update();
+			ImGui::DragFloat("Terrain scale", mTerrainScale.getDataPtr());
+			mTerrainScale.update();
 
-		ImGui::DragFloat("Fog encroachment", mFogEncroachment.getDataPtr(), 1, 0, int(mViewDistance.data()));
-		mFogEncroachment.update();
+			ImGui::DragFloat("View distance", mViewDistance.getDataPtr(), 1, 0, 1000);
+			mViewDistance.update();
 
-		ImGui::DragFloat("Grass dot cutoff", mGrassDotCutoff.getDataPtr(), 0.005, 0, 1);
-		mGrassDotCutoff.update();
+			ImGui::DragFloat("Fog encroachment", mFogEncroachment.getDataPtr(), 1, 0, int(mViewDistance.data()));
+			mFogEncroachment.update();
 
-		ImGui::DragFloat("Snow dot cutoff", mSnowDotCutoff.getDataPtr(), 0.005, 0, 1);
-		mSnowDotCutoff.update();
+			ImGui::DragFloat("Grass dot cutoff", mGrassDotCutoff.getDataPtr(), 0.005, 0, 1);
+			mGrassDotCutoff.update();
 
-		ImGui::DragInt("Shell count", mShellCount.getDataPtr(), 0.1, 0, 256);
-		mShellCount.update();
+			ImGui::DragFloat("Snow dot cutoff", mSnowDotCutoff.getDataPtr(), 0.005, 0, 1);
+			mSnowDotCutoff.update();
 
-		ImGui::DragFloat("Shell max height", mShellMaxHeight.getDataPtr(), 0.001, 0, 10);
-		mShellMaxHeight.update();
+			ImGui::DragInt("Shell count", mShellCount.getDataPtr(), 0.1, 0, 256);
+			mShellCount.update();
 
-		ImGui::DragFloat("Grass noise scale", mGrassNoiseScale.getDataPtr(), 1, 1, 1000);
-		mGrassNoiseScale.update();
+			ImGui::DragFloat("Shell max height", mShellMaxHeight.getDataPtr(), 0.001, 0, 10);
+			mShellMaxHeight.update();
 
-		//ImGui::DragFloat("Snow noise scale", mSnowNoiseScale.getDataPtr(), 1, 1, 1000);
-		//mSnowNoiseScale.update();
+			ImGui::DragFloat("Grass noise scale", mGrassNoiseScale.getDataPtr(), 1, 1, 1000);
+			mGrassNoiseScale.update();
 
-		ImGui::DragFloat("Shell max cutoff", mShellMaxCutoff.getDataPtr(), 0.01, 0, 1);
-		mShellMaxCutoff.update();
+			//ImGui::DragFloat("Snow noise scale", mSnowNoiseScale.getDataPtr(), 1, 1, 1000);
+			//mSnowNoiseScale.update();
 
-		ImGui::DragFloat("Shell base cutoff", mShellBaseCutoff.getDataPtr(), 0.01, 0, 1);
-		mShellBaseCutoff.update();
+			ImGui::DragFloat("Shell max cutoff", mShellMaxCutoff.getDataPtr(), 0.01, 0, 1);
+			mShellMaxCutoff.update();
 
-		ImGui::DragFloat("Snow height", mSnowHeight.getDataPtr());
-		mSnowHeight.update();
+			ImGui::DragFloat("Shell base cutoff", mShellBaseCutoff.getDataPtr(), 0.01, 0, 1);
+			mShellBaseCutoff.update();
 
-		ImGui::DragFloat("Seafoam", mSeaFoam.getDataPtr(), 0.01, 0, 10);
-		mSeaFoam.update();
+			ImGui::DragFloat("Snow height", mSnowHeight.getDataPtr(), 0.05);
+			mSnowHeight.update();
 
-		ImGui::DragFloat("Snow line noise scale", mSnowLineNoiseScale.getDataPtr(), 0.001, 0, 100);
-		mSnowLineNoiseScale.update();
+			ImGui::DragFloat("Seafoam", mSeaFoam.getDataPtr(), 0.01, 0, 10);
+			mSeaFoam.update();
 
-		ImGui::DragFloat("Snow line noise amplitude", mSnowLineNoiseAmplitude.getDataPtr(), 0.01, 0, 10);
-		mSnowLineNoiseAmplitude.update();
+			ImGui::DragFloat("Snow line noise scale", mSnowLineNoiseScale.getDataPtr(), 0.001, 0, 100);
+			mSnowLineNoiseScale.update();
 
-		ImGui::DragFloat("Mountain snow cutoff", mMountainSnowCutoff.getDataPtr(), 0.01, 0, 10);
-		mMountainSnowCutoff.update();
+			ImGui::DragFloat("Snow line noise amplitude", mSnowLineNoiseAmplitude.getDataPtr(), 0.01, 0, 10);
+			mSnowLineNoiseAmplitude.update();
 
-		ImGui::End();
+			ImGui::DragFloat("Mountain snow cutoff", mMountainSnowCutoff.getDataPtr(), 0.01, 0, 10);
+			mMountainSnowCutoff.update();
 
-		// Terrain Parameters
-		ImGui::Begin("Terrain Parameters");
+			ImGui::DragFloat("Snow line ease", mSnowLineEase.getDataPtr(), 0.01, 0, 10);
+			mSnowLineEase.update();
 
-		ImGui::DragInt("Octave count", mTerrainOctaveCount.getDataPtr(), 0.1, 1, 30);
-		mTerrainOctaveCount.update();
+			ImGui::DragFloat("Shell ambient occlusion", mShellAmbientOcclusion.getDataPtr(), 0.001, 0, 1);
+			mShellAmbientOcclusion.update();
 
-		ImGui::DragFloat("Amplitude", mTerrainAmplitude.getDataPtr(), 0.7, 0, 500);
-		mTerrainAmplitude.update();
+			ImGui::End();
 
-		ImGui::DragFloat("Amplitude decay", mTerrainAmplitudeMultiplier.getDataPtr(), 0.0005, 0, 100);
-		mTerrainAmplitudeMultiplier.update();
+			// Terrain Parameters
+			ImGui::Begin("Terrain Parameters");
 
-		ImGui::DragFloat("Spread factor", mTerrainSpreadFactor.getDataPtr(), 0.001, 0, 100);
-		mTerrainSpreadFactor.update();
+			ImGui::DragInt("Octave count", mTerrainOctaveCount.getDataPtr(), 0.1, 1, 30);
+			mTerrainOctaveCount.update();
 
-		ImGui::DragFloat("Mountain frequency", mMountainFrequency.getDataPtr(), 0.003, 0, 2);
-		mMountainFrequency.update();
+			ImGui::DragInt("Smooth octave count", mTerrainSmoothOctaveCount.getDataPtr(), 0.1, 1, 30);
+			mTerrainSmoothOctaveCount.update();
 
-		ImGui::DragFloat("Mountain exponent", mMountainExponent.getDataPtr(), 0.01, 0.1, 30);
-		mMountainExponent.update();
+			ImGui::DragFloat("Amplitude", mTerrainAmplitude.getDataPtr(), 0.7, 0, 500);
+			mTerrainAmplitude.update();
 
-		ImGui::DragFloat("Anti flat factor", mAntiFlatFactor.getDataPtr(), 0.001, 0, 1);
-		mAntiFlatFactor.update();
+			ImGui::DragFloat("Amplitude decay", mTerrainAmplitudeMultiplier.getDataPtr(), 0.0005, 0, 100);
+			mTerrainAmplitudeMultiplier.update();
 
-		ImGui::DragFloat("River frequency", mRiverFrequency.getDataPtr(), 0.001, 0, 2);
-		mRiverFrequency.update();
+			ImGui::DragFloat("Spread factor", mTerrainSpreadFactor.getDataPtr(), 0.001, 0, 100);
+			mTerrainSpreadFactor.update();
 
-		ImGui::DragFloat("River strength", mRiverStrength.getDataPtr(), 1, 0, 1000);
-		mRiverStrength.update();
+			ImGui::DragFloat("Mountain frequency", mMountainFrequency.getDataPtr(), 0.003, 0, 2);
+			mMountainFrequency.update();
 
-		ImGui::DragFloat("River exponent", mRiverExponent.getDataPtr(), 1, 0, 1000);
-		mRiverExponent.update();
+			ImGui::DragFloat("Mountain exponent", mMountainExponent.getDataPtr(), 0.01, 0.1, 30);
+			mMountainExponent.update();
 
-		ImGui::End();
+			ImGui::DragFloat("Anti flat factor", mAntiFlatFactor.getDataPtr(), 0.001, 0, 1);
+			mAntiFlatFactor.update();
 
-		// Water Parameters
-		ImGui::Begin("Water Parameters");
+			ImGui::DragFloat("River frequency", mRiverFrequency.getDataPtr(), 0.001, 0, 2);
+			mRiverFrequency.update();
 
-		ImGui::DragInt("Wave count", mWaterWaveCount.getDataPtr(), 0.1, 1, 100);
-		mWaterWaveCount.update();
+			ImGui::DragFloat("River strength", mRiverStrength.getDataPtr(), 1, 0, 1000);
+			mRiverStrength.update();
 
-		ImGui::DragFloat("Initial amplitude", mWaterAmplitude.getDataPtr(), 0.005, 0.01, 1);
-		mWaterAmplitude.update();
+			ImGui::DragFloat("River exponent", mRiverExponent.getDataPtr(), 1, 0, 1000);
+			mRiverExponent.update();
 
-		ImGui::DragFloat("Amplitude multiplier", mWaterAmplitudeMultiplier.getDataPtr(), 0.001, 0, 1);
-		mWaterAmplitudeMultiplier.update();
+			ImGui::End();
 
-		ImGui::DragFloat("Initial frequency", mWaterFrequency.getDataPtr(), 0.01, 0, 5);
-		mWaterFrequency.update();
+			// Water Parameters
+			ImGui::Begin("Water Parameters");
 
-		ImGui::DragFloat("Frequency multiplier", mWaterFrequencyMultiplier.getDataPtr(), 0.01, 0, 1.5);
-		mWaterFrequencyMultiplier.update();
+			ImGui::DragInt("Wave count", mWaterWaveCount.getDataPtr(), 0.1, 1, 100);
+			mWaterWaveCount.update();
 
-		ImGui::DragFloat("Initial speed", mWaterSpeed.getDataPtr(), 0.02, 0, 20);
-		mWaterSpeed.update();
+			ImGui::DragFloat("Initial amplitude", mWaterAmplitude.getDataPtr(), 0.005, 0.01, 1);
+			mWaterAmplitude.update();
 
-		ImGui::DragFloat("Speed multiplier", mWaterSpeedMultiplier.getDataPtr(), 0.007, 0, 2);
-		mWaterSpeedMultiplier.update();
+			ImGui::DragFloat("Amplitude multiplier", mWaterAmplitudeMultiplier.getDataPtr(), 0.001, 0, 1);
+			mWaterAmplitudeMultiplier.update();
 
-		ImGui::DragFloat("Shininess", mWaterShininess.getDataPtr());
-		mWaterShininess.update();
+			ImGui::DragFloat("Initial frequency", mWaterFrequency.getDataPtr(), 0.01, 0, 5);
+			mWaterFrequency.update();
 
-		ImGui::End();
+			ImGui::DragFloat("Frequency multiplier", mWaterFrequencyMultiplier.getDataPtr(), 0.01, 0, 1.5);
+			mWaterFrequencyMultiplier.update();
 
-		// Colours
-		ImGui::Begin("Colours");
+			ImGui::DragFloat("Initial speed", mWaterSpeed.getDataPtr(), 0.02, 0, 20);
+			mWaterSpeed.update();
 
-		ImGui::ColorPicker3("Dirt", (float*)mDirtColour.getDataPtr());
-		mDirtColour.update();
+			ImGui::DragFloat("Speed multiplier", mWaterSpeedMultiplier.getDataPtr(), 0.007, 0, 2);
+			mWaterSpeedMultiplier.update();
 
-		ImGui::ColorPicker3("Mountain", (float*)mMountainColour.getDataPtr());
-		mMountainColour.update();
+			ImGui::DragFloat("Shininess", mWaterShininess.getDataPtr());
+			mWaterShininess.update();
 
-		ImGui::ColorPicker3("Grass", (float*)mGrassColour.getDataPtr());
-		mGrassColour.update();
+			ImGui::End();
 
-		ImGui::ColorPicker3("Snow", (float*)mSnowColour.getDataPtr());
-		mSnowColour.update();
+			// Colours
+			ImGui::Begin("Colours");
 
-		ImGui::ColorPicker3("Water", (float*)mWaterColour.getDataPtr());
-		mWaterColour.update();
+			ImGui::ColorPicker3("Dirt", (float*)mDirtColour.getDataPtr());
+			mDirtColour.update();
 
-		ImGui::ColorPicker3("Sun", (float*)mSunColour.getDataPtr());
-		mSunColour.update();
+			ImGui::ColorPicker3("Mountain", (float*)mMountainColour.getDataPtr());
+			mMountainColour.update();
 
-		ImGui::End();
+			ImGui::ColorPicker3("Grass", (float*)mGrassColour.getDataPtr());
+			mGrassColour.update();
 
-		// Plane Chunking
-		ImGui::Begin("Plane Chunking");
+			ImGui::ColorPicker3("Snow", (float*)mSnowColour.getDataPtr());
+			mSnowColour.update();
 
-		ImGui::DragFloat("Width", mChunkWidth.getDataPtr(), 1, 1, 100);
-		mChunkWidth.update();
+			ImGui::ColorPicker3("Water", (float*)mWaterColour.getDataPtr());
+			mWaterColour.update();
 
-		ImGui::DragInt("Count", mChunkCount.getDataPtr(), 1, 1, 100);
-		mChunkCount.update();
+			ImGui::ColorPicker3("Sun", (float*)mSunColour.getDataPtr());
+			mSunColour.update();
 
-		ImGui::DragInt("Low quality plane vertices", mLowQualityPlaneVertices.getDataPtr(), 1, 2, 1000);
-		mLowQualityPlaneVertices.update();
+			ImGui::End();
 
-		ImGui::DragInt("High quality plane quality scale", mHighQualityPlaneQualityScale.getDataPtr(), 1, 2, 1000);
-		mHighQualityPlaneQualityScale.update();
+			// Plane Chunking
+			ImGui::Begin("Plane Chunking");
 
-		ImGui::DragFloat("Vertex LOD dist", mVertexLODDistance.getDataPtr(), 1, 1, 1000);
-		mVertexLODDistance.update();
+			ImGui::DragFloat("Width", mChunkWidth.getDataPtr(), 1, 1, 100);
+			mChunkWidth.update();
 
-		ImGui::DragFloat("Shell LOD dist", mShellLODDistance.getDataPtr(), 1, 1, 1000);
-		mShellLODDistance.update();
+			ImGui::DragInt("Count", mChunkCount.getDataPtr(), 1, 1, 100);
+			mChunkCount.update();
 
-		ImGui::DragFloat("Water height", mWaterHeight.getDataPtr(), 0.1);
-		mWaterHeight.update();
+			ImGui::DragInt("Low quality plane vertices", mLowQualityPlaneVertices.getDataPtr(), 1, 2, 1000);
+			mLowQualityPlaneVertices.update();
 
-		ImGui::End();
+			ImGui::DragInt("High quality plane quality scale", mHighQualityPlaneQualityScale.getDataPtr(), 1, 2, 1000);
+			mHighQualityPlaneQualityScale.update();
 
-		// Day
-		ImGui::Begin("Day");
+			ImGui::DragFloat("Vertex LOD dist", mVertexLODDistance.getDataPtr(), 1, 1, 1000);
+			mVertexLODDistance.update();
 
-		ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001, 0.1, 0.9);
-		mDayTime.update();
+			ImGui::DragFloat("Shell LOD dist", mShellLODDistance.getDataPtr(), 1, 1, 1000);
+			mShellLODDistance.update();
 
-		ImGui::End();
+			ImGui::DragFloat("Water height", mWaterHeight.getDataPtr(), 0.1);
+			mWaterHeight.update();
 
-		// Terrain Images
-		ImGui::Begin("Terrain Images");
-		for (int i{ 0 }; i < 4; ++i) {
-			std::string indexString{ std::to_string(i + 1) };
+			ImGui::End();
 
-			ImGui::DragFloat(("World size " + indexString).c_str(), mImageWorldSizes[i].getDataPtr(), 1, 1, 100000);
-			mImageWorldSizes[i].update();
+			// Day
+			ImGui::Begin("Day");
 
-			ImGui::InputInt(("Pixel quality " + indexString).c_str(), mImagePixelDimensions[i].getDataPtr(), 100, 1000);
-			mImagePixelDimensions[i].update();
+			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001, 0.1, 0.9);
+			mDayTime.update();
+
+			ImGui::End();
+
+			// Terrain Images
+			ImGui::Begin("Terrain Images");
+			for (int i{ 0 }; i < 4; ++i) {
+				std::string indexString{ std::to_string(i + 1) };
+
+				ImGui::DragFloat(("World size " + indexString).c_str(), mImageWorldSizes[i].getDataPtr(), 1, 1, 100000);
+				mImageWorldSizes[i].update();
+
+				ImGui::InputInt(("Pixel quality " + indexString).c_str(), mImagePixelDimensions[i].getDataPtr(), 100, 1000);
+				mImagePixelDimensions[i].update();
+			}
+			ImGui::End();
 		}
-		ImGui::End();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -271,6 +283,7 @@ public:
 
 	// Terrain Parameters
 	UIElement<int>    mTerrainOctaveCount        { 15 };
+	UIElement<int>    mTerrainSmoothOctaveCount  { 15 };
 	UIElement<float> mTerrainAmplitude	         { 80 };
 	UIElement<float> mTerrainAmplitudeMultiplier{ 0.4 };
 	UIElement<float> mTerrainSpreadFactor       { 2 };
@@ -317,6 +330,8 @@ public:
 	UIElement<float> mSnowLineNoiseScale{ 0.3 };
 	UIElement<float> mSnowLineNoiseAmplitude{ 2.75 };
 	UIElement<float> mMountainSnowCutoff{ 0.9 };
+	UIElement<float> mSnowLineEase{ 4.5 };
+	UIElement<float> mShellAmbientOcclusion{ 0.2 };
 };
 
 #endif

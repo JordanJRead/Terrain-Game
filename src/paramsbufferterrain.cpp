@@ -16,6 +16,13 @@ bool ParamsBufferTerrain::updateGPU(const UIManager& uiManager, bool force) {
 	}
 	offset += size;
 
+	size = sizeof(int);
+	if (uiManager.mTerrainSmoothOctaveCount.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mTerrainSmoothOctaveCount.data());
+		hasChanged = true;
+	}
+	offset += size;
+
 	size = sizeof(float);
 	if (uiManager.mTerrainAmplitude.hasChanged() || force) {
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mTerrainAmplitude.data());

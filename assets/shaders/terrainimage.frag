@@ -6,6 +6,7 @@ out vec4 OutTerrainData;
 
 layout(std140, binding = 0) uniform terrainParams {
 	uniform int   octaveCount;
+	uniform int   smoothOctaveCount;
 	uniform float initialAmplitude;
 	uniform float amplitudeDecay;
 	uniform float spreadFactor;
@@ -132,6 +133,14 @@ float dquintic(float x) {
 	return x < 0.5 ? 80 * x * x * x * x : 80 * (1 - x) * (1 - x) * (1 - x) * (1 - x);
 }
 
+float packFloats(vec2 v) {
+	return uintBitsToFloat(packHalf2x16(v));
+}
+
+vec2 unpackFloats(float v) {
+	return unpackHalf2x16(floatBitsToUint(v));
+}
+
 vec4 getTerrainInfo(vec2 pos) {
 	vec3 mountain = perlin(pos * mountainFrequency, 0);
 	mountain.yz *= scale;
@@ -163,6 +172,7 @@ vec4 getTerrainInfo(vec2 pos) {
 	river.x *= (mountain.x * 5 + 1);
 
 	vec3 terrainInfo = vec3(0, 0, 0);
+	vec3 smoothTerrainInfo = vec3(0, 0, 0);
 
 	float amplitude = initialAmplitude;
 	float spread = 1;
@@ -173,19 +183,33 @@ vec4 getTerrainInfo(vec2 pos) {
 
 		terrainInfo.x += amplitude * perlinData.x;
 		terrainInfo.yz += amplitude * perlinData.yz * spread;
+		
+		if (i < smoothOctaveCount) {
+			smoothTerrainInfo.x += amplitude * perlinData.x;
+			smoothTerrainInfo.yz += amplitude * perlinData.yz * spread;
+		}
 
 		amplitude *= amplitudeDecay;
 		spread *= spreadFactor;
 	}
 	terrainInfo.yz *= scale;
+	smoothTerrainInfo.yz *= scale;
+	
+	terrainInfo.yz = terrainInfo.x * mountain.yz + mountain.x * terrainInfo.yz;
+	terrainInfo.x *= mountain.x;
+	smoothTerrainInfo.yz = smoothTerrainInfo.x * mountain.yz + mountain.x * smoothTerrainInfo.yz;
+	smoothTerrainInfo.x *= mountain.x;
 
-	vec3 finalOutput = vec3(0);
-	finalOutput.x = terrainInfo.x * mountain.x;
-	finalOutput.yz = terrainInfo.x * mountain.yz + mountain.x * terrainInfo.yz;
+	terrainInfo.x -= river.x;
+	terrainInfo.yz -= river.yz;
+	smoothTerrainInfo.x -= river.x;
+	smoothTerrainInfo.yz -= river.yz;
 
-	finalOutput.x -= river.x;
-	finalOutput.yz -= river.yz;
-	return vec4(finalOutput, mountain);
+	vec4 combinedTerrainInfo = vec4(terrainInfo.x, 0, 0, mountain);
+	combinedTerrainInfo.y = packFloats(vec2(terrainInfo.y, smoothTerrainInfo.y));
+	combinedTerrainInfo.z = packFloats(vec2(terrainInfo.z, smoothTerrainInfo.z));
+
+	return combinedTerrainInfo;
 }
 
 void main() {

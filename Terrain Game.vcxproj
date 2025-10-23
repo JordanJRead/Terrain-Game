@@ -185,6 +185,22 @@
     <ClInclude Include="include\planephysics.h" />
     <ClInclude Include="include\planeunit.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\gamma.frag" />
+    <None Include="assets\shaders\gamma.vert" />
+    <None Include="assets\shaders\grid.frag" />
+    <None Include="assets\shaders\grid.vert" />
+    <None Include="assets\shaders\physics.frag" />
+    <None Include="assets\shaders\physics.vert" />
+    <None Include="assets\shaders\skybox.frag" />
+    <None Include="assets\shaders\skybox.vert" />
+    <None Include="assets\shaders\terrain.frag" />
+    <None Include="assets\shaders\terrain.vert" />
+    <None Include="assets\shaders\terrainimage.frag" />
+    <None Include="assets\shaders\terrainimage.vert" />
+    <None Include="assets\shaders\water.frag" />
+    <None Include="assets\shaders\water.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

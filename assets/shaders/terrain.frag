@@ -34,6 +34,8 @@ layout(std140, binding = 1) uniform ArtisticParams {
 	uniform float snowLineNoiseScale;
 	uniform float snowLineNoiseAmplitude;
 	uniform float mountainSnowCutoff;
+	uniform float snowLineEase;
+	uniform float shellAmbientOcclusion;
 };
 
 layout(std140, binding = 3) uniform Colours {
@@ -61,12 +63,24 @@ uniform float waterHeight;
 // Per plane
 in flat int shellIndex;
 
-vec4 getTerrainInfo(vec2 worldPos) {
+vec2 unpackFloats(float v) {
+	return unpackHalf2x16(floatBitsToUint(v));
+}
+
+vec4 getTerrainInfo(vec2 worldPos, bool smoothTerrain) {
 	for (int i = 0; i < IMAGECOUNT; ++i) {
 		vec2 sampleCoord = ((worldPos / terrainScale - imagePositions[i]) / imageScales[i]) + vec2(0.5);
 		
 		if (!(sampleCoord.x > 1 || sampleCoord.x < 0 || sampleCoord.y > 1 || sampleCoord.y < 0)) {
 			vec4 terrainInfo = texture(images[i], sampleCoord);
+			if (!smoothTerrain) {
+				terrainInfo.y = unpackFloats(terrainInfo.y).x;
+				terrainInfo.z = unpackFloats(terrainInfo.z).x; // ?
+			}
+			else {
+				terrainInfo.y = unpackFloats(terrainInfo.y).y;
+				terrainInfo.z = unpackFloats(terrainInfo.z).y;
+			}
 			terrainInfo.yz /= imageScales[i] * terrainScale;
 			return terrainInfo;
 		}
@@ -204,9 +218,11 @@ void main() {
 
 	// Terrain
 	vec2 flatWorldPos = groundWorldPos.xz;
-	vec4 terrainInfo = getTerrainInfo(flatWorldPos);
+	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	float groundHeight = groundWorldPos.y;
 	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
+	vec4 smoothTerrainInfo = getTerrainInfo(flatWorldPos, true);
+	vec3 smoothNormal = normalize(vec3(-smoothTerrainInfo.y, 1, -smoothTerrainInfo.z));
 
 	float mountain = terrainInfo.a;
 	mountain = extreme(mountain);
@@ -221,6 +237,8 @@ void main() {
 	bool isSnow = actualSnowHeight < groundHeight && mountain > mountainSnowCutoff;
 	bool isGrass = !isSnow;
 	vec3 shellAlbedo = isSnow ? snowColor : grassColor;
+	float shellProgress = float(shellIndex + 1) / shellCount;
+	shellAlbedo = shellAlbedo - shellAlbedo * (1 - shellProgress) * shellAmbientOcclusion;
 
 	// Shell blade height
 	float shellScale = isGrass ? grassNoiseScale : snowNoiseScale;
@@ -241,7 +259,7 @@ void main() {
 	
 	// Terrain at center of texel
 	vec2 shellWorldMiddlePos = vec2(shellGridX / shellScale, shellGridZ / shellScale);
-	vec4 shellMiddleTerrainInfo = getTerrainInfo(shellWorldMiddlePos);
+	vec4 shellMiddleTerrainInfo = getTerrainInfo(shellWorldMiddlePos, false);
 	vec3 shellNormal = normalize(vec3(-shellMiddleTerrainInfo.y, 1, -shellMiddleTerrainInfo.z));
 
 	// Wetness
@@ -250,12 +268,22 @@ void main() {
 	float wet =  1 - (distAboveWater / wetHeight);
 	wet = clamp(wet, 0.0, 1.0);
 
-	// Should shell exist?
+	// Dot cutoff
 	float currDotCutoff = isGrass ? grassDotCutoff : snowDotCutoff;
-	bool shallowEnough = dot(normal, vec3(0, 1, 0)) >= currDotCutoff;
+	if (isSnow) {
+		float snowHeightNorm = (groundHeight - actualSnowHeight) / snowLineEase;
+		snowHeightNorm = clamp(snowHeightNorm, 0, 1);
 
-	float shellProgress = float(shellIndex + 1) / shellCount;
-	float shellCutoff = shellBaseCutoff + shellProgress * (shellMaxCutoff - shellBaseCutoff);
+		currDotCutoff += (1 - currDotCutoff) * (1 - snowHeightNorm);
+	}
+
+	float currDot = dot(normal, vec3(0, 1, 0));
+	bool shallowEnough = currDot >= currDotCutoff;
+
+	// Get smaller at harder dots
+	randomTexelHeight *= ((currDot - currDotCutoff) / (1 - currDotCutoff));
+
+	float shellCutoff = shellBaseCutoff * int(isGrass) + shellProgress * (shellMaxCutoff - shellBaseCutoff);
 	if (isGrass)
 		shellCutoff += extreme(mountain); // Grass can't grow on mountains
 
@@ -276,7 +304,7 @@ void main() {
 	else {
 		if (!doesShellExist)
 			discard;
-		albedo = shellAlbedo + shellAlbedo * shellProgress * 0.2;
+		albedo = shellAlbedo;
 	}
 
 
@@ -294,6 +322,8 @@ void main() {
 
 	// Lighting
 	vec3 currNormal = isGrass && isShell ? shellNormal : normal;
+	if (isSnow)
+		currNormal = smoothNormal;
 	float diffuse = max(0, dot(dirToLight, currNormal));
 	float ambient = 0.03;
 	vec3 viewDir = normalize(cameraPos - groundWorldPos);
