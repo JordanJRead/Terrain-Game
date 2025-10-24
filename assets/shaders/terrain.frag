@@ -214,11 +214,17 @@ float pullup(float x) {
 }
 
 void main() {
+	vec2 flatWorldPos = groundWorldPos.xz;
+	vec4 terrainInfo = getTerrainInfo(flatWorldPos, true);
+
+	// Cool stuff
+	//float myperlin = perlin(flatWorldPos / vec2(cos(atan(terrainInfo.y)), cos(atan(terrainInfo.z))), 0).x;
+	//FragColor = vec4(myperlin.xxx, 1);
+	//return;
+	
 	bool isShell = shellIndex >= 0;
 
 	// Terrain
-	vec2 flatWorldPos = groundWorldPos.xz;
-	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	float groundHeight = groundWorldPos.y;
 	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
 	vec4 smoothTerrainInfo = getTerrainInfo(flatWorldPos, true);
@@ -236,7 +242,8 @@ void main() {
 	float actualSnowHeight = snowHeight + normToNegPos(perlin(flatWorldPos * snowLineNoiseScale, 0).x) * snowLineNoiseAmplitude;
 	bool isSnow = actualSnowHeight < groundHeight && mountain > mountainSnowCutoff;
 	bool isGrass = !isSnow;
-	vec3 shellAlbedo = isSnow ? snowColor : grassColor;
+	float grassperlin = perlin(flatWorldPos * 0.1, 0).x;
+	vec3 shellAlbedo = isSnow ? snowColor : (grassColor * grassperlin + sunColour * (1 - grassperlin));
 	float shellProgress = float(shellIndex + 1) / shellCount;
 	shellAlbedo = shellAlbedo - shellAlbedo * (1 - shellProgress) * shellAmbientOcclusion;
 
