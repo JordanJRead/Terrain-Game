@@ -242,6 +242,10 @@ public:
 				ImGui::DragFloat(("World size " + indexString).c_str(), mImageWorldSizes[i].getDataPtr(), 1, 1, 100000);
 				mImageWorldSizes[i].update();
 
+				if (i != 3 && mImageWorldSizes[i + 1].data() < mImageWorldSizes[i].data()) {
+					mImageWorldSizes[i + 1].mData = mImageWorldSizes[i].data();
+				}
+
 				ImGui::InputInt(("Pixel quality " + indexString).c_str(), mImagePixelDimensions[i].getDataPtr(), 100, 1000);
 				mImagePixelDimensions[i].update();
 			}
