@@ -186,8 +186,11 @@ public:
 			ImGui::ColorPicker3("Mountain", (float*)mMountainColour.getDataPtr());
 			mMountainColour.update();
 
-			ImGui::ColorPicker3("Grass", (float*)mGrassColour.getDataPtr());
-			mGrassColour.update();
+			ImGui::ColorPicker3("Grass 1", (float*)mGrassColour1.getDataPtr());
+			mGrassColour1.update();
+
+			ImGui::ColorPicker3("Grass 2", (float*)mGrassColour2.getDataPtr());
+			mGrassColour2.update();
 
 			ImGui::ColorPicker3("Snow", (float*)mSnowColour.getDataPtr());
 			mSnowColour.update();
@@ -212,7 +215,7 @@ public:
 			ImGui::DragInt("Low quality plane vertices", mLowQualityPlaneVertices.getDataPtr(), 1, 2, 1000);
 			mLowQualityPlaneVertices.update();
 
-			ImGui::DragInt("High quality plane quality scale", mHighQualityPlaneQualityScale.getDataPtr(), 1, 2, 1000);
+			ImGui::DragInt("High quality plane quality scale", mHighQualityPlaneQualityScale.getDataPtr(), 1, 1, 100);
 			mHighQualityPlaneQualityScale.update();
 
 			ImGui::DragFloat("Vertex LOD dist", mVertexLODDistance.getDataPtr(), 1, 1, 1000);
@@ -280,7 +283,8 @@ public:
 	// Colours
 	UIElement<glm::vec3> mDirtColour    { {40 / 255.0, 21 / 255.0, 10  / 255.0} };
 	UIElement<glm::vec3> mMountainColour{ {34 / 255.0, 34 / 255.0, 34 / 255.0} };
-	UIElement<glm::vec3> mGrassColour   { {0   / 255.0, 56 / 255.0, 0   / 255.0} };
+	UIElement<glm::vec3> mGrassColour1  { {0   / 255.0, 56 / 255.0, 0   / 255.0} };
+	UIElement<glm::vec3> mGrassColour2{ {0 / 255.0, 56 / 255.0, 0 / 255.0} };
 	UIElement<glm::vec3> mSnowColour    { {255 / 255.0, 255 / 255.0, 255 / 255.0} };
 	UIElement<glm::vec3> mWaterColour   { {0   / 255.0, 1.7  / 255.0, 56 / 255.0} };
 	UIElement<glm::vec3> mSunColour     { {255 / 255.0, 255 / 255.0, 255 / 255.0} };

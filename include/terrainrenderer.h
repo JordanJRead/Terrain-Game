@@ -229,6 +229,7 @@ public:
 
 		float minChunkHeight{ getMinHeight(uiManager) };
 		glm::vec3 cameraForward{ camera.getForward() };
+
 		// For each chunk
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mChunkWidth.data() };

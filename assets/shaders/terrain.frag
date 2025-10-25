@@ -39,11 +39,12 @@ layout(std140, binding = 1) uniform ArtisticParams {
 };
 
 layout(std140, binding = 3) uniform Colours {
-	uniform vec3 dirtColor;
-	uniform vec3 mountainColor;
-	uniform vec3 grassColor;
-	uniform vec3 snowColor;
-	uniform vec3 waterColor;
+	uniform vec3 dirtColour;
+	uniform vec3 mountainColour;
+	uniform vec3 grassColour1;
+	uniform vec3 grassColour2;
+	uniform vec3 snowColour;
+	uniform vec3 waterColour;
 	uniform vec3 sunColour;
 };
 
@@ -236,14 +237,14 @@ void main() {
 	mountain = pullup(mountain);
 	mountain = extreme(mountain);
 	
-	vec3 groundAlbedo = dirtColor * (1 - mountain) + mountain * mountainColor;
+	vec3 groundAlbedo = dirtColour * (1 - mountain) + mountain * mountainColour;
 
 	// Which shell type are we?
 	float actualSnowHeight = snowHeight + normToNegPos(perlin(flatWorldPos * snowLineNoiseScale, 0).x) * snowLineNoiseAmplitude;
 	bool isSnow = actualSnowHeight < groundHeight && mountain > mountainSnowCutoff;
 	bool isGrass = !isSnow;
 	float grassperlin = perlin(flatWorldPos * 0.1, 0).x;
-	vec3 shellAlbedo = isSnow ? snowColor : (grassColor * grassperlin + sunColour * (1 - grassperlin));
+	vec3 shellAlbedo = isSnow ? snowColour : (grassColour1 * grassperlin + grassColour2 * (1 - grassperlin));
 	float shellProgress = float(shellIndex + 1) / shellCount;
 	shellAlbedo = shellAlbedo - shellAlbedo * (1 - shellProgress) * shellAmbientOcclusion;
 

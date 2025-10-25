@@ -10,7 +10,7 @@ class ParamsBufferColour {
 public:
 	ParamsBufferColour(const UIManager& uiManager) {
 		glBindBuffer(GL_UNIFORM_BUFFER, mBUF);
-		glBufferData(GL_UNIFORM_BUFFER, 6 * 4 * sizeof(float), nullptr, GL_STATIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, 7 * 4 * sizeof(float), nullptr, GL_STATIC_DRAW);
 		glBindBufferBase(GL_UNIFORM_BUFFER, 3, mBUF);
 		updateGPU(uiManager, true);
 	}

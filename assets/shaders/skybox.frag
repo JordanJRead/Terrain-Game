@@ -19,11 +19,12 @@ layout(std140, binding = 2) uniform WaterParams {
 };
 
 layout(std140, binding = 3) uniform Colours {
-	uniform vec3 dirtColor;
-	uniform vec3 mountainColor;
-	uniform vec3 grassColor;
-	uniform vec3 snowColor;
-	uniform vec3 waterColor;
+	uniform vec3 dirtColour;
+	uniform vec3 mountainColour;
+	uniform vec3 grassColour1;
+	uniform vec3 grassColour2;
+	uniform vec3 snowColour;
+	uniform vec3 waterColour;
 	uniform vec3 sunColour;
 };
 

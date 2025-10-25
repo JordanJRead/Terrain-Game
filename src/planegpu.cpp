@@ -17,13 +17,13 @@ PlaneGPU::PlaneGPU(const PlanePhysics& physicsPlane)
 	: PlaneI{ physicsPlane.getVerticesPerEdge() }
 {
 	mIndexCount = physicsPlane.getIndexCount();
-	mIndexCount = physicsPlane.getIndexCount();
 	mVertexArray.create(physicsPlane.getVertexData(), physicsPlane.getIndices(), std::vector<int>{ 3 });
 }
 
 void PlaneGPU::rebuild(int verticesPerEdge) {
 	PlaneUnit plane{ verticesPerEdge };
 	mIndexCount = plane.getIndexCount();
+	mVerticesPerEdge = verticesPerEdge;
 	mVertexArray.updateVertices(plane.getVertexData(), plane.getIndices());
 }
 
