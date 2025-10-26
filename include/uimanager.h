@@ -292,7 +292,7 @@ public:
 	UIElement<glm::vec3> mDirtColour    { {40 / 255.0, 21 / 255.0, 10  / 255.0} };
 	UIElement<glm::vec3> mMountainColour{ {34 / 255.0, 34 / 255.0, 34 / 255.0} };
 	UIElement<glm::vec3> mGrassColour1  { {0   / 255.0, 56 / 255.0, 0   / 255.0} };
-	UIElement<glm::vec3> mGrassColour2{ {0 / 255.0, 56 / 255.0, 0 / 255.0} };
+	UIElement<glm::vec3> mGrassColour2{ {15 / 255.0, 56 / 255.0, 0 / 255.0} };
 	UIElement<glm::vec3> mSnowColour    { {255 / 255.0, 255 / 255.0, 255 / 255.0} };
 	UIElement<glm::vec3> mWaterColour   { {0   / 255.0, 1.7  / 255.0, 56 / 255.0} };
 	UIElement<glm::vec3> mSunColour     { {255 / 255.0, 255 / 255.0, 255 / 255.0} };
@@ -334,7 +334,7 @@ public:
 	UIElement<float> mTerrainScale{ 22 };
 	UIElement<float> mViewDistance{ 328 };
 	UIElement<float> mFogEncroachment{ 68 };
-	UIElement<float> mGrassDotCutoff{ 0.875 };
+	UIElement<float> mGrassDotCutoff{ 0.6 };
 	UIElement<float> mSnowDotCutoff{ 0.3 };
 	UIElement<int>   mShellCount{ 30 };
 	UIElement<float> mShellMaxHeight{ 0.117 };
