@@ -238,6 +238,7 @@ public:
 		glm::vec3 cameraForward{ camera.getForward() };
 
 		// For each chunk
+		int visibleChunks{ 0 };
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mChunkWidth.data() };
  		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
@@ -253,24 +254,30 @@ public:
 				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0, chunkPos.z + chunkWidth / 2.0 };
 
 				bool isVisible{ false };
-				for (float x : xVals) {
-					for (float y : yVals) {
-						for (float z : zVals) {
-							glm::vec3 corner{ x, y, z };
-							glm::vec3 viewDir{ glm::normalize(corner - camera.getPosition()) };
-							if (glm::dot(viewDir, cameraForward) > 0) {
-								isVisible = true;
-								break;
-							}
-						}
-						if (isVisible)
-							break;
-					}
-					if (isVisible)
-						break;
+				if (uiManager.mFrustumCulling.data())
+					isVisible = isAABBInFrustum(camera, {{chunkPos.x - chunkWidth / 2.0, minChunkHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, maxChunkHeight, chunkPos.z + chunkWidth / 2.0}});
+				else {
+					//for (float x : xVals) {
+					//	for (float y : yVals) {
+					//		for (float z : zVals) {
+					//			glm::vec3 corner{ x, y, z };
+					//			glm::vec3 viewDir{ glm::normalize(corner - camera.getPosition()) };
+					//			if (glm::dot(viewDir, cameraForward) > 0) {
+					//				isVisible = true;
+					//				break;
+					//			}
+					//		}
+					//		if (isVisible)
+					//			break;
+					//	}
+					//	if (isVisible)
+					//		break;
+					//}
+					isVisible = true;
 				}
 
 				if (isVisible) {
+					visibleChunks += 1;
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
 					bool highQuality{ !(chunkDist > uiManager.mVertexLODDistance.data()) };
 					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
@@ -316,6 +323,7 @@ public:
 				}
 			}
 		}
+		//std::cout << visibleChunks << "\n";
 	}
 
 	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
@@ -567,6 +575,14 @@ private:
 			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, near });
 			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, yNear, near });
 		}
+
+		for (const glm::vec3& edgeCross : edgeCrosses) {
+			if (!doesOBBOverlapFrustumAlongAxis(obb, edgeCross, xNear, yNear, near, far)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 };
 

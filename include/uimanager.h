@@ -33,12 +33,15 @@ private:
 
 public:
 	void render(double deltaTime, bool visible = true) {
-		double currTime{ glfwGetTime() };
-		double currTimeFrac{ currTime - (long)currTime };
-		if (currTimeFrac < mPrevTimeFrac) {
-			mDisplayDeltaTime = deltaTime;
+
+		mDeltaTimeSum += deltaTime;
+		++mFrameIndex;
+
+		if (mFrameIndex == mMaxFrameIndex) {
+			mDisplayDeltaTime = mDeltaTimeSum / mMaxFrameIndex;
+			mDeltaTimeSum = 0;
+			mFrameIndex = 0;
 		}
-		mPrevTimeFrac = currTimeFrac;
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -227,6 +230,9 @@ public:
 			ImGui::DragFloat("Water height", mWaterHeight.getDataPtr(), 0.1);
 			mWaterHeight.update();
 
+			ImGui::Checkbox("Frustum culling", mFrustumCulling.getDataPtr());
+			mFrustumCulling.update();
+
 			ImGui::End();
 
 			// Day
@@ -259,8 +265,10 @@ public:
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
+	int mFrameIndex{ 0 };
+	int mMaxFrameIndex{ 60 };
+	double mDeltaTimeSum{ 0 };
 	double mDisplayDeltaTime{ 1 };
-	double mPrevTimeFrac{ 0.9 };
 
 	// Terrain Images
 	std::array<UIElement<float>, 4> mImageWorldSizes{
@@ -310,6 +318,7 @@ public:
 	UIElement<float> mVertexLODDistance{ 110 };
 	UIElement<float> mShellLODDistance{ 60 };
 	UIElement<float> mWaterHeight{ -1.5 };
+	UIElement<bool> mFrustumCulling{ true };
 
 	// Water Parameters
 	UIElement<int>   mWaterWaveCount{ 24 };
