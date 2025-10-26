@@ -78,6 +78,9 @@ public:
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_1_Back-Z.png"
 			} }
 	{
+		mMinTerrainHeight = getMinHeight(uiManager);
+		mMaxTerrainHeight = getMaxHeight(uiManager);
+
 		std::vector<float> vertexData{
 		-1, -1,
 		 1, -1,
@@ -127,6 +130,10 @@ public:
 
 	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer& framebuffer) {
 		bool hasTerrainChanged{ mTerrainParams.updateGPU(uiManager, false) };
+		if (hasTerrainChanged) {
+			mMinTerrainHeight = getMinHeight(uiManager);
+			mMaxTerrainHeight = getMaxHeight(uiManager);
+		}
 		mArtisticParams.updateGPU(uiManager, false);
 		mWaterParams.updateGPU(uiManager, false);
 		mColours.updateGPU(uiManager, false);
@@ -242,7 +249,7 @@ public:
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
-				std::array<float, 2> yVals{ minChunkHeight - chunkWidth / 2.0, maxChunkHeight + chunkWidth / 2.0 };
+				std::array<float, 2> yVals{ minChunkHeight, maxChunkHeight };
 				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0, chunkPos.z + chunkWidth / 2.0 };
 
 				bool isVisible{ false };
@@ -371,6 +378,8 @@ private:
 	ParamsBufferColour mColours;
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
+	float mMinTerrainHeight;
+	float mMaxTerrainHeight;
 
 	Shader mTerrainImageShader;
 	Shader mTerrainShader;
@@ -388,67 +397,67 @@ private:
 	VertexArray mScreenQuad;
 
 	float getMaxHeight(const UIManager& uiManager) {
-		glm::vec3 mountain = { 1, 0, 0 };
+		float mountain = 1;
 
-		mountain.x *= mountain.x;
-		mountain.x *= mountain.x;
-		mountain.x = mountain.x * 0.95 + 0.05;
+		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
-		glm::vec3 offset = { 1, 0, 0 };
+		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
-		offset.x = offset.x < 0.5 ? (16 * offset.x * offset.x * offset.x * offset.x * offset.x) : 1 - pow(-2 * offset.x + 2, 5.0) / 2.0;
+		// Rivers
+		float river = 0;
 
-		offset *= 20;
-
-		glm::vec3 terrainInfo = { 0, 0, 0 };
+		float terrainHeight = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
+		float spread = 1;
 
-		for (int i{ 0 }; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			glm::vec3 perlinData = { 1, 0, 0 };
+		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {;
+			float perlinData = 1;
 
-			terrainInfo.x += amplitude * perlinData.x;
+			terrainHeight += amplitude * perlinData;
 
 			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
+			spread *= uiManager.mTerrainSpreadFactor.data();
 		}
 
-		glm::vec3 finalOutput = { 0, 0, 0 };
-		finalOutput.x = terrainInfo.x * mountain.x;
+		float finalOutput = 0;
+		finalOutput = terrainHeight * mountain;
 
-		finalOutput.x += offset.x;
-		return finalOutput.x;
+		finalOutput -= river;
+		return finalOutput;
 	}
 
 	float getMinHeight(const UIManager& uiManager) {
-		glm::vec3 mountain = { 0, 0, 0 };
+		float mountain = 0;
 
-		mountain.x *= mountain.x;
-		mountain.x *= mountain.x;
-		mountain.x = mountain.x * 0.95 + 0.05;
+		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
-		glm::vec3 offset = { 0, 0, 0 };
+		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
-		offset.x = offset.x < 0.5 ? (16 * offset.x * offset.x * offset.x * offset.x * offset.x) : 1 - pow(-2 * offset.x + 2, 5.0) / 2.0;
+		// Rivers
+		float river = 1;
+		river *= uiManager.mRiverStrength.data();
+		river *= (mountain * 5 + 1);
 
-		offset *= 20;
-
-		glm::vec3 terrainInfo = { 0, 0, 0 };
+		float terrainHeight = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
+		float spread = 1;
 
-		for (int i{ 0 }; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			glm::vec3 perlinData = { 0, 0, 0 };
+		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
+			float perlinData = 0;
 
-			terrainInfo.x += amplitude * perlinData.x;
+			terrainHeight += amplitude * perlinData;
 
 			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
+			spread *= uiManager.mTerrainSpreadFactor.data();
 		}
 
-		glm::vec3 finalOutput = { 0, 0, 0 };
-		finalOutput.x = terrainInfo.x * mountain.x;
+		float finalOutput = 0;
+		finalOutput = terrainHeight * mountain;
 
-		finalOutput.x += offset.x;
-		return finalOutput.x;
+		finalOutput -= river;
+		return finalOutput;
 	}
 };
 
