@@ -49,8 +49,8 @@ glm::mat4 Camera::getViewMatrix() const {
 }
 
 glm::mat4 Camera::getProjectionMatrix() const {
-	return glm::perspective(glm::radians(90.0f), mAspectRatio, 0.1f, 10000.0f);
-}
+	return glm::perspective(mFOVYRad, mAspectRatio, mNear, mFar);
+} 
 
 glm::vec3 Camera::getForward() const {
 	return {

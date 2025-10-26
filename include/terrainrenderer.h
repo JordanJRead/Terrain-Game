@@ -459,6 +459,51 @@ private:
 		finalOutput -= river;
 		return finalOutput;
 	}
+
+	struct AABB {
+		glm::vec3 mMin;
+		glm::vec3 mMax;
+	};
+
+	struct OBB {
+		OBB(const std::array<glm::vec3, 4>& orderedCorners)
+			: mAxes{ { orderedCorners[1] - orderedCorners[0], orderedCorners[2] - orderedCorners[0], orderedCorners[3] - orderedCorners[0] } }
+			, mCenter{ orderedCorners[0] + 0.5f * (mAxes[0] + mAxes[1] + mAxes[2]) }
+			, mExtents{ glm::length(mAxes[0]), glm::length(mAxes[1]), glm::length(mAxes[2]) }
+		{
+			mAxes[0] /= mExtents.x;
+			mAxes[1] /= mExtents.y;
+			mAxes[2] /= mExtents.z;
+			mExtents *= 0.5;
+		}
+
+		std::array<glm::vec3, 3> mAxes;
+		glm::vec3 mExtents;
+		glm::vec3 mCenter;
+	};
+
+	// https://bruop.github.io/improved_frustum_culling/
+	static bool isAABBInFrustum(const Camera& camera, const AABB& aabb) {
+		float xNear =  camera.getXNear();
+		float yNear =  camera.getYNear();
+		float near  = -camera.getNearPlaneDist();
+		float far   = -camera.getFarPlaneDist();
+
+		std::array<glm::vec3, 4> obbCorners{{
+				aabb.mMin,
+			   {aabb.mMax.x, aabb.mMin.y, aabb.mMin.z},
+			   {aabb.mMin.x, aabb.mMax.y, aabb.mMin.z},
+			   {aabb.mMin.x, aabb.mMin.y, aabb.mMax.z}
+			}};
+
+		for (size_t i{ 0 }; i < obbCorners.size(); ++i) {
+			obbCorners[i] = camera.getViewMatrix() * glm::vec4{ obbCorners[i], 1 }; // ?
+		}
+
+		OBB obb{ obbCorners };
+
+		// TODO test all required axes
+	}
 };
 
 #endif

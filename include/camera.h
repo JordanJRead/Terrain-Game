@@ -18,6 +18,10 @@ public:
 	glm::mat4 getProjectionMatrix() const;
 	glm::vec3 getPosition() const { return mPosition; }
 	glm::vec3 getForward() const;
+	float getNearPlaneDist() const { return mNear; }
+	float getFarPlaneDist() const { return mFar; }
+	float getXNear() const { return mXNear; }
+	float getYNear() const { return mYNear; }
 
 private:
 	float mPitch{ 0 }; // In radians
@@ -27,6 +31,12 @@ private:
 	float mPrevX{ 0 };
 	float mPrevY{ 0 };
 	bool mIsFirstLook{ true };
+
+	float mFOVYRad{ 90 * 3.1415926535897932384626433832795 / 180.0f };
+	float mNear{ 0.1f };
+	float mYNear{ mNear * glm::tan(mFOVYRad / 2.0) };
+	float mXNear{ mYNear * mAspectRatio };
+	float mFar{ 10000.0f };
 
 	glm::vec3 mPosition;
 
