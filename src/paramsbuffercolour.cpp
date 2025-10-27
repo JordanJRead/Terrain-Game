@@ -21,8 +21,14 @@ void ParamsBufferColour::updateGPU(const UIManager& uiManager, bool force) {
 	offset += size;
 
 	size = 4 * sizeof(float);
-	if (uiManager.mGrassColour.hasChanged() || force) {
-		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mGrassColour.data());
+	if (uiManager.mGrassColour1.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mGrassColour1.data());
+	}
+	offset += size;
+
+	size = 4 * sizeof(float);
+	if (uiManager.mGrassColour2.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mGrassColour2.data());
 	}
 	offset += size;
 

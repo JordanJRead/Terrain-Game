@@ -73,9 +73,9 @@ void App::loop() {
 
 		deltaTime = glfwGetTime() - prevFrame;
 		prevFrame = glfwGetTime();
-
+		//-385 1703 - cool thing
 		// Physics
-		PlanePhysics physicsPlane{ 20, mCamera.getPosition(), 10, mTerrainRenderer, mUIManager};
+		PlanePhysics physicsPlane{ 5, mCamera.getPosition(), 2, mTerrainRenderer, mUIManager};
 
 		/// Input
 		handleInput();
@@ -98,7 +98,7 @@ void App::loop() {
 		glEnable(GL_DEPTH_TEST);
 
 		if (mIsUIVisible)
-			mUIManager.render(deltaTime);
+			mUIManager.render(deltaTime, mIsUIVisible);
 
 		// Debug physics plane
 		//PlaneGPU gpuPlane{ physicsPlane };

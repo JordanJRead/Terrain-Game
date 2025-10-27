@@ -38,7 +38,8 @@ public:
 
 
 		, mLowQualityPlane{ uiManager.mLowQualityPlaneVertices.data() }
-		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() }
+		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() } // ?
+		, mReallyLowQualityPlane{ 2 }
 
 		, mTerrainImageShader{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
 		, mTerrainShader{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
@@ -77,6 +78,9 @@ public:
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_1_Back-Z.png"
 			} }
 	{
+		mMinTerrainHeight = getMinHeight(uiManager);
+		mMaxTerrainHeight = getMaxHeight(uiManager);
+
 		std::vector<float> vertexData{
 		-1, -1,
 		 1, -1,
@@ -126,6 +130,10 @@ public:
 
 	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer& framebuffer) {
 		bool hasTerrainChanged{ mTerrainParams.updateGPU(uiManager, false) };
+		if (hasTerrainChanged) {
+			mMinTerrainHeight = getMinHeight(uiManager);
+			mMaxTerrainHeight = getMaxHeight(uiManager);
+		}
 		mArtisticParams.updateGPU(uiManager, false);
 		mWaterParams.updateGPU(uiManager, false);
 		mColours.updateGPU(uiManager, false);
@@ -228,7 +236,9 @@ public:
 
 		float minChunkHeight{ getMinHeight(uiManager) };
 		glm::vec3 cameraForward{ camera.getForward() };
+
 		// For each chunk
+		int visibleChunks{ 0 };
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mChunkWidth.data() };
  		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
@@ -240,28 +250,34 @@ public:
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
-				std::array<float, 2> yVals{ minChunkHeight - chunkWidth / 2.0, maxChunkHeight + chunkWidth / 2.0 };
+				std::array<float, 2> yVals{ minChunkHeight, maxChunkHeight };
 				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0, chunkPos.z + chunkWidth / 2.0 };
 
 				bool isVisible{ false };
-				for (float x : xVals) {
-					for (float y : yVals) {
-						for (float z : zVals) {
-							glm::vec3 corner{ x, y, z };
-							glm::vec3 viewDir{ glm::normalize(corner - camera.getPosition()) };
-							if (glm::dot(viewDir, cameraForward) > 0) {
-								isVisible = true;
-								break;
-							}
-						}
-						if (isVisible)
-							break;
-					}
-					if (isVisible)
-						break;
+				if (uiManager.mFrustumCulling.data())
+					isVisible = isAABBInFrustum(camera, {{chunkPos.x - chunkWidth / 2.0, minChunkHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, maxChunkHeight, chunkPos.z + chunkWidth / 2.0}});
+				else {
+					//for (float x : xVals) {
+					//	for (float y : yVals) {
+					//		for (float z : zVals) {
+					//			glm::vec3 corner{ x, y, z };
+					//			glm::vec3 viewDir{ glm::normalize(corner - camera.getPosition()) };
+					//			if (glm::dot(viewDir, cameraForward) > 0) {
+					//				isVisible = true;
+					//				break;
+					//			}
+					//		}
+					//		if (isVisible)
+					//			break;
+					//	}
+					//	if (isVisible)
+					//		break;
+					//}
+					isVisible = true;
 				}
 
 				if (isVisible) {
+					visibleChunks += 1;
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
 					bool highQuality{ !(chunkDist > uiManager.mVertexLODDistance.data()) };
 					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
@@ -290,27 +306,28 @@ public:
 
 					// Draw terrain
 					// glInstanceID is 1 greater than the shellIndex (base terrain is -1 shell index, first shell is 0 shell index)
-					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
+					for (int i{ 0 }; i <= newShellCount; ++i) {
+						mTerrainShader.setInt("instanceID", i);
+						glDrawElements(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
+					}
 					// I could do each of the plane qualities in one instanced call, but for some reason it is slightly slower
 
 					// Draw water
 					mWaterShader.use();
+					mReallyLowQualityPlane.useVertexArray();
 					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z});
 					mWaterShader.setFloat("planeWorldWidth", chunkWidth);
-					glDrawElements(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
+					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
 
 					mArtisticParams.fixShellCount(uiManager);
 				}
 			}
 		}
+		//std::cout << visibleChunks << "\n";
 	}
 
 	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
 		return MathHelper::getClosestWorldStepPosition(pos, uiManager.mImageWorldSizes[imageIndex].data() / uiManager.mImagePixelDimensions[imageIndex].data() * uiManager.mTerrainScale.data());
-	}
-
-	static float quintic(float x) {
-		return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
 	}
 
 	float getHeightAtPoint(const glm::vec2& worldPos, const UIManager& uiManager) const {
@@ -321,11 +338,28 @@ public:
 
 		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
-		float offset = MathHelper::perlin(pos * uiManager.mDipFrequency.data(), 1);
+		// Rivers
+		float river = MathHelper::perlin(pos * uiManager.mRiverFrequency.data() , 1);
 
-		offset = quintic(offset);
+		river *= 2;
+		river -= 1;
+		river = abs(river);
+		river = 1 - river;
 
-		offset *= uiManager.mDipStrength.data();
+		river = pow(river, uiManager.mRiverExponent.data());
+
+		river *= uiManager.mRiverStrength.data();
+		river *= (mountain * 5 + 1);
+
+		// Lakes
+		float lake = MathHelper::perlin(pos * uiManager.mLakeFrequency.data(), 1);
+
+		lake = MathHelper::extreme(lake);
+
+		lake = pow(lake, uiManager.mLakeExponent.data());
+
+		lake *= uiManager.mLakeStrength.data();
+		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
 		float terrainHeight = 0;
 
@@ -345,7 +379,8 @@ public:
 		float finalOutput = 0;
 		finalOutput = terrainHeight * mountain;
 
-		finalOutput += offset;
+		finalOutput -= river;
+		finalOutput -= lake;
 		return finalOutput;
 	}
 
@@ -358,6 +393,8 @@ private:
 	ParamsBufferColour mColours;
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
+	float mMinTerrainHeight;
+	float mMaxTerrainHeight;
 
 	Shader mTerrainImageShader;
 	Shader mTerrainShader;
@@ -370,71 +407,197 @@ private:
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mHighQualityPlane;
+	PlaneGPU mReallyLowQualityPlane;
 
 	VertexArray mScreenQuad;
 
 	float getMaxHeight(const UIManager& uiManager) {
-		glm::vec3 mountain = { 1, 0, 0 };
+		float mountain = 1;
 
-		mountain.x *= mountain.x;
-		mountain.x *= mountain.x;
-		mountain.x = mountain.x * 0.95 + 0.05;
+		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
-		glm::vec3 offset = { 1, 0, 0 };
+		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
-		offset.x = offset.x < 0.5 ? (16 * offset.x * offset.x * offset.x * offset.x * offset.x) : 1 - pow(-2 * offset.x + 2, 5.0) / 2.0;
+		// Rivers
+		float river = 0;
 
-		offset *= 20;
+		float lake = 0;
 
-		glm::vec3 terrainInfo = { 0, 0, 0 };
+		float terrainHeight = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
+		float spread = 1;
 
-		for (int i{ 0 }; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			glm::vec3 perlinData = { 1, 0, 0 };
+		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {;
+			float perlinData = 1;
 
-			terrainInfo.x += amplitude * perlinData.x;
+			terrainHeight += amplitude * perlinData;
 
 			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
+			spread *= uiManager.mTerrainSpreadFactor.data();
 		}
 
-		glm::vec3 finalOutput = { 0, 0, 0 };
-		finalOutput.x = terrainInfo.x * mountain.x;
+		float finalOutput = 0;
+		finalOutput = terrainHeight * mountain;
 
-		finalOutput.x += offset.x;
-		return finalOutput.x;
+		finalOutput -= river;
+		finalOutput -= lake;
+		return finalOutput;
 	}
 
 	float getMinHeight(const UIManager& uiManager) {
-		glm::vec3 mountain = { 0, 0, 0 };
+		float mountain = 0;
 
-		mountain.x *= mountain.x;
-		mountain.x *= mountain.x;
-		mountain.x = mountain.x * 0.95 + 0.05;
+		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
-		glm::vec3 offset = { 0, 0, 0 };
+		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
-		offset.x = offset.x < 0.5 ? (16 * offset.x * offset.x * offset.x * offset.x * offset.x) : 1 - pow(-2 * offset.x + 2, 5.0) / 2.0;
+		// Rivers
+		float river = 1;
+		river *= uiManager.mRiverStrength.data();
+		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
-		offset *= 20;
+		float lake = 1;
+		lake *= uiManager.mLakeStrength.data();
+		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
-		glm::vec3 terrainInfo = { 0, 0, 0 };
+		float terrainHeight = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
+		float spread = 1;
 
-		for (int i{ 0 }; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			glm::vec3 perlinData = { 0, 0, 0 };
+		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
+			float perlinData = 0;
 
-			terrainInfo.x += amplitude * perlinData.x;
+			terrainHeight += amplitude * perlinData;
 
 			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
+			spread *= uiManager.mTerrainSpreadFactor.data();
 		}
 
-		glm::vec3 finalOutput = { 0, 0, 0 };
-		finalOutput.x = terrainInfo.x * mountain.x;
+		float finalOutput = 0;
+		finalOutput = terrainHeight * mountain;
 
-		finalOutput.x += offset.x;
-		return finalOutput.x;
+		finalOutput -= river;
+		finalOutput -= lake;
+		return finalOutput;
+	}
+
+	struct AABB {
+		glm::vec3 mMin;
+		glm::vec3 mMax;
+	};
+
+	struct OBB {
+		OBB(const std::array<glm::vec3, 4>& orderedCorners)
+			: mAxes{ { orderedCorners[1] - orderedCorners[0], orderedCorners[2] - orderedCorners[0], orderedCorners[3] - orderedCorners[0] } }
+			, mCenter{ orderedCorners[0] + 0.5f * (mAxes[0] + mAxes[1] + mAxes[2]) }
+			, mExtents{ glm::length(mAxes[0]), glm::length(mAxes[1]), glm::length(mAxes[2]) }
+		{
+			mAxes[0] /= mExtents.x;
+			mAxes[1] /= mExtents.y;
+			mAxes[2] /= mExtents.z;
+			mExtents *= 0.5;
+		}
+
+		std::array<glm::vec3, 3> mAxes;
+		glm::vec3 mExtents;
+		glm::vec3 mCenter;
+	};
+
+	static bool doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec3& axis, float xNear, float yNear, float near, float far) {
+		float MoX = fabsf(axis.x);
+		float MoY = fabsf(axis.y);
+		float MoZ = axis.z;
+
+		constexpr float epsilon = 1e-4;
+		if (MoX < epsilon && MoY < epsilon && fabsf(MoZ) < epsilon) return true;
+
+		float MoC = glm::dot(axis, obb.mCenter);
+
+		float obb_radius = 0.0f;
+		for (size_t i = 0; i < 3; i++) {
+			obb_radius += fabsf(glm::dot(axis, obb.mAxes[i])) * obb.mExtents[i];
+		}
+
+		float obb_min = MoC - obb_radius;
+		float obb_max = MoC + obb_radius;
+
+		// Frustum projection
+		float p = xNear * MoX + yNear * MoY;
+		float tau_0 = near * MoZ - p;
+		float tau_1 = near * MoZ + p;
+		if (tau_0 < 0.0f) {
+			tau_0 *= far / near;
+		}
+		if (tau_1 > 0.0f) {
+			tau_1 *= far / near;
+		}
+
+		if (obb_min > tau_1 || obb_max < tau_0) {
+			return false;
+		}
+	}
+
+	// https://bruop.github.io/improved_frustum_culling/
+	static bool isAABBInFrustum(const Camera& camera, const AABB& aabb) {
+		float xNear =  camera.getXNear();
+		float yNear =  camera.getYNear();
+		float near  = -camera.getNearPlaneDist();
+		float far   = -camera.getFarPlaneDist();
+
+		std::array<glm::vec3, 4> obbCorners{{
+				aabb.mMin,
+			   {aabb.mMax.x, aabb.mMin.y, aabb.mMin.z},
+			   {aabb.mMin.x, aabb.mMax.y, aabb.mMin.z},
+			   {aabb.mMin.x, aabb.mMin.y, aabb.mMax.z}
+			}};
+
+		for (size_t i{ 0 }; i < obbCorners.size(); ++i) {
+			obbCorners[i] = camera.getViewMatrix() * glm::vec4{ obbCorners[i], 1 }; // ?
+		}
+
+		OBB obb{ obbCorners };
+
+		std::array<glm::vec3, 5> frustumNormals{ {
+			{ 0.0, 0.0, 1 },
+			{ 0.0, -near, yNear },
+			{ 0.0, near, yNear },
+			{ -near, 0.0f, xNear },
+			{ near, 0.0f, xNear }
+		} };
+
+		for (const glm::vec3& frustumNormal : frustumNormals) {
+			if (!doesOBBOverlapFrustumAlongAxis(obb, frustumNormal, xNear, yNear, near, far)) {
+				return false;
+			}
+		}
+
+		for (const glm::vec3& obbAxis : obb.mAxes) {
+			if (!doesOBBOverlapFrustumAlongAxis(obb, obbAxis, xNear, yNear, near, far)) {
+				return false;
+			}
+		}
+
+		std::array<glm::vec3, 18> edgeCrosses;
+
+		for (size_t obbAxisIndex{ 0 }; obbAxisIndex < 3; ++obbAxisIndex) {
+			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 1, 0, 0 });
+			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, 0 });
+
+			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, near });
+			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, near });
+			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, near });
+			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, yNear, near });
+		}
+
+		for (const glm::vec3& edgeCross : edgeCrosses) {
+			if (!doesOBBOverlapFrustumAlongAxis(obb, edgeCross, xNear, yNear, near, far)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 };
 

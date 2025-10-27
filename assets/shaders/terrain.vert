@@ -20,14 +20,21 @@ layout(std140, binding = 1) uniform ArtisticParams {
 	uniform float terrainScale;
 	uniform float maxViewDistance;
 	uniform float fogEncroach;
-	uniform float colorDotCutoff;
-	uniform int shellCount;
+	uniform float grassDotCutoff;
+	uniform float snowDotCutoff;
+	uniform int   shellCount;
 	uniform float shellMaxHeight;
-	uniform float shellDetail;
+	uniform float grassNoiseScale;
+	uniform float snowNoiseScale;
 	uniform float shellMaxCutoff;
 	uniform float shellBaseCutoff;
 	uniform float snowHeight;
 	uniform float seafoamStrength;
+	uniform float snowLineNoiseScale;
+	uniform float snowLineNoiseAmplitude;
+	uniform float mountainSnowCutoff;
+	uniform float snowLineEase;
+	uniform float shellAmbientOcclusion;
 };
 
 // Per frame
@@ -37,14 +44,27 @@ uniform mat4 proj;
 // Per plane
 uniform float planeWorldWidth;
 uniform vec3 planePos;
+uniform int instanceID;
 out flat int shellIndex;
 
-vec4 getTerrainInfo(vec2 worldPos) {
+vec2 unpackFloats(float v) {
+	return unpackHalf2x16(floatBitsToUint(v));
+}
+
+vec4 getTerrainInfo(vec2 worldPos, bool smoothTerrain) {
 	for (int i = 0; i < IMAGECOUNT; ++i) {
 		vec2 sampleCoord = ((worldPos / terrainScale - imagePositions[i]) / imageScales[i]) + vec2(0.5);
 		
 		if (!(sampleCoord.x > 1 || sampleCoord.x < 0 || sampleCoord.y > 1 || sampleCoord.y < 0)) {
 			vec4 terrainInfo = texture(images[i], sampleCoord);
+			if (smoothTerrain) {
+				terrainInfo.y = unpackFloats(terrainInfo.y).y;
+				terrainInfo.z = unpackFloats(terrainInfo.z).y;
+			}
+			else {
+				terrainInfo.y = unpackFloats(terrainInfo.y).x;
+				terrainInfo.z = unpackFloats(terrainInfo.z).x; // ?
+			}
 			terrainInfo.yz /= imageScales[i] * terrainScale;
 			return terrainInfo;
 		}
@@ -55,12 +75,12 @@ vec4 getTerrainInfo(vec2 worldPos) {
 void main() {
 	vec4 worldPos = vec4(vPos.x * planeWorldWidth + planePos.x, planePos.y, vPos.y * planeWorldWidth + planePos.z, 1);
 	vec2 flatWorldPos = worldPos.xz;
-	vec4 terrainInfo = getTerrainInfo(flatWorldPos);
+	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
 	worldPos.y += terrainInfo.x;
-	
+
 	groundWorldPos = worldPos.xyz;
-	shellIndex = gl_InstanceID - 1;
+	shellIndex = shellCount - 1 - instanceID; // -1 to shellCount - 1, in reverse order to minimize overdraw
 	if (shellIndex >= 0) {
 		float shellProgress = float(shellIndex + 1) / shellCount;
 		worldPos.xyz += normal * shellProgress * shellMaxHeight;

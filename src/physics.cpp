@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include "mathhelper.h"
+#include <iomanip>
 
 // https://www.peroxide.dk/papers/collision/collision.pdf
 Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition, const glm::vec3& displacement, const std::array<glm::vec3, 3>& trianglePoints) {
@@ -116,9 +117,6 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 }
  
 glm::vec3 Physics::move(const glm::vec3& capsulePos, const glm::vec3& capsuleScales, const glm::vec3& displacement, const PlanePhysics& physicsPlane, int maxRecursionDepth) {
-	if (glm::length(displacement) == 0)
-		return capsulePos;
-
 	const std::vector<float>& vertexData{ physicsPlane.getVertexData() };
 	const std::vector<unsigned int>& vertexIndices{ physicsPlane.getIndices() };
 
@@ -133,6 +131,8 @@ glm::vec3 Physics::move(const glm::vec3& capsulePos, const glm::vec3& capsuleSca
 	}
 
 	for (int recursionI{ 0 }; recursionI < maxRecursionDepth; ++recursionI) {
+		if (glm::length(eDisplacement) == 0)
+			return (ePosition + eDisplacement) * capsuleScales;
 		double smallestT{ 2 };
 		glm::vec3 closestCollisionPosition{ 0, 0, 0 }; // collision when colliding or collision position?
 
@@ -158,25 +158,20 @@ glm::vec3 Physics::move(const glm::vec3& capsulePos, const glm::vec3& capsuleSca
 			break;
 
 		glm::vec3 eDesiredDestination{ ePosition + eDisplacement };
+		ePosition += eDisplacement * (float)smallestT; // Move
 
 		// Collision response
-		ePosition += eDisplacement * (float)smallestT;
 
 		glm::vec3 eSlidingPlanePoint{ closestCollisionPosition };
 		glm::vec3 eSlidingPlaneNormal{ glm::normalize(ePosition - closestCollisionPosition) };
+		
+		glm::vec3 eRemainingDisplacement{ eDisplacement * (float)(1 - smallestT) };
+		glm::vec3 eFlattenedDisplacement{ eRemainingDisplacement - (glm::dot(eRemainingDisplacement, eSlidingPlaneNormal)) * eSlidingPlaneNormal};
+		eDisplacement = eFlattenedDisplacement;
 
-		double distCutOff = 1 - std::abs(MathHelper::signedDistFromPlane(eDesiredDestination, eSlidingPlaneNormal, eSlidingPlanePoint));
-
-		float offset = 0.00001f;
-
-		glm::vec3 eNewDesiredDestination{ eDesiredDestination + eSlidingPlaneNormal * (float)distCutOff + offset * eSlidingPlaneNormal };
+		// Offset
+		float offset = 0.00000f;
 		ePosition += offset * eSlidingPlaneNormal;
-		eDisplacement = eNewDesiredDestination - ePosition;
-
-		if (glm::length(eDisplacement) > 10) {
-			int x = 1;
-		}
 	}
-
 	return (ePosition + eDisplacement) * capsuleScales;
 }

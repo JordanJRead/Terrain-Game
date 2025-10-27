@@ -16,6 +16,13 @@ bool ParamsBufferTerrain::updateGPU(const UIManager& uiManager, bool force) {
 	}
 	offset += size;
 
+	size = sizeof(int);
+	if (uiManager.mTerrainSmoothOctaveCount.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mTerrainSmoothOctaveCount.data());
+		hasChanged = true;
+	}
+	offset += size;
+
 	size = sizeof(float);
 	if (uiManager.mTerrainAmplitude.hasChanged() || force) {
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mTerrainAmplitude.data());
@@ -59,15 +66,50 @@ bool ParamsBufferTerrain::updateGPU(const UIManager& uiManager, bool force) {
 	offset += size;
 
 	size = sizeof(float);
-	if (uiManager.mDipFrequency.hasChanged() || force) {
-		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mDipFrequency.data());
+	if (uiManager.mRiverFrequency.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mRiverFrequency.data());
 		hasChanged = true;
 	}
 	offset += size;
 
 	size = sizeof(float);
-	if (uiManager.mDipStrength.hasChanged() || force) {
-		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mDipStrength.data());
+	if (uiManager.mRiverStrength.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mRiverStrength.data());
+		hasChanged = true;
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mRiverExponent.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mRiverExponent.data());
+		hasChanged = true;
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mWaterEatingMountain.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mWaterEatingMountain.data());
+		hasChanged = true;
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mLakeFrequency.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mLakeFrequency.data());
+		hasChanged = true;
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mLakeStrength.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mLakeStrength.data());
+		hasChanged = true;
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mLakeExponent.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mLakeExponent.data());
 		hasChanged = true;
 	}
 	offset += size;

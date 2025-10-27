@@ -96,6 +96,9 @@
     <ClCompile Include="src\mathhelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\framebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="libraries\glfw3dll.lib" />
@@ -119,5 +122,27 @@
     <ClInclude Include="include\mathhelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\framebuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OpenGLObjects\RBO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\gamma.frag" />
+    <None Include="assets\shaders\gamma.vert" />
+    <None Include="assets\shaders\grid.frag" />
+    <None Include="assets\shaders\grid.vert" />
+    <None Include="assets\shaders\physics.frag" />
+    <None Include="assets\shaders\physics.vert" />
+    <None Include="assets\shaders\skybox.frag" />
+    <None Include="assets\shaders\skybox.vert" />
+    <None Include="assets\shaders\terrain.frag" />
+    <None Include="assets\shaders\terrain.vert" />
+    <None Include="assets\shaders\terrainimage.frag" />
+    <None Include="assets\shaders\terrainimage.vert" />
+    <None Include="assets\shaders\water.frag" />
+    <None Include="assets\shaders\water.vert" />
   </ItemGroup>
 </Project>
