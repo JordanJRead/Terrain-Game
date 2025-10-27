@@ -86,5 +86,33 @@ bool ParamsBufferTerrain::updateGPU(const UIManager& uiManager, bool force) {
 	}
 	offset += size;
 
+	size = sizeof(float);
+	if (uiManager.mWaterEatingMountain.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mWaterEatingMountain.data());
+		hasChanged = true;
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mLakeFrequency.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mLakeFrequency.data());
+		hasChanged = true;
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mLakeStrength.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mLakeStrength.data());
+		hasChanged = true;
+	}
+	offset += size;
+
+	size = sizeof(float);
+	if (uiManager.mLakeExponent.hasChanged() || force) {
+		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, &uiManager.mLakeExponent.data());
+		hasChanged = true;
+	}
+	offset += size;
+
 	return hasChanged;
 }

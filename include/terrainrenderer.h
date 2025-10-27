@@ -330,10 +330,6 @@ public:
 		return MathHelper::getClosestWorldStepPosition(pos, uiManager.mImageWorldSizes[imageIndex].data() / uiManager.mImagePixelDimensions[imageIndex].data() * uiManager.mTerrainScale.data());
 	}
 
-	static float quintic(float x) {
-		return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
-	}
-
 	float getHeightAtPoint(const glm::vec2& worldPos, const UIManager& uiManager) const {
 		glm::vec2 pos = worldPos / uiManager.mTerrainScale.data();
 		float mountain = MathHelper::perlin(pos * uiManager.mMountainFrequency.data(), 0);
@@ -355,6 +351,16 @@ public:
 		river *= uiManager.mRiverStrength.data();
 		river *= (mountain * 5 + 1);
 
+		// Lakes
+		float lake = MathHelper::perlin(pos * uiManager.mLakeFrequency.data(), 1);
+
+		lake = MathHelper::extreme(lake);
+
+		lake = pow(lake, uiManager.mLakeExponent.data());
+
+		lake *= uiManager.mLakeStrength.data();
+		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
+
 		float terrainHeight = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
@@ -374,6 +380,7 @@ public:
 		finalOutput = terrainHeight * mountain;
 
 		finalOutput -= river;
+		finalOutput -= lake;
 		return finalOutput;
 	}
 
@@ -414,6 +421,8 @@ private:
 		// Rivers
 		float river = 0;
 
+		float lake = 0;
+
 		float terrainHeight = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
@@ -432,6 +441,7 @@ private:
 		finalOutput = terrainHeight * mountain;
 
 		finalOutput -= river;
+		finalOutput -= lake;
 		return finalOutput;
 	}
 
@@ -446,6 +456,10 @@ private:
 		float river = 1;
 		river *= uiManager.mRiverStrength.data();
 		river *= (mountain * 5 + 1);
+
+		float lake = 1;
+		lake *= uiManager.mLakeStrength.data();
+		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
 		float terrainHeight = 0;
 
@@ -465,6 +479,7 @@ private:
 		finalOutput = terrainHeight * mountain;
 
 		finalOutput -= river;
+		finalOutput -= lake;
 		return finalOutput;
 	}
 

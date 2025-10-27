@@ -17,6 +17,10 @@ layout(std140, binding = 0) uniform terrainParams {
 	uniform float riverScale;
 	uniform float riverStrength;
 	uniform float riverExponent;
+	uniform float waterEatingMountain;
+	uniform float lakeScale;
+	uniform float lakeStrength;
+	uniform float lakeExponent;
 };
 
 uniform float scale;
@@ -125,11 +129,11 @@ vec3 perlin(vec2 pos, int reroll) {
 	return vec3(noise, tangents.x, tangents.y);
 }
 
-float quintic(float x) {
+float extreme(float x) {
 	return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
 }
 
-float dquintic(float x) { 
+float dextreme(float x) { 
 	return x < 0.5 ? 80 * x * x * x * x : 80 * (1 - x) * (1 - x) * (1 - x) * (1 - x);
 }
 
@@ -169,7 +173,22 @@ vec4 getTerrainInfo(vec2 pos) {
 	river.yz *= riverScale;
 	river *= riverStrength;
 	river.yz = river.yz * (mountain.x * 5 + 1) + 5 * mountain.yz * river.x;
-	river.x *= (mountain.x * 5 + 1);
+	river.x *= (mountain.x * waterEatingMountain + 1);
+
+	// Lakes
+	vec3 lake = perlin(pos * lakeScale, 1);
+
+	lake.yz *= dextreme(lake.x);
+	lake.x = extreme(lake.x);
+	
+	lake.yz = lakeExponent * pow(lake.x, lakeExponent - 1) * lake.yz;
+	lake.x = pow(lake.x, lakeExponent);
+
+	lake.yz *= scale;
+	lake.yz *= lakeScale;
+	lake *= lakeStrength;
+	lake.yz = lake.yz * (mountain.x * 5 + 1) + 5 * mountain.yz * lake.x;
+	lake.x *= (mountain.x * waterEatingMountain + 1);
 
 	vec3 terrainInfo = vec3(0, 0, 0);
 	vec3 smoothTerrainInfo = vec3(0, 0, 0);
@@ -204,6 +223,11 @@ vec4 getTerrainInfo(vec2 pos) {
 	terrainInfo.yz -= river.yz;
 	smoothTerrainInfo.x -= river.x;
 	smoothTerrainInfo.yz -= river.yz;
+	
+	terrainInfo.x -= lake.x;
+	terrainInfo.yz -= lake.yz;
+	smoothTerrainInfo.x -= lake.x;
+	smoothTerrainInfo.yz -= lake.yz;
 
 	vec4 combinedTerrainInfo = vec4(terrainInfo.x, 0, 0, mountain);
 	combinedTerrainInfo.y = packFloats(vec2(terrainInfo.y, smoothTerrainInfo.y));

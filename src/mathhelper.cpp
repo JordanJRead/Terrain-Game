@@ -115,6 +115,10 @@ glm::vec2 MathHelper::quinticDerivative(glm::vec2 t) {
 	return glm::vec2(30) * t * t * (t * (t - glm::vec2(2)) + glm::vec2(1));
 }
 
+float MathHelper::extreme(float x) {
+	return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
+}
+
 float MathHelper::perlin(const glm::vec2& pos, int reroll) {
 	int x0 = getClosestInt(floor(pos.x));
 	int x1 = getClosestInt(ceil(pos.x));

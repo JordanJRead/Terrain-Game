@@ -49,6 +49,8 @@ namespace MathHelper {
 
 	glm::vec2 quinticDerivative(glm::vec2 t);
 
+	float extreme(float x);
+
 	float perlin(const glm::vec2& pos, int reroll);
 }
 

@@ -60,7 +60,7 @@ public:
 			ImGui::DragFloat("Terrain scale", mTerrainScale.getDataPtr());
 			mTerrainScale.update();
 
-			ImGui::DragFloat("View distance", mViewDistance.getDataPtr(), 1, 0, 1000);
+			ImGui::DragFloat("View distance", mViewDistance.getDataPtr(), 1, 0, 10000);
 			mViewDistance.update();
 
 			ImGui::DragFloat("Fog encroachment", mFogEncroachment.getDataPtr(), 1, 0, int(mViewDistance.data()));
@@ -149,6 +149,18 @@ public:
 			ImGui::DragFloat("River exponent", mRiverExponent.getDataPtr(), 1, 0, 1000);
 			mRiverExponent.update();
 
+			ImGui::DragFloat("Water eating mountains", mWaterEatingMountain.getDataPtr(), 0.1, 0, 5);
+			mWaterEatingMountain.update();
+
+			ImGui::DragFloat("Lake frequency", mLakeFrequency.getDataPtr(), 0.001, 0, 2);
+			mLakeFrequency.update();
+
+			ImGui::DragFloat("Lake strength", mLakeStrength.getDataPtr(), 0.5, 0, 1000);
+			mLakeStrength.update();
+
+			ImGui::DragFloat("Lake exponent", mLakeExponent.getDataPtr(), 0.01, 0, 1000);
+			mLakeExponent.update();
+
 			ImGui::End();
 
 			// Water Parameters
@@ -212,7 +224,7 @@ public:
 			ImGui::DragFloat("Width", mChunkWidth.getDataPtr(), 1, 1, 100);
 			mChunkWidth.update();
 
-			ImGui::DragInt("Count", mChunkCount.getDataPtr(), 1, 1, 100);
+			ImGui::DragInt("Count", mChunkCount.getDataPtr(), 1, 1, 1000);
 			mChunkCount.update();
 
 			ImGui::DragInt("Low quality plane vertices", mLowQualityPlaneVertices.getDataPtr(), 1, 2, 1000);
@@ -309,6 +321,10 @@ public:
 	UIElement<float> mRiverFrequency              { 0.05 };
 	UIElement<float> mRiverStrength               { 20 };
 	UIElement<float> mRiverExponent{ 32 };
+	UIElement<float> mWaterEatingMountain{ 5 };
+	UIElement<float> mLakeFrequency{ 0.04 };
+	UIElement<float> mLakeStrength{ 40 };
+	UIElement<float> mLakeExponent{ 100 }; // 100 for quintic, 5 not
 
 	// Plane Chunking
 	UIElement<float> mChunkWidth{ 16 };
