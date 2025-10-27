@@ -455,7 +455,7 @@ private:
 		// Rivers
 		float river = 1;
 		river *= uiManager.mRiverStrength.data();
-		river *= (mountain * 5 + 1);
+		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
 		float lake = 1;
 		lake *= uiManager.mLakeStrength.data();
