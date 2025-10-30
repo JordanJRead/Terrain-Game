@@ -9,9 +9,6 @@
 #include <array>
 #include <string>
 #include <string_view>
-#include "paramsbufferartistic.h"
-#include "paramsbufferterrain.h"
-#include "paramsbufferwater.h"
 #include "paramsbuffercolour.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
@@ -23,6 +20,7 @@
 #include "uimanager.h"
 #include "mathhelper.h"
 #include "framebuffer.h"
+#include "uniformbuffer.h"
 
 constexpr int ImageCount{ 4 };
 //template <int ImageCount>
@@ -30,14 +28,7 @@ constexpr int ImageCount{ 4 };
 class TerrainRenderer {
 public:
 	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos, std::array<glm::vec2, ImageCount> imageWorldPositions, const UIManager& uiManager)
-		
-		: mArtisticParams{ uiManager }
-		, mTerrainParams{ uiManager }
-		, mWaterParams{ uiManager }
-		, mColours{ uiManager }
-
-
-		, mLowQualityPlane{ uiManager.mLowQualityPlaneVertices.data() }
+		: mLowQualityPlane{ uiManager.mLowQualityPlaneVertices.data() }
 		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() } // ?
 		, mReallyLowQualityPlane{ 2 }
 
@@ -56,18 +47,18 @@ public:
 		} }
 
 		, mDaySkybox{ {
-				"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_2_Left+X.png",
-				"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_3_Right-X.png",
-				"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_4_Up+Y.png",
-				"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_5_Down-Y.png",
-				"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_0_Front+Z.png",
-				"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_1_Back-Z.png"
-				//"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_2_Left+X.png",
-				//"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_3_Right-X.png",
-				//"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_4_Up+Y.png",
-				//"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_5_Down-Y.png",
-				//"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_0_Front+Z.png",
-				//"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_1_Back-Z.png"
+				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_2_Left+X.png",
+				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_3_Right-X.png",
+				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_4_Up+Y.png",
+				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_5_Down-Y.png",
+				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_0_Front+Z.png",
+				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_1_Back-Z.png"
+				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_2_Left+X.png",
+				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_3_Right-X.png",
+				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_4_Up+Y.png",
+				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_5_Down-Y.png",
+				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_0_Front+Z.png",
+				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_1_Back-Z.png"
 			} }
 		, mNightSkybox{ {
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_2_Left+X.png",
@@ -129,14 +120,14 @@ public:
 	}
 
 	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer& framebuffer) {
-		bool hasTerrainChanged{ mTerrainParams.updateGPU(uiManager, false) };
+		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
 			mMinTerrainHeight = getMinHeight(uiManager);
 			mMaxTerrainHeight = getMaxHeight(uiManager);
 		}
-		mArtisticParams.updateGPU(uiManager, false);
-		mWaterParams.updateGPU(uiManager, false);
-		mColours.updateGPU(uiManager, false);
+		mArtisticParams.updateGPU(uiManager);
+		mWaterParams.updateGPU(uiManager);
+		mColourParams.updateGPU(uiManager);
 		mTerrainShader.use();
 
 		// Update plane types
@@ -293,15 +284,15 @@ public:
 					float shellLODDistance{ uiManager.mShellLODDistance.data() };
 					if (chunkDist > shellLODDistance * 4) {
 						newShellCount = oldShellCount > 3 ? 3 : oldShellCount;
-						mArtisticParams.forceShaderShellCount(newShellCount);
+						mArtisticParams.updateGPU({ uiManager, newShellCount });
 					}
 					if (chunkDist > shellLODDistance * 2) {
 						newShellCount = oldShellCount > 7 ? 7 : oldShellCount;
-						mArtisticParams.forceShaderShellCount(newShellCount);
+						mArtisticParams.updateGPU({ uiManager, newShellCount });
 					}
 					else if (chunkDist > shellLODDistance) {
 						newShellCount = oldShellCount > 10 ? 10 : oldShellCount;
-						mArtisticParams.forceShaderShellCount(newShellCount);
+						mArtisticParams.updateGPU({ uiManager, newShellCount });
 					}
 
 					// Draw terrain
@@ -319,7 +310,7 @@ public:
 					mWaterShader.setFloat("planeWorldWidth", chunkWidth);
 					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
 
-					mArtisticParams.fixShellCount(uiManager);
+					mArtisticParams.updateGPU({ uiManager });
 				}
 			}
 		}
@@ -387,10 +378,10 @@ public:
 private:
 	// The chunk collection consists of a square of chunkCount * chunkCount chunks, each having a width of chunkWidth
 
-	ParamsBufferArtistic mArtisticParams;
-	ParamsBufferTerrain mTerrainParams;
-	ParamsBufferWater mWaterParams;
-	ParamsBufferColour mColours;
+	UniformBuffer<BufferTypes::TerrainParams> mTerrainParams{ 0 };
+	UniformBuffer<BufferTypes::ArtisticParams> mArtisticParams{ 1 };
+	UniformBuffer<BufferTypes::WaterParams> mWaterParams{ 2 };
+	UniformBuffer<BufferTypes::ColourParams> mColourParams{ 3 };
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;
