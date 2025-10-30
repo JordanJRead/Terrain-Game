@@ -9,7 +9,6 @@
 #include <array>
 #include <string>
 #include <string_view>
-#include "paramsbuffercolour.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
