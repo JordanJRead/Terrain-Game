@@ -3,11 +3,23 @@
 
 #define PI 3.141592653589793238462
 
+float pullup(float x) {
+	return x == 1 ? 1 : 1 - pow(2.0, -10.0 * x);
+}
+
 uint rand(uint n) {
 	uint state = n * 747796405u + 2891336453u;
 	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
 	word = (word >> 22u) ^ word;
 	return word;
+}
+
+float packFloats(vec2 v) {
+	return uintBitsToFloat(packHalf2x16(v));
+}
+
+vec2 unpackFloats(float v) {
+	return unpackHalf2x16(floatBitsToUint(v));
 }
 
 float randToFloat(uint n) {
@@ -118,6 +130,5 @@ float extreme(float x) {
 float dextreme(float x) {
 	return x < 0.5 ? 80 * x * x * x * x : 80 * (1 - x) * (1 - x) * (1 - x) * (1 - x);
 }
-
 
 #endif

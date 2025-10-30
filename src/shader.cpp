@@ -1,36 +1,28 @@
-#include <string_view>
+#include <string>
 #include <glad/glad.h>
 #include "shader.h"
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#define STB_INCLUDE_IMPLEMENTATION
+#define STB_INCLUDE_LINE_GLSL
+#include "stb_include.h"
 
-Shader::Shader(std::string_view vertPath, std::string_view fragPath) {
-    std::ifstream fs{ vertPath.data() };
-    fs.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-    std::string vertTemp{};
-    std::string fragTemp{};
-    const char* vertSource;
-    const char* fragSource;
-
-    try {
-        // Read vertex shader
-        std::stringstream ss{};
-        ss << fs.rdbuf();
-        vertTemp = ss.str();
-        vertSource = vertTemp.c_str();
-
-        // Read fragment shader
-        fs.close();
-        fs.open(fragPath.data());
-        ss.str("");
-        ss << fs.rdbuf();
-        fragTemp = ss.str();
-        fragSource = fragTemp.c_str();
+Shader::Shader(const std::string& vertPath, const std::string& fragPath) {
+    
+    // Read soruce code in
+    char vertError[256];
+    char* vertSource{ stb_include_file((char*)vertPath.data(), nullptr, std::string("assets/shaders").data(), vertError)};
+    
+    if (!vertSource) {
+        std::cerr << "ERROR::SHADER::VERTEX::STB_INCLUDE_READ_FAILED\n" << vertPath << "\n" << vertError << "\n";
     }
-    catch (std::ifstream::failure e) {
-        std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ " << vertPath << " : " << fragPath << "\n";
+
+    char fragError[256];
+    char* fragSource{ stb_include_file((char*)fragPath.data(), nullptr, std::string("assets/shaders").data(), fragError)};
+
+    if (!fragSource) {
+        std::cerr << "ERROR::SHADER::VERTEX::STB_INCLUDE_READ_FAILED\n" << fragPath << "\n" << fragError << "\n";
     }
 
     // Compile vertex
@@ -43,7 +35,7 @@ Shader::Shader(std::string_view vertPath, std::string_view fragPath) {
     if (!success) {
         char infoLog[512];
         glGetShaderInfoLog(vertShader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << vertPath << infoLog << "\n";
+        std::cerr << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << vertPath << "\n" << infoLog << "\n";
     }
 
     // Compile fragment
@@ -75,4 +67,6 @@ Shader::Shader(std::string_view vertPath, std::string_view fragPath) {
 
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
+    free(vertSource);
+    free(fragSource);
 }

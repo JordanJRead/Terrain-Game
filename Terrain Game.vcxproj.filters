@@ -128,6 +128,12 @@
     <ClInclude Include="include\OpenGLObjects\RBO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\shaderheader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\uniformbuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\gamma.frag" />

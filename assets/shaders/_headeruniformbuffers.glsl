@@ -1,7 +1,7 @@
 #ifndef UNIFORM_BUFFER_H
 #define UNIFORM_BUFFER_H
 
-layout(std140, binding = 0) uniform terrainParams {
+layout(std140, binding = 0) uniform TerrainParams {
 	uniform int   octaveCount;
 	uniform int   smoothOctaveCount;
 	uniform float initialAmplitude;
@@ -18,7 +18,7 @@ layout(std140, binding = 0) uniform terrainParams {
 	uniform float lakeScale;
 	uniform float lakeStrength;
 	uniform float lakeExponent;
-};
+} terrainParams;
 
 layout(std140, binding = 1) uniform ArtisticParams {
 	uniform float terrainScale;

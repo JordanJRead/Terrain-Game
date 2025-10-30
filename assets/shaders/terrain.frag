@@ -1,4 +1,5 @@
 #version 430 core
+#extension GL_ARB_shading_language_include : require
 #define PI 3.141592653589793238462
 #define IMAGECOUNT 4
 
@@ -16,203 +17,14 @@ uniform vec3 dirToLight;
 // Per whenever they get changed
 uniform float imageScales[IMAGECOUNT];
 uniform vec2 imagePositions[IMAGECOUNT];
-
-layout(std140, binding = 1) uniform ArtisticParams {
-	uniform float terrainScale;
-	uniform float maxViewDistance;
-	uniform float fogEncroach;
-	uniform float grassDotCutoff;
-	uniform float snowDotCutoff;
-	uniform int   shellCount;
-	uniform float shellMaxHeight;
-	uniform float grassNoiseScale;
-	uniform float snowNoiseScale;
-	uniform float shellMaxCutoff;
-	uniform float shellBaseCutoff;
-	uniform float snowHeight;
-	uniform float seafoamStrength;
-	uniform float snowLineNoiseScale;
-	uniform float snowLineNoiseAmplitude;
-	uniform float mountainSnowCutoff;
-	uniform float snowLineEase;
-	uniform float shellAmbientOcclusion;
-};
-
-layout(std140, binding = 3) uniform Colours {
-	uniform vec3 dirtColour;
-	uniform vec3 mountainColour;
-	uniform vec3 grassColour1;
-	uniform vec3 grassColour2;
-	uniform vec3 snowColour;
-	uniform vec3 waterColour;
-	uniform vec3 sunColour;
-};
-
-layout(std140, binding = 2) uniform WaterParams {
-	uniform int waveCount;
-	uniform float initialAmplitude;
-	uniform float amplitudeMult;
-	uniform float initialFreq;
-	uniform float freqMult;
-	uniform float initialSpeed;
-	uniform float speedMult;
-	uniform float specExp;
-};
-
-uniform float waterHeight;
+#include "_headermath.glsl" //    '/' is required but can't be used for intellisense?
+#include "_headeruniformbuffers.glsl"
+#include "_headerterraininfo.glsl"
 
 // Per plane
 in flat int shellIndex;
 
-vec2 unpackFloats(float v) {
-	return unpackHalf2x16(floatBitsToUint(v));
-}
-
-vec4 getTerrainInfo(vec2 worldPos, bool smoothTerrain) {
-	for (int i = 0; i < IMAGECOUNT; ++i) {
-		vec2 sampleCoord = ((worldPos / terrainScale - imagePositions[i]) / imageScales[i]) + vec2(0.5);
-		
-		if (!(sampleCoord.x > 1 || sampleCoord.x < 0 || sampleCoord.y > 1 || sampleCoord.y < 0)) {
-			vec4 terrainInfo = texture(images[i], sampleCoord);
-			if (!smoothTerrain) {
-				terrainInfo.y = unpackFloats(terrainInfo.y).x;
-				terrainInfo.z = unpackFloats(terrainInfo.z).x; // ?
-			}
-			else {
-				terrainInfo.y = unpackFloats(terrainInfo.y).y;
-				terrainInfo.z = unpackFloats(terrainInfo.z).y;
-			}
-			terrainInfo.yz /= imageScales[i] * terrainScale;
-			return terrainInfo;
-		}
-	}
-	return vec4(0, 0, 0, 0);
-}
-
-
-float easeInExpo(float x) {
-	return x == 0 ? 0 : pow(2.0, 10 * x - 10);
-}
-
-float easeInOutQuint(float x) {
-	return x < 0.5 ? 16 * x * x * x * x * x : 1 - pow(-2.0 * x + 2, 5.0) / 2;
-}
-
-uint rand(uint n) {
-	uint state = n * 747796405u + 2891336453u;
-	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-	word = (word >> 22u) ^ word;
-	return word;
-}
-
-float randToFloat(uint n) {
-	return float(n) / 4294967296.0;
-}
-
-uint labelPoint(int x, int y) {
-	if (x == 0 && y == 0)
-		return 0;
-
-	int n = max(abs(x), abs(y));
-	int width = 2 * n + 1;
-	int startingIndex = (width - 2) * (width - 2);
-
-	if (n == y) { // top row
-		return startingIndex + x + n;
-	}
-	if (n == -y) { // bottom row
-		return startingIndex + width + x + n;
-	}
-	if (n == x) { // right col
-		return startingIndex + width * 2 + y - 1 + n;
-	}
-	if (n == -x) { // right col
-		return startingIndex + width * 2  + width - 2 + y - 1 + n;
-	}
-	return 0;
-}
-
-vec2 randUnitVector(float randNum) {
-	float theta = 2 * PI * randNum;
-	return normalize(vec2(cos(theta), sin(theta)));
-}
-
-int getClosestInt(float x) {
-	return int(round(x) + 0.1 * (x < 0 ? -1 : 1));
-}
-
-vec2 quinticInterpolation(vec2 t) {
-	return t * t * t * (t * (t * vec2(6) - vec2(15)) + vec2(10));
-}
-
-vec2 quinticDerivative(vec2 t) {
-	return vec2(30) * t * t * (t * (t - vec2(2)) + vec2(1));
-}
-
-vec3 perlin(vec2 pos, int reroll) {
-	int x0 = getClosestInt(floor(pos.x));
-	int x1 = getClosestInt(ceil(pos.x));
-	int y0 = getClosestInt(floor(pos.y));
-	int y1 = getClosestInt(ceil(pos.y));
-
-	vec2 p00 = vec2(x0, y0);
-	
-	vec2 relPoint =  pos - p00;
-
-	uint rui00 = rand(labelPoint(x0, y0));
-	uint rui10 = rand(labelPoint(x1, y0));
-	uint rui01 = rand(labelPoint(x0, y1));
-	uint rui11 = rand(labelPoint(x1, y1));
-
-	for (int i = 0; i < reroll; ++i) {
-		rui00 = rand(rui00);
-		rui10 = rand(rui10);
-		rui01 = rand(rui01);
-		rui11 = rand(rui11);
-	}
-
-	float r00 = randToFloat(rui00);
-	float r10 = randToFloat(rui10);
-	float r01 = randToFloat(rui01);
-	float r11 = randToFloat(rui11);
-
-	vec2 g00 = randUnitVector(r00);
-	vec2 g10 = randUnitVector(r10);
-	vec2 g01 = randUnitVector(r01);
-	vec2 g11 = randUnitVector(r11);
-
-	vec2 v00 = relPoint;
-	vec2 v11 = relPoint - vec2(1, 1);
-	vec2 v10 = relPoint - vec2(1, 0);
-	vec2 v01 = relPoint - vec2(0, 1);
-	
-	float d00 = dot(v00, g00);
-	float d10 = dot(v10, g10);
-	float d01 = dot(v01, g01);
-	float d11 = dot(v11, g11);
-
-	// From https://iquilezles.org/articles/gradientnoise/ and Acerola's github
-	vec2 u = quinticInterpolation(relPoint);
-	vec2 du = quinticDerivative(relPoint);
-	float noise = d00 + u.x * (d10 - d00) + u.y * (d01 - d00) + u.x * u.y * (d00 - d10 - d01 + d11);
-	noise = noise / 1.414 + 0.5;
-	vec2 tangents = g00 + u.x * (g10 - g00) + u.y * (g01 - g00) + u.x * u.y * (g00 - g10 - g01 + g11) + du * (u.yx * (d00 - d10 - d01 + d11) + vec2(d10, d01) - d00);
-	tangents /= 1.414;
-
-	return vec3(noise, tangents.x, tangents.y);
-}
-
-float normToNegPos(float x) {
-	return x * 2 - 1;
-}
-
-float extreme(float x) {
-	return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
-}
-
-float pullup(float x) {
-	return x == 1 ? 1 : 1 - pow(2.0, -10.0 * x);
-}
+uniform float waterHeight;
 
 void main() {
 	vec2 flatWorldPos = groundWorldPos.xz;
@@ -237,19 +49,19 @@ void main() {
 	mountain = pullup(mountain);
 	mountain = extreme(mountain);
 	
-	vec3 groundAlbedo = dirtColour * (1 - mountain) + mountain * mountainColour;
+	vec3 groundAlbedo = colours.dirtColour * (1 - mountain) + mountain * colours.mountainColour;
 
 	// Which shell type are we?
-	float actualSnowHeight = snowHeight + normToNegPos(perlin(flatWorldPos * snowLineNoiseScale, 0).x) * snowLineNoiseAmplitude;
-	bool isSnow = actualSnowHeight < groundHeight && mountain > mountainSnowCutoff;
+	float actualSnowHeight = artisticParams.snowHeight + normToNegPos(perlin(flatWorldPos * artisticParams.snowLineNoiseScale, 0).x) * artisticParams.snowLineNoiseAmplitude;
+	bool isSnow = actualSnowHeight < groundHeight && mountain > artisticParams.mountainSnowCutoff;
 	bool isGrass = !isSnow;
 	float grassperlin = perlin(flatWorldPos * 0.1, 0).x;
-	vec3 shellAlbedo = isSnow ? snowColour : (grassColour1 * grassperlin + grassColour2 * (1 - grassperlin));
-	float shellProgress = float(shellIndex + 1) / shellCount;
-	shellAlbedo = shellAlbedo - shellAlbedo * (1 - shellProgress) * shellAmbientOcclusion;
+	vec3 shellAlbedo = isSnow ? colours.snowColour : (colours.grassColour1 * grassperlin + colours.grassColour2 * (1 - grassperlin));
+	float shellProgress = float(shellIndex + 1) / artisticParams.shellCount;
+	shellAlbedo = shellAlbedo - shellAlbedo * (1 - shellProgress) * artisticParams.shellAmbientOcclusion;
 
 	// Shell blade height
-	float shellScale = isGrass ? grassNoiseScale : snowNoiseScale;
+	float shellScale = isGrass ? artisticParams.grassNoiseScale : artisticParams.snowNoiseScale;
 	vec2 shellCoord = flatWorldPos * shellScale;
 	int shellGridX = getClosestInt(floor(shellCoord.x));
 	int shellGridZ = getClosestInt(floor(shellCoord.y));
@@ -277,9 +89,9 @@ void main() {
 	wet = clamp(wet, 0.0, 1.0);
 
 	// Dot cutoff
-	float currDotCutoff = isGrass ? grassDotCutoff : snowDotCutoff;
+	float currDotCutoff = isGrass ? artisticParams.grassDotCutoff : artisticParams.snowDotCutoff;
 	if (isSnow) {
-		float snowHeightNorm = (groundHeight - actualSnowHeight) / snowLineEase;
+		float snowHeightNorm = (groundHeight - actualSnowHeight) / artisticParams.snowLineEase;
 		snowHeightNorm = clamp(snowHeightNorm, 0, 1);
 
 		currDotCutoff += (1 - currDotCutoff) * (1 - snowHeightNorm);
@@ -291,7 +103,7 @@ void main() {
 	// Get smaller at harder dots
 	randomTexelHeight *= ((currDot - currDotCutoff) / (1 - currDotCutoff));
 
-	float shellCutoff = shellBaseCutoff * int(isGrass) + shellProgress * (shellMaxCutoff - shellBaseCutoff);
+	float shellCutoff = artisticParams.shellBaseCutoff * int(isGrass) + shellProgress * (artisticParams.shellMaxCutoff - artisticParams.shellBaseCutoff);
 	if (isGrass)
 		shellCutoff += extreme(mountain); // Grass can't grow on mountains
 
@@ -318,15 +130,15 @@ void main() {
 
 	// Fog
 	float distFromCamera = length(viewPos);
-	float fogStart = maxViewDistance - fogEncroach;
+	float fogStart = artisticParams.maxViewDistance - artisticParams.fogEncroach;
 	float fogStrength;
 
 	if (distFromCamera < fogStart)
 		fogStrength = 0;
-	else if (distFromCamera > maxViewDistance)
+	else if (distFromCamera > artisticParams.maxViewDistance)
 		fogStrength = 1;
 	else
-		fogStrength = (distFromCamera - fogStart) / fogEncroach;
+		fogStrength = (distFromCamera - fogStart) / artisticParams.fogEncroach;
 
 	// Lighting
 	vec3 currNormal = isGrass && isShell ? shellNormal : normal;
@@ -336,10 +148,10 @@ void main() {
 	float ambient = 0.03;
 	vec3 viewDir = normalize(cameraPos - groundWorldPos);
 	vec3 halfWay = normalize(viewDir + dirToLight);
-	float spec = isShell ? 0 : pow(max(dot(normal, halfWay), 0), specExp);
+	float spec = isShell ? 0 : pow(max(dot(normal, halfWay), 0), waterParams.specExp);
 	spec *= wet * wet;
 
-	vec3 litAlbedo = (diffuse + ambient) * albedo + spec * sunColour;
+	vec3 litAlbedo = (diffuse + ambient) * albedo + spec * colours.sunColour;
 	vec3 skyboxSample = shellWorldPos - cameraPos;
 	vec3 finalColor = (1 - fogStrength) * litAlbedo + fogStrength * texture(skybox, skyboxSample).xyz;
 	FragColor = vec4(finalColor, 1);

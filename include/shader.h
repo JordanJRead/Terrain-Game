@@ -2,14 +2,14 @@
 #define SHADER_H
 
 #include <string>
-#include <string_view>
 #include <glad/glad.h>
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include <vector>
 
 class Shader {
 public:
-	Shader(std::string_view vertPath, std::string_view fragPath);
+	Shader(const std::string& vertPath, const std::string& fragPath);
 	~Shader() { glDeleteProgram(mID); }
 	void use() const { glUseProgram(mID); }
 

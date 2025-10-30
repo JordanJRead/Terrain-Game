@@ -1,4 +1,5 @@
 #version 430 core
+#extension GL_ARB_shading_language_include : require
 #define PI 3.141592653589793238462
 #define IMAGECOUNT 4
 
@@ -16,26 +17,8 @@ uniform sampler2D images[IMAGECOUNT];
 uniform float imageScales[IMAGECOUNT];
 uniform vec2 imagePositions[IMAGECOUNT];
 
-layout(std140, binding = 1) uniform ArtisticParams {
-	uniform float terrainScale;
-	uniform float maxViewDistance;
-	uniform float fogEncroach;
-	uniform float grassDotCutoff;
-	uniform float snowDotCutoff;
-	uniform int   shellCount;
-	uniform float shellMaxHeight;
-	uniform float grassNoiseScale;
-	uniform float snowNoiseScale;
-	uniform float shellMaxCutoff;
-	uniform float shellBaseCutoff;
-	uniform float snowHeight;
-	uniform float seafoamStrength;
-	uniform float snowLineNoiseScale;
-	uniform float snowLineNoiseAmplitude;
-	uniform float mountainSnowCutoff;
-	uniform float snowLineEase;
-	uniform float shellAmbientOcclusion;
-};
+#include "_headeruniformbuffers.glsl"
+#include "_headerterraininfo.glsl"
 
 // Per frame
 uniform mat4 view;
@@ -47,31 +30,6 @@ uniform vec3 planePos;
 uniform int instanceID;
 out flat int shellIndex;
 
-vec2 unpackFloats(float v) {
-	return unpackHalf2x16(floatBitsToUint(v));
-}
-
-vec4 getTerrainInfo(vec2 worldPos, bool smoothTerrain) {
-	for (int i = 0; i < IMAGECOUNT; ++i) {
-		vec2 sampleCoord = ((worldPos / terrainScale - imagePositions[i]) / imageScales[i]) + vec2(0.5);
-		
-		if (!(sampleCoord.x > 1 || sampleCoord.x < 0 || sampleCoord.y > 1 || sampleCoord.y < 0)) {
-			vec4 terrainInfo = texture(images[i], sampleCoord);
-			if (smoothTerrain) {
-				terrainInfo.y = unpackFloats(terrainInfo.y).y;
-				terrainInfo.z = unpackFloats(terrainInfo.z).y;
-			}
-			else {
-				terrainInfo.y = unpackFloats(terrainInfo.y).x;
-				terrainInfo.z = unpackFloats(terrainInfo.z).x; // ?
-			}
-			terrainInfo.yz /= imageScales[i] * terrainScale;
-			return terrainInfo;
-		}
-	}
-	return vec4(0, 0, 0, 0);
-}
-
 void main() {
 	vec4 worldPos = vec4(vPos.x * planeWorldWidth + planePos.x, planePos.y, vPos.y * planeWorldWidth + planePos.z, 1);
 	vec2 flatWorldPos = worldPos.xz;
@@ -80,10 +38,10 @@ void main() {
 	worldPos.y += terrainInfo.x;
 
 	groundWorldPos = worldPos.xyz;
-	shellIndex = shellCount - 1 - instanceID; // -1 to shellCount - 1, in reverse order to minimize overdraw
+	shellIndex = artisticParams.shellCount - 1 - instanceID; // -1 to shellCount - 1, in reverse order to minimize overdraw
 	if (shellIndex >= 0) {
-		float shellProgress = float(shellIndex + 1) / shellCount;
-		worldPos.xyz += normal * shellProgress * shellMaxHeight;
+		float shellProgress = float(shellIndex + 1) / artisticParams.shellCount;
+		worldPos.xyz += normal * shellProgress * artisticParams.shellMaxHeight;
 	}
 	shellWorldPos = worldPos.xyz;
 	
