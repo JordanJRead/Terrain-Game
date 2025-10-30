@@ -6,11 +6,6 @@ layout(location = 0) in vec2 vPos;
 out vec3 worldPos3;
 out vec3 viewPos;
 
-// Per frame
-uniform mat4 view;
-uniform mat4 proj;
-uniform float time;
-
 // Per plane
 uniform float planeWorldWidth;
 uniform vec3 planePos;
@@ -31,9 +26,9 @@ vec3 getWaterHeight(vec2 pos) {
 		amplitudeSum += amplitude;
 		float randNum = randToFloat(rand(i));
 		vec2 waterDir = randUnitVector(randNum);
-		//waterInfo.x += amplitude * sin(dot(waterDir, pos) * freq + time * speed);
-		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + time * speed)) - 1.4);
-		waterInfo.yz += amplitude * exp(sin(dot(waterDir, pos) * freq + time * speed)) * cos(dot(waterDir, pos) * freq + time * speed) * freq * waterDir;
+		//waterInfo.x += amplitude * sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed);
+		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) - 1.4);
+		waterInfo.yz += amplitude * exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) * cos(dot(waterDir, pos) * freq + perFrameInfo.time * speed) * freq * waterDir;
 
 		amplitude *= waterParams.amplitudeMult;
 		freq *= waterParams.freqMult;
@@ -49,7 +44,6 @@ void main() {
 	worldPos.y += waterInfo.x;
 
 	worldPos3 = worldPos.xyz;
-	viewPos = (view * worldPos).xyz;
-	//worldPos.y = planePos.y;
-	gl_Position = proj * vec4((view * worldPos).xyz, 1);
+	viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
+	gl_Position = perFrameInfo.projectionMatrix * perFrameInfo.viewMatrix * worldPos;
 }

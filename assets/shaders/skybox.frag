@@ -5,32 +5,12 @@ in vec3 outVPos;
 out vec4 FragColor;
 
 uniform samplerCube skybox;
-uniform vec3 dirToLight;
 
-layout(std140, binding = 2) uniform WaterParams {
-	uniform int waveCount;
-	uniform float initialAmplitude;
-	uniform float amplitudeMult;
-	uniform float initialFreq;
-	uniform float freqMult;
-	uniform float initialSpeed;
-	uniform float speedMult;
-	uniform float specExp;
-};
-
-layout(std140, binding = 3) uniform Colours {
-	uniform vec3 dirtColour;
-	uniform vec3 mountainColour;
-	uniform vec3 grassColour1;
-	uniform vec3 grassColour2;
-	uniform vec3 snowColour;
-	uniform vec3 waterColour;
-	uniform vec3 sunColour;
-};
+#include "_headeruniformbuffers.glsl";
 
 void main() {
-	float d = dot(normalize(outVPos), dirToLight);
+	float d = dot(normalize(outVPos), perFrameInfo.dirToSun);
 	d = clamp(d, 0.0, 1.0);
-	vec3 sunAdd = pow(d, 200.0) * sunColour;
+	vec3 sunAdd = pow(d, 200.0) * colours.sunColour;
 	FragColor = texture(skybox, outVPos) + vec4(sunAdd, 1);
 }

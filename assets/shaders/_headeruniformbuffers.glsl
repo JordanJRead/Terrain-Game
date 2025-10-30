@@ -66,8 +66,8 @@ layout(std140, binding = 3) uniform Colours {
 layout(std140, binding = 4) uniform PerFrameInfo {
 	mat4 viewMatrix;
 	mat4 projectionMatrix;
-	vec4 cameraPos;
-	vec4 dirToSun;
+	vec3 cameraPos; float g;
+	vec3 dirToSun; float gg;
 	float time;
 } perFrameInfo;
 

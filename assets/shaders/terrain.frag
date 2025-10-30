@@ -11,8 +11,6 @@ out vec4 FragColor;
 // Per app probably
 uniform sampler2D images[IMAGECOUNT];
 uniform samplerCube skybox;
-uniform vec3 cameraPos;
-uniform vec3 dirToLight;
 
 // Per whenever they get changed
 uniform float imageScales[IMAGECOUNT];
@@ -144,15 +142,15 @@ void main() {
 	vec3 currNormal = isGrass && isShell ? shellNormal : normal;
 	if (isSnow)
 		currNormal = smoothNormal;
-	float diffuse = max(0, dot(dirToLight, currNormal));
+	float diffuse = max(0, dot(perFrameInfo.dirToSun, currNormal));
 	float ambient = 0.03;
-	vec3 viewDir = normalize(cameraPos - groundWorldPos);
-	vec3 halfWay = normalize(viewDir + dirToLight);
+	vec3 viewDir = normalize(perFrameInfo.cameraPos - groundWorldPos);
+	vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
 	float spec = isShell ? 0 : pow(max(dot(normal, halfWay), 0), waterParams.specExp);
 	spec *= wet * wet;
 
 	vec3 litAlbedo = (diffuse + ambient) * albedo + spec * colours.sunColour;
-	vec3 skyboxSample = shellWorldPos - cameraPos;
+	vec3 skyboxSample = shellWorldPos - perFrameInfo.cameraPos;
 	vec3 finalColor = (1 - fogStrength) * litAlbedo + fogStrength * texture(skybox, skyboxSample).xyz;
 	FragColor = vec4(finalColor, 1);
 }

@@ -5,6 +5,7 @@
 #include "OpenGLObjects/BUF.h"
 #include "uimanager.h"
 #include "glm/glm.hpp"
+#include "camera.h"
 
 namespace BufferTypes {
 	struct TerrainParams {
@@ -144,6 +145,24 @@ namespace BufferTypes {
 		glm::vec4 waterColour;
 		glm::vec4 sunColour;
 	};
+
+	struct PerFrameInfo {
+		PerFrameInfo() : time{ -1 } {}
+		PerFrameInfo(const Camera& camera, glm::vec3 _dirToSun, float _time)
+			: viewMatrix{ camera.getViewMatrix() }
+			, projectionMatrix{ camera.getProjectionMatrix() }
+			, cameraPos{ camera.getPosition(), 1 }
+			, dirToSun{ _dirToSun, 0 }
+			, time{ _time }
+		{ }
+		bool operator==(const PerFrameInfo&) const = default;
+
+		glm::mat4 viewMatrix;
+		glm::mat4 projectionMatrix;
+		glm::vec4 cameraPos;
+		glm::vec4 dirToSun;
+		float time;
+	};
 }
 
 template <typename T>
@@ -158,10 +177,11 @@ public:
 	// Returns whether the data was changed between calls
 	bool updateGPU(const T& data) {
 		if (data != mPrevData) {
+			auto x{ sizeof(T) };
 			glBindBuffer(GL_UNIFORM_BUFFER, mBUF);
 			glBufferData(GL_UNIFORM_BUFFER, sizeof(T), &data, GL_STATIC_DRAW);
 			mPrevData = data;
-				return true;
+			return true;
 		}
 		return false;
 	}

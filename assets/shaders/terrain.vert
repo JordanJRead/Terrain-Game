@@ -20,10 +20,6 @@ uniform vec2 imagePositions[IMAGECOUNT];
 #include "_headeruniformbuffers.glsl"
 #include "_headerterraininfo.glsl"
 
-// Per frame
-uniform mat4 view;
-uniform mat4 proj;
-
 // Per plane
 uniform float planeWorldWidth;
 uniform vec3 planePos;
@@ -45,6 +41,6 @@ void main() {
 	}
 	shellWorldPos = worldPos.xyz;
 	
-	viewPos = (view * worldPos).xyz;
-	gl_Position = proj * vec4(viewPos, 1);
+	viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
+	gl_Position = perFrameInfo.projectionMatrix * vec4(viewPos, 1);
 }

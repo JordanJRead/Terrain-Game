@@ -6,10 +6,7 @@ in vec3 worldPos3;
 in vec3 viewPos;
 out vec4 FragColour;
 
-uniform float time;
 uniform samplerCube skybox;
-uniform vec3 cameraPos;
-uniform vec3 dirToLight;
 
 uniform sampler2D images[IMAGECOUNT];
 uniform float imageScales[IMAGECOUNT];
@@ -33,9 +30,9 @@ vec3 getWaterHeight(vec2 pos) {
 		amplitudeSum += amplitude;
 		float randNum = randToFloat(rand(i));
 		vec2 waterDir = randUnitVector(randNum);
-		//waterInfo.x += amplitude * sin(dot(waterDir, pos) * freq + time * speed);
-		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + time * speed)) - 1.4);
-		waterInfo.yz += amplitude * exp(sin(dot(waterDir, pos) * freq + time * speed)) * cos(dot(waterDir, pos) * freq + time * speed) * freq * waterDir;
+		//waterInfo.x += amplitude * sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed);
+		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) - 1.4);
+		waterInfo.yz += amplitude * exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) * cos(dot(waterDir, pos) * freq + perFrameInfo.time * speed) * freq * waterDir;
 
 		amplitude *= waterParams.amplitudeMult;
 		freq *= waterParams.freqMult;
@@ -52,10 +49,10 @@ void main() {
 
 	// Lighting
 	vec3 normal = normalize(vec3(-waterInfo.y, 1, -waterInfo.z));
-	float diffuse = max(0, dot(dirToLight, normal));
+	float diffuse = max(0, dot(perFrameInfo.dirToSun, normal));
 
-	vec3 viewDir = normalize(cameraPos - worldPos3);
-	vec3 halfWay = normalize(viewDir + dirToLight);
+	vec3 viewDir = normalize(perFrameInfo.cameraPos - worldPos3);
+	vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
 	float spec = pow(max(dot(normal, halfWay), 0), waterParams.specExp);
 
 	float ambient = 0.2;
@@ -82,7 +79,7 @@ void main() {
 	else
 		fogStrength = (distFromCamera - fogStart) / artisticParams.fogEncroach;
 		
-	vec3 skyboxSample = worldPos3 - cameraPos;
+	vec3 skyboxSample = worldPos3 - perFrameInfo.cameraPos;
 	vec3 litAlbedo = (diffuse + ambient) * albedo;
 	
 	float fresnel = pow(1 - dot(viewDir, normal), 3.0);

@@ -89,14 +89,11 @@ public:
 		mScreenQuad.create(vertexData, indices, attribs);
 
 		// Set shader uniforms
-		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
 		mWaterShader.use();
 		mWaterShader.setInt("skybox", 7);
-		mWaterShader.setVector3("dirToLight", dirToSun);
 		mTerrainShader.use();
 		mTerrainShader.setInt("skybox", 7);
 		mTerrainShader.setInt("imageCount", ImageCount);
-		mTerrainShader.setVector3("dirToLight", dirToSun);
 		for (int i{ 0 }; i < ImageCount; ++i) {
 			std::string indexString{ std::to_string(i) };
 
@@ -115,7 +112,6 @@ public:
 
 		mSkyboxShader.use();
 		mSkyboxShader.setInt("skybox", 7);
-		mSkyboxShader.setVector3("dirToLight", dirToSun);
 	}
 
 	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer& framebuffer) {
@@ -124,9 +120,11 @@ public:
 			mMinTerrainHeight = getMinHeight(uiManager);
 			mMaxTerrainHeight = getMaxHeight(uiManager);
 		}
+		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
 		mArtisticParams.updateGPU(uiManager);
 		mWaterParams.updateGPU(uiManager);
 		mColourParams.updateGPU(uiManager);
+		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		mTerrainShader.use();
 
 		// Update plane types
@@ -134,7 +132,7 @@ public:
 			mLowQualityPlane.rebuild(uiManager.mLowQualityPlaneVertices.data());
 		}
 
-		int highQualityVerticesPerEdge{ uiManager.mHighQualityPlaneQualityScale.data() * (uiManager.mLowQualityPlaneVertices.data() - 1) + 1}; // We want the distance between vertices to be multiples of each other, so we do this
+		int highQualityVerticesPerEdge{ uiManager.mHighQualityPlaneQualityScale.data() * (uiManager.mLowQualityPlaneVertices.data() - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this
 		if (highQualityVerticesPerEdge != mHighQualityPlane.getVerticesPerEdge()) {
 			mHighQualityPlane.rebuild(highQualityVerticesPerEdge);
 		}
@@ -146,7 +144,7 @@ public:
 			glm::vec2 scaledCameraPos{ glm::vec2(camera.getPosition().x, camera.getPosition().z) / uiManager.mTerrainScale.data() };
 			double cameraDistFromImageCenter{ glm::length(scaledCameraPos - mImageWorldPositions[i]) };
 			if (cameraDistFromImageCenter * 2 > 0.2 * uiManager.mImageWorldSizes[i].data()) { // If near edge of image, update image
-				glm::vec3 pixelPosition{ getClosestWorldPixelPos(camera.getPosition() / uiManager.mTerrainScale.data(), i, uiManager)};
+				glm::vec3 pixelPosition{ getClosestWorldPixelPos(camera.getPosition() / uiManager.mTerrainScale.data(), i, uiManager) };
 				mImageWorldPositions[i] = glm::vec2(pixelPosition.x, pixelPosition.z);
 			}
 
@@ -192,14 +190,9 @@ public:
 			}
 		}
 
-		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
-
 		framebuffer.bind();
 		// Render skybox
 		mSkyboxShader.use();
-		mSkyboxShader.setMatrix4("view", camera.getViewMatrix()); // TODO make these just buffers
-		mSkyboxShader.setMatrix4("proj", camera.getProjectionMatrix());
-		mSkyboxShader.setVector3("dirToLight", dirToSun);
 		mDaySkybox.bindTexture(7);
 		mCubeVertices.useVertexArray();
 		glDisable(GL_DEPTH_TEST);
@@ -207,17 +200,7 @@ public:
 		glEnable(GL_DEPTH_TEST);
 
 		mTerrainShader.use();
-		mTerrainShader.setMatrix4("view", camera.getViewMatrix());
-		mTerrainShader.setMatrix4("proj", camera.getProjectionMatrix());
-		mTerrainShader.setVector3("cameraPos", camera.getPosition());
-		mTerrainShader.setFloat("waterHeight", uiManager.mWaterHeight.data());
-		mTerrainShader.setVector3("dirToLight", dirToSun);
-		mWaterShader.use();
-		mWaterShader.setMatrix4("view", camera.getViewMatrix());
-		mWaterShader.setMatrix4("proj", camera.getProjectionMatrix());
-		mWaterShader.setVector3("cameraPos", camera.getPosition());
-		mWaterShader.setFloat("time", time);
-		mWaterShader.setVector3("dirToLight", dirToSun);
+		mTerrainShader.setFloat("waterHeight", uiManager.mWaterHeight.data()); // Put into uniform buffer
 		for (int i{ 0 }; i < mImages.size(); ++i) {
 			mImages[i].bindImage(i);
 		}
@@ -231,7 +214,7 @@ public:
 		int visibleChunks{ 0 };
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mChunkWidth.data() };
- 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
+		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
 
 				mTerrainShader.use();
@@ -245,7 +228,7 @@ public:
 
 				bool isVisible{ false };
 				if (uiManager.mFrustumCulling.data())
-					isVisible = isAABBInFrustum(camera, {{chunkPos.x - chunkWidth / 2.0, minChunkHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, maxChunkHeight, chunkPos.z + chunkWidth / 2.0}});
+					isVisible = isAABBInFrustum(camera, { {chunkPos.x - chunkWidth / 2.0, minChunkHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, maxChunkHeight, chunkPos.z + chunkWidth / 2.0} });
 				else {
 					//for (float x : xVals) {
 					//	for (float y : yVals) {
@@ -305,7 +288,7 @@ public:
 					// Draw water
 					mWaterShader.use();
 					mReallyLowQualityPlane.useVertexArray();
-					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z});
+					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z });
 					mWaterShader.setFloat("planeWorldWidth", chunkWidth);
 					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
 
@@ -329,7 +312,7 @@ public:
 		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
 		// Rivers
-		float river = MathHelper::perlin(pos * uiManager.mRiverFrequency.data() , 1);
+		float river = MathHelper::perlin(pos * uiManager.mRiverFrequency.data(), 1);
 
 		river *= 2;
 		river -= 1;
@@ -381,6 +364,7 @@ private:
 	UniformBuffer<BufferTypes::ArtisticParams> mArtisticParams{ 1 };
 	UniformBuffer<BufferTypes::WaterParams> mWaterParams{ 2 };
 	UniformBuffer<BufferTypes::ColourParams> mColourParams{ 3 };
+	UniformBuffer<BufferTypes::PerFrameInfo> mPerFrameInfo{ 4 };
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;
@@ -418,7 +402,8 @@ private:
 		float amplitude = uiManager.mTerrainAmplitude.data();
 		float spread = 1;
 
-		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {;
+		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
+			;
 			float perlinData = 1;
 
 			terrainHeight += amplitude * perlinData;
@@ -531,17 +516,17 @@ private:
 
 	// https://bruop.github.io/improved_frustum_culling/
 	static bool isAABBInFrustum(const Camera& camera, const AABB& aabb) {
-		float xNear =  camera.getXNear();
-		float yNear =  camera.getYNear();
-		float near  = -camera.getNearPlaneDist();
-		float far   = -camera.getFarPlaneDist();
+		float xNear = camera.getXNear();
+		float yNear = camera.getYNear();
+		float near = -camera.getNearPlaneDist();
+		float far = -camera.getFarPlaneDist();
 
-		std::array<glm::vec3, 4> obbCorners{{
+		std::array<glm::vec3, 4> obbCorners{ {
 				aabb.mMin,
 			   {aabb.mMax.x, aabb.mMin.y, aabb.mMin.z},
 			   {aabb.mMin.x, aabb.mMax.y, aabb.mMin.z},
 			   {aabb.mMin.x, aabb.mMin.y, aabb.mMax.z}
-			}};
+			} };
 
 		for (size_t i{ 0 }; i < obbCorners.size(); ++i) {
 			obbCorners[i] = camera.getViewMatrix() * glm::vec4{ obbCorners[i], 1 }; // ?
