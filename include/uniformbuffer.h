@@ -6,6 +6,8 @@
 #include "uimanager.h"
 #include "glm/glm.hpp"
 #include "camera.h"
+#include <iostream>
+#include <array>
 
 namespace BufferTypes {
 	struct TerrainParams {
@@ -163,23 +165,34 @@ namespace BufferTypes {
 		glm::vec4 dirToSun;
 		float time;
 	};
+
+	struct TerrainImagesInfo {
+		TerrainImagesInfo() : imageScales{ 0, 0, 0, 0} {}
+		TerrainImagesInfo(const std::array<float ,4>& _imageScales, const std::array<glm::vec2, 4>& _imagePositions)
+			: imageScales{ _imageScales }
+			, imagePositions{ _imagePositions } { }
+		bool operator==(const TerrainImagesInfo&) const = default;
+
+		std::array<float, 4> imageScales;
+		std::array<glm::vec2, 4> imagePositions;
+	};
 }
 
 template <typename T>
 class UniformBuffer {
 public:
-	UniformBuffer(int bindingIndex) {
-		glBindBuffer(GL_UNIFORM_BUFFER, mBUF);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(T), 0, GL_STATIC_DRAW);
-		glBindBufferBase(GL_UNIFORM_BUFFER, bindingIndex, mBUF);
+	UniformBuffer(int bindingIndex, bool isSSBO = false) : mIsSSBO{ isSSBO } {
+		glBindBuffer(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, mBUF);
+		glBufferData(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, sizeof(T), 0, GL_STATIC_DRAW);
+		glBindBufferBase(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, bindingIndex, mBUF);
 	}
 
 	// Returns whether the data was changed between calls
 	bool updateGPU(const T& data) {
 		if (data != mPrevData) {
 			auto x{ sizeof(T) };
-			glBindBuffer(GL_UNIFORM_BUFFER, mBUF);
-			glBufferData(GL_UNIFORM_BUFFER, sizeof(T), &data, GL_STATIC_DRAW);
+			glBindBuffer(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, mBUF);
+			glBufferData(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, sizeof(T), &data, GL_STATIC_DRAW);
 			mPrevData = data;
 			return true;
 		}
@@ -189,6 +202,7 @@ public:
 private:
 	BUF mBUF;
 	T mPrevData;
+	bool mIsSSBO;
 };
 
 #endif

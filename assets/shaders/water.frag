@@ -1,6 +1,4 @@
 #version 430 core
-#define PI 3.141592653589793238462
-#define IMAGECOUNT 4
 
 in vec3 worldPos3;
 in vec3 viewPos;
@@ -8,9 +6,6 @@ out vec4 FragColour;
 
 uniform samplerCube skybox;
 
-uniform sampler2D images[IMAGECOUNT];
-uniform float imageScales[IMAGECOUNT];
-uniform vec2 imagePositions[IMAGECOUNT];
 uniform vec3 planePos;
 
 #include "_headeruniformbuffers.glsl";

@@ -1,21 +1,11 @@
 #version 430 core
 #extension GL_ARB_shading_language_include : require
-#define PI 3.141592653589793238462
-#define IMAGECOUNT 4
 
 layout(location = 0) in vec2 vPos;
 
 out vec3 viewPos;
 out vec3 groundWorldPos;
 out vec3 shellWorldPos;
-
-// Per app
-uniform int imageCount;
-uniform sampler2D images[IMAGECOUNT];
-
-// Per whenever they get changed
-uniform float imageScales[IMAGECOUNT];
-uniform vec2 imagePositions[IMAGECOUNT];
 
 #include "_headeruniformbuffers.glsl"
 #include "_headerterraininfo.glsl"

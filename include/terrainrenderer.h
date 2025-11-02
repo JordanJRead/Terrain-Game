@@ -93,19 +93,13 @@ public:
 		mWaterShader.setInt("skybox", 7);
 		mTerrainShader.use();
 		mTerrainShader.setInt("skybox", 7);
-		mTerrainShader.setInt("imageCount", ImageCount);
 		for (int i{ 0 }; i < ImageCount; ++i) {
 			std::string indexString{ std::to_string(i) };
 
 			mTerrainShader.use();
 			mTerrainShader.setInt("images[" + indexString + "]", i);
-			mTerrainShader.setFloat("imageScales[" + indexString + "]", uiManager.mImageWorldSizes[i].data());
-			mTerrainShader.setVector2("imagePositions[" + indexString + "]", mImageWorldPositions[i]);
-			// TODO 2 of these?
 			mWaterShader.use();
 			mWaterShader.setInt("images[" + indexString + "]", i);
-			mWaterShader.setFloat("imageScales[" + indexString + "]", uiManager.mImageWorldSizes[i].data());
-			mWaterShader.setVector2("imagePositions[" + indexString + "]", mImageWorldPositions[i]);
 
 			mImages[i].updateTexture(mScreenQuad, mTerrainImageShader);
 		}
@@ -155,13 +149,6 @@ public:
 			// GUI
 			if (uiManager.mImageWorldSizes[i].hasChanged()) {
 				mImages[i].setWorldSize(uiManager.mImageWorldSizes[i].data());
-
-				mTerrainShader.use();
-				mTerrainShader.setFloat("imageScales[" + indexString + "]", uiManager.mImageWorldSizes[i].data());
-
-				mWaterShader.use();
-				mWaterShader.setFloat("imageScales[" + indexString + "]", uiManager.mImageWorldSizes[i].data());
-
 				hasImageChanged = true;
 			}
 
@@ -174,13 +161,6 @@ public:
 			// The above position calculation
 			if (mImages[i].getWorldPos() != mImageWorldPositions[i]) { // Updated automatically
 				mImages[i].setWorldPos(mImageWorldPositions[i]);
-
-				mTerrainShader.use();
-				mTerrainShader.setVector2("imagePositions[" + indexString + "]", mImageWorldPositions[i]);
-
-				mWaterShader.use();
-				mWaterShader.setVector2("imagePositions[" + indexString + "]", mImageWorldPositions[i]);
-
 				hasImageChanged = true;
 			}
 
@@ -189,6 +169,7 @@ public:
 				mTerrainShader.use();
 			}
 		}
+		mTerrainImagesInfo.updateGPU({ {uiManager.mImageWorldSizes[0].data(), uiManager.mImageWorldSizes[1].data(), uiManager.mImageWorldSizes[2].data(), uiManager.mImageWorldSizes[3].data()}, mImageWorldPositions });
 
 		framebuffer.bind();
 		// Render skybox
@@ -230,22 +211,6 @@ public:
 				if (uiManager.mFrustumCulling.data())
 					isVisible = isAABBInFrustum(camera, { {chunkPos.x - chunkWidth / 2.0, minChunkHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, maxChunkHeight, chunkPos.z + chunkWidth / 2.0} });
 				else {
-					//for (float x : xVals) {
-					//	for (float y : yVals) {
-					//		for (float z : zVals) {
-					//			glm::vec3 corner{ x, y, z };
-					//			glm::vec3 viewDir{ glm::normalize(corner - camera.getPosition()) };
-					//			if (glm::dot(viewDir, cameraForward) > 0) {
-					//				isVisible = true;
-					//				break;
-					//			}
-					//		}
-					//		if (isVisible)
-					//			break;
-					//	}
-					//	if (isVisible)
-					//		break;
-					//}
 					isVisible = true;
 				}
 
@@ -365,6 +330,7 @@ private:
 	UniformBuffer<BufferTypes::WaterParams> mWaterParams{ 2 };
 	UniformBuffer<BufferTypes::ColourParams> mColourParams{ 3 };
 	UniformBuffer<BufferTypes::PerFrameInfo> mPerFrameInfo{ 4 };
+	UniformBuffer<BufferTypes::TerrainImagesInfo> mTerrainImagesInfo{ 5, true };
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;

@@ -1,6 +1,9 @@
 #ifndef UNIFORM_BUFFER_H
 #define UNIFORM_BUFFER_H
 
+#define IMAGECOUNT 4
+#extension GL_ARB_bindless_texture : require
+
 layout(std140, binding = 0) uniform TerrainParams {
 	uniform int   octaveCount;
 	uniform int   smoothOctaveCount;
@@ -70,5 +73,10 @@ layout(std140, binding = 4) uniform PerFrameInfo {
 	vec3 dirToSun; float gg;
 	float time;
 } perFrameInfo;
+
+layout(std430, binding = 5) buffer TerrainImagesInfo {
+	float imageScales[IMAGECOUNT];
+	vec2 imagePositions[IMAGECOUNT];
+} terrainImagesInfo;
 
 #endif
