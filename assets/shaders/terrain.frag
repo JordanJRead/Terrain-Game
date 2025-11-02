@@ -1,12 +1,14 @@
 #version 430 core
 #extension GL_ARB_shading_language_include : require
 
-in vec3 viewPos;
-in vec3 groundWorldPos;
-in vec3 shellWorldPos;
+in VertOut {
+	vec3 viewPos;
+	vec3 groundWorldPos;
+	vec3 worldPos;
+} fragIn;
+
 out vec4 FragColor;
 
-// Per app probably TODO move?
 uniform samplerCube skybox;
 
 #include "_headermath.glsl"
@@ -19,18 +21,13 @@ in flat int shellIndex;
 uniform float waterHeight;
 
 void main() {
-	vec2 flatWorldPos = groundWorldPos.xz;
+	vec2 flatWorldPos = fragIn.groundWorldPos.xz;
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, true);
-
-	// Cool stuff
-	//float myperlin = perlin(flatWorldPos / vec2(cos(atan(terrainInfo.y)), cos(atan(terrainInfo.z))), 0).x;
-	//FragColor = vec4(myperlin.xxx, 1);
-	//return;
 	
 	bool isShell = shellIndex >= 0;
 
 	// Terrain
-	float groundHeight = groundWorldPos.y;
+	float groundHeight = fragIn.groundWorldPos.y;
 	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
 	vec4 smoothTerrainInfo = getTerrainInfo(flatWorldPos, true);
 	vec3 smoothNormal = normalize(vec3(-smoothTerrainInfo.y, 1, -smoothTerrainInfo.z));
@@ -76,7 +73,7 @@ void main() {
 
 	// Wetness
 	float wetHeight = 0.4;
-	float distAboveWater = (isShell ? shellMiddleTerrainInfo.x : groundWorldPos.y) - waterHeight;
+	float distAboveWater = (isShell ? shellMiddleTerrainInfo.x : fragIn.groundWorldPos.y) - waterHeight;
 	float wet =  1 - (distAboveWater / wetHeight);
 	wet = clamp(wet, 0.0, 1.0);
 
@@ -121,7 +118,7 @@ void main() {
 
 
 	// Fog
-	float distFromCamera = length(viewPos);
+	float distFromCamera = length(fragIn.viewPos);
 	float fogStart = artisticParams.maxViewDistance - artisticParams.fogEncroach;
 	float fogStrength;
 
@@ -138,13 +135,13 @@ void main() {
 		currNormal = smoothNormal;
 	float diffuse = max(0, dot(perFrameInfo.dirToSun, currNormal));
 	float ambient = 0.03;
-	vec3 viewDir = normalize(perFrameInfo.cameraPos - groundWorldPos);
+	vec3 viewDir = normalize(perFrameInfo.cameraPos - fragIn.groundWorldPos);
 	vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
 	float spec = isShell ? 0 : pow(max(dot(normal, halfWay), 0), waterParams.specExp);
 	spec *= wet * wet;
 
 	vec3 litAlbedo = (diffuse + ambient) * albedo + spec * colours.sunColour;
-	vec3 skyboxSample = shellWorldPos - perFrameInfo.cameraPos;
+	vec3 skyboxSample = fragIn.worldPos - perFrameInfo.cameraPos;
 	vec3 finalColor = (1 - fogStrength) * litAlbedo + fogStrength * texture(skybox, skyboxSample).xyz;
 	FragColor = vec4(finalColor, 1);
 }

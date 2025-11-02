@@ -1,7 +1,10 @@
 #version 430 core
 
-in vec3 worldPos3;
-in vec3 viewPos;
+in VertOut {
+	vec3 worldPos;
+	vec3 viewPos;
+} fragIn;
+
 out vec4 FragColour;
 
 uniform samplerCube skybox;
@@ -37,33 +40,24 @@ vec3 getWaterHeight(vec2 pos) {
 }
 
 void main() {
-	// Water
-	vec2 flatWorldPos = worldPos3.xz;
+	// Water / terrain info
+	vec2 flatWorldPos = fragIn.worldPos.xz;
 	vec3 waterInfo = getWaterHeight(flatWorldPos);
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
-
-	// Lighting
-	vec3 normal = normalize(vec3(-waterInfo.y, 1, -waterInfo.z));
-	float diffuse = max(0, dot(perFrameInfo.dirToSun, normal));
-
-	vec3 viewDir = normalize(perFrameInfo.cameraPos - worldPos3);
-	vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
-	float spec = pow(max(dot(normal, halfWay), 0), waterParams.specExp);
-
-	float ambient = 0.2;
-
-
+	
+	// Albedo
 	vec3 albedo = colours.waterColour;
 	float nearTerrainFactor = 1 - (abs(waterInfo.x + planePos.y - terrainInfo.x)) / artisticParams.seafoamStrength;
 	nearTerrainFactor = clamp(nearTerrainFactor, 0.0, 1.0);
 	if (nearTerrainFactor > 0) {
 		float whiteStrength = nearTerrainFactor;
-		//float whiteStrength = perlin(flatWorldPos, 0).x;
-		//whiteStrength = easeInOutQuint(whiteStrength) * nearTerrainFactor;
 		albedo = vec3(0.7) * whiteStrength + albedo * (1 - whiteStrength);
 	}
 
-	float distFromCamera = length(viewPos);
+	float ambient = 0.2;
+
+	// Fog
+	float distFromCamera = length(fragIn.viewPos);
 	float fogStart = artisticParams.maxViewDistance - artisticParams.fogEncroach;
 	float fogStrength;
 
@@ -74,13 +68,21 @@ void main() {
 	else
 		fogStrength = (distFromCamera - fogStart) / artisticParams.fogEncroach;
 		
-	vec3 skyboxSample = worldPos3 - perFrameInfo.cameraPos;
+	vec3 skyboxSample = fragIn.worldPos - perFrameInfo.cameraPos;
+
+	// Lighting
+	vec3 normal = normalize(vec3(-waterInfo.y, 1, -waterInfo.z));
+	float diffuse = max(0, dot(perFrameInfo.dirToSun, normal));
+
+	vec3 viewDir = normalize(perFrameInfo.cameraPos - fragIn.worldPos);
+	vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
+	float spec = pow(max(dot(normal, halfWay), 0), waterParams.specExp);
 	vec3 litAlbedo = (diffuse + ambient) * albedo;
 	
+	// Reflections
 	float fresnel = pow(1 - dot(viewDir, normal), 3.0);
 	vec3 reflectDir = normalize(reflect(-viewDir, normal));
 	vec3 reflectColour = texture(skybox, reflectDir).xyz;
-
 	fresnel = clamp(fresnel, 0.0, 1.0);
 	litAlbedo = fresnel * reflectColour + (1 - fresnel) * litAlbedo + spec * colours.sunColour;
 

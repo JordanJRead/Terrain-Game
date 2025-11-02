@@ -3,8 +3,10 @@
 
 layout(location = 0) in vec2 vPos;
 
-out vec3 worldPos3;
-out vec3 viewPos;
+out VertOut {
+	vec3 worldPos;
+	vec3 viewPos;
+} vertOut;
 
 // Per plane
 uniform float planeWorldWidth;
@@ -43,7 +45,7 @@ void main() {
 	vec3 waterInfo = getWaterHeight(flatWorldPos);
 	worldPos.y += waterInfo.x;
 
-	worldPos3 = worldPos.xyz;
-	viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
-	gl_Position = perFrameInfo.projectionMatrix * perFrameInfo.viewMatrix * worldPos;
+	vertOut.worldPos = worldPos.xyz;
+	vertOut.viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
+	gl_Position = perFrameInfo.projectionMatrix * (vec4(vertOut.viewPos, 1));
 }

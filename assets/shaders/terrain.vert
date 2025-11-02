@@ -3,9 +3,11 @@
 
 layout(location = 0) in vec2 vPos;
 
-out vec3 viewPos;
-out vec3 groundWorldPos;
-out vec3 shellWorldPos;
+out VertOut {
+	vec3 viewPos;
+	vec3 groundWorldPos;
+	vec3 worldPos;
+} vertOut;
 
 #include "_headeruniformbuffers.glsl"
 #include "_headerterraininfo.glsl"
@@ -13,7 +15,6 @@ out vec3 shellWorldPos;
 // Per plane
 uniform float planeWorldWidth;
 uniform vec3 planePos;
-uniform int instanceID;
 out flat int shellIndex;
 
 void main() {
@@ -23,14 +24,15 @@ void main() {
 	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
 	worldPos.y += terrainInfo.x;
 
-	groundWorldPos = worldPos.xyz;
-	shellIndex = artisticParams.shellCount - 1 - instanceID; // -1 to shellCount - 1, in reverse order to minimize overdraw
+	vertOut.groundWorldPos = worldPos.xyz;
+	shellIndex = artisticParams.shellCount - 1 - gl_InstanceID; // -1 to shellCount - 1, in reverse order to minimize overdraw
 	if (shellIndex >= 0) {
 		float shellProgress = float(shellIndex + 1) / artisticParams.shellCount;
 		worldPos.xyz += normal * shellProgress * artisticParams.shellMaxHeight;
 	}
-	shellWorldPos = worldPos.xyz;
-	
-	viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
-	gl_Position = perFrameInfo.projectionMatrix * vec4(viewPos, 1);
+
+	vertOut.worldPos = worldPos.xyz;
+	vertOut.viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
+
+	gl_Position = perFrameInfo.projectionMatrix * vec4(vertOut.viewPos, 1);
 }

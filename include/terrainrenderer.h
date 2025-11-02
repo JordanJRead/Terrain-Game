@@ -243,19 +243,14 @@ public:
 					}
 
 					// Draw terrain
-					// glInstanceID is 1 greater than the shellIndex (base terrain is -1 shell index, first shell is 0 shell index)
-					for (int i{ 0 }; i <= newShellCount; ++i) {
-						mTerrainShader.setInt("instanceID", i);
-						glDrawElements(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
-					}
-					// I could do each of the plane qualities in one instanced call, but for some reason it is slightly slower
+					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
 
 					// Draw water
 					mWaterShader.use();
 					mReallyLowQualityPlane.useVertexArray();
-					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z });
+					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }); // TODO should use a different xz value
 					mWaterShader.setFloat("planeWorldWidth", chunkWidth);
-					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0); // Draw each shell plus the base terrain
+					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
 
 					mArtisticParams.updateGPU({ uiManager });
 				}
