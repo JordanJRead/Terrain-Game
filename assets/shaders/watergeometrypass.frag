@@ -1,19 +1,18 @@
 #version 430 core
-#define PI 3.141592653589793238462
 
-layout(location = 0) in vec2 vPos;
-
-out VertOut {
+in VertOut {
 	vec3 worldPos;
-	vec3 viewPos;
-} vertOut;
+} fragIn;
 
-// Per plane
-uniform float planeWorldWidth;
+layout(location=0) out vec4 OutGroundWorldPosShellIndex;
+layout(location=1) out vec4 OutWorldPosMountain;
+layout(location=2) out vec4 OutNormalDoesTexelExist;
+
 uniform vec3 planePos;
 
 #include "_headeruniformbuffers.glsl";
 #include "_headermath.glsl";
+#include "_headerterraininfo.glsl";
 
 vec3 getWaterHeight(vec2 pos) {
 	vec3 waterInfo = vec3(0, 0, 0);
@@ -28,7 +27,6 @@ vec3 getWaterHeight(vec2 pos) {
 		amplitudeSum += amplitude;
 		float randNum = randToFloat(rand(i));
 		vec2 waterDir = randUnitVector(randNum);
-		//waterInfo.x += amplitude * sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed);
 		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) - 1.4);
 		waterInfo.yz += amplitude * exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) * cos(dot(waterDir, pos) * freq + perFrameInfo.time * speed) * freq * waterDir;
 
@@ -40,12 +38,11 @@ vec3 getWaterHeight(vec2 pos) {
 }
 
 void main() {
-	vec4 worldPos = vec4(vPos.x * planeWorldWidth + planePos.x, planePos.y, vPos.y * planeWorldWidth + planePos.z, 1);
-	vec2 flatWorldPos = worldPos.xz;
+	vec2 flatWorldPos = fragIn.worldPos.xz;
 	vec3 waterInfo = getWaterHeight(flatWorldPos);
-	worldPos.y += waterInfo.x;
+	vec3 normal = normalize(vec3(-waterInfo.y, 1, -waterInfo.z));
 
-	vertOut.worldPos = worldPos.xyz;
-	vertOut.viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
-	gl_Position = perFrameInfo.projectionMatrix * (vec4(vertOut.viewPos, 1));
+	OutGroundWorldPosShellIndex = vec4(fragIn.worldPos, -2);
+	OutWorldPosMountain = vec4(fragIn.worldPos, 0);
+	OutNormalDoesTexelExist = vec4(normal, 0);
 }

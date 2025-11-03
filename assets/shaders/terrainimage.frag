@@ -4,160 +4,24 @@
 in vec2 latticePos;
 out vec4 OutTerrainData;
 
-layout(std140, binding = 0) uniform terrainParams {
-	uniform int   octaveCount;
-	uniform int   smoothOctaveCount;
-	uniform float initialAmplitude;
-	uniform float amplitudeDecay;
-	uniform float spreadFactor;
-
-	uniform float mountainFrequency;
-	uniform float mountainExponent;
-	uniform float antiFlatFactor;
-	uniform float riverScale;
-	uniform float riverStrength;
-	uniform float riverExponent;
-	uniform float waterEatingMountain;
-	uniform float lakeScale;
-	uniform float lakeStrength;
-	uniform float lakeExponent;
-};
-
 uniform float scale;
 
-uint rand(uint n) {
-	uint state = n * 747796405u + 2891336453u;
-	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-	word = (word >> 22u) ^ word;
-	return word;
-}
+#include "_headeruniformbuffers.glsl"
+#include "_headermath.glsl"
 
-float randToFloat(uint n) {
-	return float(n) / 4294967296.0;
-}
-
-uint labelPoint(int x, int y) {
-	if (x == 0 && y == 0)
-		return 0;
-
-	int n = max(abs(x), abs(y));
-	int width = 2 * n + 1;
-	int startingIndex = (width - 2) * (width - 2);
-
-	if (n == y) { // top row
-		return startingIndex + x + n;
-	}
-	if (n == -y) { // bottom row
-		return startingIndex + width + x + n;
-	}
-	if (n == x) { // right col
-		return startingIndex + width * 2 + y - 1 + n;
-	}
-	if (n == -x) { // right col
-		return startingIndex + width * 2  + width - 2 + y - 1 + n;
-	}
-	return 0;
-}
-
-vec2 randUnitVector(float randNum) {
-	float theta = 2 * PI * randNum;
-	return normalize(vec2(cos(theta), sin(theta)));
-}
-
-int getClosestInt(float x) {
-	return int(round(x) + 0.1 * (x < 0 ? -1 : 1));
-}
-
-vec2 quinticInterpolation(vec2 t) {
-	return t * t * t * (t * (t * vec2(6) - vec2(15)) + vec2(10));
-}
-
-vec2 quinticDerivative(vec2 t) {
-	return vec2(30) * t * t * (t * (t - vec2(2)) + vec2(1));
-}
-
-vec3 perlin(vec2 pos, int reroll) {
-	int x0 = getClosestInt(floor(pos.x));
-	int x1 = getClosestInt(ceil(pos.x));
-	int y0 = getClosestInt(floor(pos.y));
-	int y1 = getClosestInt(ceil(pos.y));
-
-	vec2 p00 = vec2(x0, y0);
-	
-	vec2 relPoint =  pos - p00;
-
-	uint rui00 = rand(labelPoint(x0, y0));
-	uint rui10 = rand(labelPoint(x1, y0));
-	uint rui01 = rand(labelPoint(x0, y1));
-	uint rui11 = rand(labelPoint(x1, y1));
-
-	for (int i = 0; i < reroll; ++i) {
-		rui00 = rand(rui00);
-		rui10 = rand(rui10);
-		rui01 = rand(rui01);
-		rui11 = rand(rui11);
-	}
-
-	float r00 = randToFloat(rui00);
-	float r10 = randToFloat(rui10);
-	float r01 = randToFloat(rui01);
-	float r11 = randToFloat(rui11);
-
-	vec2 g00 = randUnitVector(r00);
-	vec2 g10 = randUnitVector(r10);
-	vec2 g01 = randUnitVector(r01);
-	vec2 g11 = randUnitVector(r11);
-
-	vec2 v00 = relPoint;
-	vec2 v11 = relPoint - vec2(1, 1);
-	vec2 v10 = relPoint - vec2(1, 0);
-	vec2 v01 = relPoint - vec2(0, 1);
-	
-	float d00 = dot(v00, g00);
-	float d10 = dot(v10, g10);
-	float d01 = dot(v01, g01);
-	float d11 = dot(v11, g11);
-
-	// From https://iquilezles.org/articles/gradientnoise/ and Acerola's github
-	vec2 u = quinticInterpolation(relPoint);
-	vec2 du = quinticDerivative(relPoint);
-	float noise = d00 + u.x * (d10 - d00) + u.y * (d01 - d00) + u.x * u.y * (d00 - d10 - d01 + d11);
-	noise = noise / 1.414 + 0.5;
-	vec2 tangents = g00 + u.x * (g10 - g00) + u.y * (g01 - g00) + u.x * u.y * (g00 - g10 - g01 + g11) + du * (u.yx * (d00 - d10 - d01 + d11) + vec2(d10, d01) - d00);
-	tangents /= 1.414;
-
-	return vec3(noise, tangents.x, tangents.y);
-}
-
-float extreme(float x) {
-	return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
-}
-
-float dextreme(float x) { 
-	return x < 0.5 ? 80 * x * x * x * x : 80 * (1 - x) * (1 - x) * (1 - x) * (1 - x);
-}
-
-float packFloats(vec2 v) {
-	return uintBitsToFloat(packHalf2x16(v));
-}
-
-vec2 unpackFloats(float v) {
-	return unpackHalf2x16(floatBitsToUint(v));
-}
-
-vec4 getTerrainInfo(vec2 pos) {
-	vec3 mountain = perlin(pos * mountainFrequency, 0);
+vec4 createTerrainInfo(vec2 pos) {
+	vec3 mountain = perlin(pos * terrainParams.mountainFrequency, 0);
 	mountain.yz *= scale;
-	mountain.yz *= mountainFrequency;
+	mountain.yz *= terrainParams.mountainFrequency;
 	
-	mountain.yz = mountainExponent * pow(mountain.x, mountainExponent - 1) * mountain.yz;
-	mountain.x = pow(mountain.x, mountainExponent);
+	mountain.yz = terrainParams.mountainExponent * pow(mountain.x, terrainParams.mountainExponent - 1) * mountain.yz;
+	mountain.x = pow(mountain.x, terrainParams.mountainExponent);
 	
-	mountain.yz = (1 - antiFlatFactor) * mountain.yz;
-	mountain.x = mountain.x * (1 - antiFlatFactor) + antiFlatFactor;
+	mountain.yz = (1 - terrainParams.antiFlatFactor) * mountain.yz;
+	mountain.x = mountain.x * (1 - terrainParams.antiFlatFactor) + terrainParams.antiFlatFactor;
 
 	// Rivers
-	vec3 river = perlin(pos * riverScale, 1);
+	vec3 river = perlin(pos * terrainParams.riverScale, 1);
 
 	river *= 2;
 	river.x -= 1;
@@ -166,50 +30,50 @@ vec4 getTerrainInfo(vec2 pos) {
 	river.x = 1 - river.x;
 	river.yz *= -1;
 	
-	river.yz = riverExponent * pow(river.x, riverExponent - 1) * river.yz;
-	river.x = pow(river.x, riverExponent);
+	river.yz = terrainParams.riverExponent * pow(river.x, terrainParams.riverExponent - 1) * river.yz;
+	river.x = pow(river.x, terrainParams.riverExponent);
 
 	river.yz *= scale;
-	river.yz *= riverScale;
-	river *= riverStrength;
+	river.yz *= terrainParams.riverScale;
+	river *= terrainParams.riverStrength;
 	river.yz = river.yz * (mountain.x * 5 + 1) + 5 * mountain.yz * river.x;
-	river.x *= (mountain.x * waterEatingMountain + 1);
+	river.x *= (mountain.x * terrainParams.waterEatingMountain + 1);
 
 	// Lakes
-	vec3 lake = perlin(pos * lakeScale, 1);
+	vec3 lake = perlin(pos * terrainParams.lakeScale, 1);
 
 	lake.yz *= dextreme(lake.x);
 	lake.x = extreme(lake.x);
 	
-	lake.yz = lakeExponent * pow(lake.x, lakeExponent - 1) * lake.yz;
-	lake.x = pow(lake.x, lakeExponent);
+	lake.yz = terrainParams.lakeExponent * pow(lake.x, terrainParams.lakeExponent - 1) * lake.yz;
+	lake.x = pow(lake.x, terrainParams.lakeExponent);
 
 	lake.yz *= scale;
-	lake.yz *= lakeScale;
-	lake *= lakeStrength;
+	lake.yz *= terrainParams.lakeScale;
+	lake *= terrainParams.lakeStrength;
 	lake.yz = lake.yz * (mountain.x * 5 + 1) + 5 * mountain.yz * lake.x;
-	lake.x *= (mountain.x * waterEatingMountain + 1);
+	lake.x *= (mountain.x * terrainParams.waterEatingMountain + 1);
 
 	vec3 terrainInfo = vec3(0, 0, 0);
 	vec3 smoothTerrainInfo = vec3(0, 0, 0);
 
-	float amplitude = initialAmplitude;
+	float amplitude = terrainParams.initialAmplitude;
 	float spread = 1;
 
-	for (int i = 0; i < octaveCount; ++i) {
+	for (int i = 0; i < terrainParams.octaveCount; ++i) {
 		vec2 samplePos = pos * spread;
 		vec3 perlinData = perlin(samplePos, 0);
 
 		terrainInfo.x += amplitude * perlinData.x;
 		terrainInfo.yz += amplitude * perlinData.yz * spread;
 		
-		if (i < smoothOctaveCount) {
+		if (i < terrainParams.smoothOctaveCount) {
 			smoothTerrainInfo.x += amplitude * perlinData.x;
 			smoothTerrainInfo.yz += amplitude * perlinData.yz * spread;
 		}
 
-		amplitude *= amplitudeDecay;
-		spread *= spreadFactor;
+		amplitude *= terrainParams.amplitudeDecay;
+		spread *= terrainParams.spreadFactor;
 	}
 	terrainInfo.yz *= scale;
 	smoothTerrainInfo.yz *= scale;
@@ -237,5 +101,5 @@ vec4 getTerrainInfo(vec2 pos) {
 }
 
 void main() {
-	OutTerrainData = getTerrainInfo(latticePos);
+	OutTerrainData = createTerrainInfo(latticePos);
 }

@@ -21,13 +21,7 @@
     <ClCompile Include="src\app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\paramsbufferartistic.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\paramsbuffercolour.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\cubemap.cpp">
@@ -63,13 +57,7 @@
     <ClCompile Include="src\terrainimagegenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\paramsbufferterrain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\vertexarray.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\paramsbufferwater.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="include\planegpu.h">
@@ -94,9 +82,6 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="src\mathhelper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\framebuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,21 +113,14 @@
     <ClInclude Include="include\OpenGLObjects\RBO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\gamma.frag" />
-    <None Include="assets\shaders\gamma.vert" />
-    <None Include="assets\shaders\grid.frag" />
-    <None Include="assets\shaders\grid.vert" />
-    <None Include="assets\shaders\physics.frag" />
-    <None Include="assets\shaders\physics.vert" />
-    <None Include="assets\shaders\skybox.frag" />
-    <None Include="assets\shaders\skybox.vert" />
-    <None Include="assets\shaders\terrain.frag" />
-    <None Include="assets\shaders\terrain.vert" />
-    <None Include="assets\shaders\terrainimage.frag" />
-    <None Include="assets\shaders\terrainimage.vert" />
-    <None Include="assets\shaders\water.frag" />
-    <None Include="assets\shaders\water.vert" />
+    <ClInclude Include="include\shaderheader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\uniformbuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\deferredrenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

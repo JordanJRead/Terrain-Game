@@ -16,7 +16,7 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	, mScreenWidth{ screenWidth }
 	, mScreenHeight{ screenHeight }
 	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition(), std::array<glm::vec2, 4> {glm::vec2{0}, glm::vec2{0}, glm::vec2{0}}, mUIManager }
-	, mFramebuffer{ screenWidth, screenHeight }
+	, mFramebuffer{ screenWidth, screenHeight, GL_RGBA16 }
 {
 	std::vector<float> vertexData{
 	-1, -1,
@@ -47,7 +47,6 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	//glFrontFace(GL_CW);
-	glClearColor(0.5f, 0.5f, 0.5f, 1);
 }
 
 void App::handleInput() {
@@ -82,16 +81,19 @@ void App::loop() {
 		mCamera.move(mWindow, (float)deltaTime, physicsPlane);
 
 		/// Rendering
-		mFramebuffer.bind();
+		mFramebuffer.use();
+		glClearColor(0.5f, 0.5f, 0.5f, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Terrain
 		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mUIManager, mFramebuffer);
+
+		// Gamma
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		mGammaShader.use();
-		mFramebuffer.bindTexture(0);
+		mFramebuffer.bindColourTexture(0, 0);
 		mScreenQuad.use();
 		glDisable(GL_DEPTH_TEST);
 		glDrawElements(GL_TRIANGLES, mScreenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);

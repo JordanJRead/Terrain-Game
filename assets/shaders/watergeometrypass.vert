@@ -5,7 +5,6 @@ layout(location = 0) in vec2 vPos;
 
 out VertOut {
 	vec3 worldPos;
-	vec3 viewPos;
 } vertOut;
 
 // Per plane
@@ -46,6 +45,5 @@ void main() {
 	worldPos.y += waterInfo.x;
 
 	vertOut.worldPos = worldPos.xyz;
-	vertOut.viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
-	gl_Position = perFrameInfo.projectionMatrix * (vec4(vertOut.viewPos, 1));
+	gl_Position = perFrameInfo.projectionMatrix * perFrameInfo.viewMatrix * worldPos;
 }

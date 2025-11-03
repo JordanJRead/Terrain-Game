@@ -21,10 +21,12 @@ public:
 	void setWorldSize(float worldSize);
 	void setWorldPos(const glm::vec2& worldPos);
 	void updateTexture(const VertexArray& screenQuad, const Shader& terrainImageShader);
+	unsigned long long getTextureHandle() { return mTextureHandle; }
 
 private:
 	FBO mFBO;
 	TEX mColorTex;
+	unsigned long long mTextureHandle;
 
 	int mPixelDim;
 	float mWorldSize;
