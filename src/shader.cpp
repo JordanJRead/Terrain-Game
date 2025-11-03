@@ -62,7 +62,7 @@ Shader::Shader(const std::string& vertPath, const std::string& fragPath) {
     if (!success) {
         char infoLog[512];
         glGetProgramInfoLog(mID, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << "\n";
+        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << vertPath << " --> " << fragPath << "\n" << infoLog << "\n";
     }
 
     glDeleteShader(vertShader);

@@ -2,12 +2,14 @@
 #extension GL_ARB_shading_language_include : require
 
 in VertOut {
-	vec3 viewPos;
 	vec3 groundWorldPos;
 	vec3 worldPos;
+	flat int shellIndex;
 } fragIn;
 
-out vec4 FragColor;
+layout(location=0) out vec4 OutGroundWorldPosShellIndex;
+layout(location=1) out vec4 OutWorldPosMountain;
+layout(location=2) out vec4 OutNormalDoesTexelExist;
 
 uniform samplerCube skybox;
 
@@ -16,25 +18,25 @@ uniform samplerCube skybox;
 #include "_headerterraininfo.glsl"
 
 // Per plane
-in flat int shellIndex;
 
 void main() {
 	vec2 flatWorldPos = fragIn.groundWorldPos.xz;
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, true);
-	
-	bool isShell = shellIndex >= 0;
-
-	// Terrain
-	float groundHeight = fragIn.groundWorldPos.y;
-	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
-	vec4 smoothTerrainInfo = getTerrainInfo(flatWorldPos, true);
-	vec3 smoothNormal = normalize(vec3(-smoothTerrainInfo.y, 1, -smoothTerrainInfo.z));
-
 	float mountain = terrainInfo.a;
 	mountain = extreme(mountain);
 	mountain = pullup(mountain);
 	mountain = pullup(mountain);
 	mountain = extreme(mountain);
+
+	OutGroundWorldPosShellIndex = vec4(fragIn.groundWorldPos, fragIn.shellIndex);
+	OutWorldPosMountain = vec4(fragIn.worldPos, mountain);
+	
+	bool isShell = fragIn.shellIndex >= 0;
+
+	// Terrain
+	float groundHeight = fragIn.groundWorldPos.y;
+	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
+
 	
 	vec3 groundAlbedo = colours.dirtColour * (1 - mountain) + mountain * colours.mountainColour;
 
@@ -42,10 +44,7 @@ void main() {
 	float actualSnowHeight = artisticParams.snowHeight + normToNegPos(perlin(flatWorldPos * artisticParams.snowLineNoiseScale, 0).x) * artisticParams.snowLineNoiseAmplitude;
 	bool isSnow = actualSnowHeight < groundHeight && mountain > artisticParams.mountainSnowCutoff;
 	bool isGrass = !isSnow;
-	float grassperlin = perlin(flatWorldPos * 0.1, 0).x;
-	vec3 shellAlbedo = isSnow ? colours.snowColour : (colours.grassColour1 * grassperlin + colours.grassColour2 * (1 - grassperlin));
-	float shellProgress = float(shellIndex + 1) / artisticParams.shellCount;
-	shellAlbedo = shellAlbedo - shellAlbedo * (1 - shellProgress) * artisticParams.shellAmbientOcclusion;
+	float shellProgress = float(fragIn.shellIndex + 1) / artisticParams.shellCount;
 
 	// Shell blade height
 	float shellScale = isGrass ? artisticParams.grassNoiseScale : artisticParams.snowNoiseScale;
@@ -95,51 +94,7 @@ void main() {
 		shellCutoff += extreme(mountain); // Grass can't grow on mountains
 
 	bool doesShellExist = shallowEnough && randomTexelHeight >= shellCutoff && wet == 0;
-
-	// Albedo
-	vec3 albedo;
-	// Ground
-	if (!isShell) {
-		if (wet == 0)
-			albedo = doesShellExist ? shellAlbedo : groundAlbedo;
-		else {
-			albedo = groundAlbedo - wet * groundAlbedo * 0.4;
-		}
-	}
-
-	// Shell
-	else {
-		if (!doesShellExist)
-			discard;
-		albedo = shellAlbedo;
-	}
-
-
-	// Fog
-	float distFromCamera = length(fragIn.viewPos);
-	float fogStart = artisticParams.maxViewDistance - artisticParams.fogEncroach;
-	float fogStrength;
-
-	if (distFromCamera < fogStart)
-		fogStrength = 0;
-	else if (distFromCamera > artisticParams.maxViewDistance)
-		fogStrength = 1;
-	else
-		fogStrength = (distFromCamera - fogStart) / artisticParams.fogEncroach;
-
-	// Lighting
-	vec3 currNormal = isGrass && isShell ? shellNormal : normal;
-	if (isSnow)
-		currNormal = smoothNormal;
-	float diffuse = max(0, dot(perFrameInfo.dirToSun, currNormal));
-	float ambient = 0.03;
-	vec3 viewDir = normalize(perFrameInfo.cameraPos - fragIn.groundWorldPos);
-	vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
-	float spec = isShell ? 0 : pow(max(dot(normal, halfWay), 0), waterParams.specExp);
-	spec *= wet * wet;
-
-	vec3 litAlbedo = (diffuse + ambient) * albedo + spec * colours.sunColour;
-	vec3 skyboxSample = fragIn.worldPos - perFrameInfo.cameraPos;
-	vec3 finalColor = (1 - fogStrength) * litAlbedo + fogStrength * texture(skybox, skyboxSample).xyz;
-	FragColor = vec4(finalColor, 1);
+	if (isShell && !doesShellExist)
+		discard;
+	OutNormalDoesTexelExist = vec4(isGrass && isShell ? shellNormal : normal, doesShellExist);
 }

@@ -82,16 +82,18 @@ void App::loop() {
 		mCamera.move(mWindow, (float)deltaTime, physicsPlane);
 
 		/// Rendering
-		mFramebuffer.bind();
+		mFramebuffer.use();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Terrain
 		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mUIManager, mFramebuffer);
+
+		// Gamma
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		mGammaShader.use();
-		mFramebuffer.bindTexture(0);
+		mFramebuffer.bindColourTexture(0, 0);
 		mScreenQuad.use();
 		glDisable(GL_DEPTH_TEST);
 		glDrawElements(GL_TRIANGLES, mScreenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);

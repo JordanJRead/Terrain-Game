@@ -147,7 +147,6 @@
     <ClCompile Include="include\uimanager.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\app.cpp" />
-    <ClCompile Include="src\framebuffer.cpp" />
     <ClCompile Include="src\mathhelper.cpp" />
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\cubemap.cpp" />
@@ -172,6 +171,7 @@
     <Library Include="libraries\glfw3dll.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\deferredrenderer.h" />
     <ClInclude Include="include\framebuffer.h" />
     <ClInclude Include="include\mathhelper.h" />
     <ClInclude Include="include\OpenGLObjects\RBO.h" />

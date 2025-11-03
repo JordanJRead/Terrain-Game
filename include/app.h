@@ -25,7 +25,7 @@ private:
 	GLFWwindow* mWindow;
 	Shader mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
 	Shader mGammaShader{ "assets/shaders/gamma.vert", "assets/shaders/gamma.frag" };
-	Framebuffer mFramebuffer;
+	Framebuffer<1> mFramebuffer;
 	VertexArray mScreenQuad;
 	bool mIsCursorHidden{ true };
 

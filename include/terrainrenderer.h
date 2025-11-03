@@ -20,6 +20,7 @@
 #include "mathhelper.h"
 #include "framebuffer.h"
 #include "uniformbuffer.h"
+#include "deferredrenderer.h"
 
 constexpr int ImageCount{ 4 };
 //template <int ImageCount>
@@ -67,6 +68,7 @@ public:
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_0_Front+Z.png",
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_1_Back-Z.png"
 			} }
+		, mDeferredRenderer{ screenWidth, screenHeight }
 	{
 		mMinTerrainHeight = getMinHeight(uiManager);
 		mMaxTerrainHeight = getMaxHeight(uiManager);
@@ -108,7 +110,9 @@ public:
 		mSkyboxShader.setInt("skybox", 7);
 	}
 
-	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer& framebuffer) {
+	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer<1>& targetFramebuffer) {
+		mDeferredRenderer.useFramebuffer();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
 			mMinTerrainHeight = getMinHeight(uiManager);
@@ -171,17 +175,16 @@ public:
 		}
 		mTerrainImagesInfo.updateGPU({ {uiManager.mImageWorldSizes[0].data(), uiManager.mImageWorldSizes[1].data(), uiManager.mImageWorldSizes[2].data(), uiManager.mImageWorldSizes[3].data()}, mImageWorldPositions });
 
-		framebuffer.bind();
-		// Render skybox
-		mSkyboxShader.use();
-		mDaySkybox.bindTexture(7);
-		mCubeVertices.useVertexArray();
-		glDisable(GL_DEPTH_TEST);
-		glDrawElements(GL_TRIANGLES, mCubeVertices.getIndexCount(), GL_UNSIGNED_INT, 0);
-		glEnable(GL_DEPTH_TEST);
+		//framebuffer.use();
 
-		mTerrainShader.use();
-		mTerrainShader.setFloat("waterHeight", uiManager.mWaterHeight.data()); // Put into uniform buffer
+		// Render skybox
+		//mSkyboxShader.use();
+		//mDaySkybox.bindTexture(7);
+		//mCubeVertices.useVertexArray();
+		//glDisable(GL_DEPTH_TEST);
+		//glDrawElements(GL_TRIANGLES, mCubeVertices.getIndexCount(), GL_UNSIGNED_INT, 0);
+		//glEnable(GL_DEPTH_TEST);
+
 		for (int i{ 0 }; i < mImages.size(); ++i) {
 			mImages[i].bindImage(i);
 		}
@@ -198,8 +201,6 @@ public:
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
 
-				mTerrainShader.use();
-				//glm::vec3 chunkPos{ getClosestWorldVertexPos(camera.getPosition()) - glm::vec3(x * mChunkWidth, 0, z * mChunkWidth) };
 				glm::vec3 chunkPos{ mLowQualityPlane.getClosestWorldVertexPos(camera.getPosition(), chunkWidth) - glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
 				// Frustum culling
@@ -243,10 +244,11 @@ public:
 					}
 
 					// Draw terrain
+					mDeferredRenderer.useTerrainGeometryShaderPass();
 					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
 
 					// Draw water
-					mWaterShader.use();
+					mDeferredRenderer.useWaterGeometryShaderPass();
 					mReallyLowQualityPlane.useVertexArray();
 					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }); // TODO should use a different xz value
 					mWaterShader.setFloat("planeWorldWidth", chunkWidth);
@@ -256,7 +258,7 @@ public:
 				}
 			}
 		}
-		//std::cout << visibleChunks << "\n";
+		mDeferredRenderer.doDeferredShading(targetFramebuffer, mScreenQuad);
 	}
 
 	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
@@ -338,6 +340,7 @@ private:
 	Cubemap mDaySkybox;
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
+	DeferredRenderer mDeferredRenderer;
 	//glm::vec3 mDirToLight{ -0.008373, 0.089878, 0.995917 };
 
 	PlaneGPU mLowQualityPlane;
