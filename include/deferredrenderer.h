@@ -11,7 +11,7 @@
 class DeferredRenderer {
 public:
 	DeferredRenderer(int screenWidth, int screenHeight)
-		: mFramebuffer{ screenWidth, screenHeight }
+		: mFramebuffer{ screenWidth, screenHeight, GL_RGBA32F }
 		, mShaderTerrainGeometry{ "assets/shaders/terraingeometrypass.vert", "assets/shaders/terraingeometrypass.frag" }
 		, mShaderWaterGeometry{ "assets/shaders/watergeometrypass.vert", "assets/shaders/watergeometrypass.frag" }
 		, mShaderDeferred{ "assets/shaders/deferredshader.vert", "assets/shaders/deferredshader.frag" }
@@ -20,9 +20,9 @@ public:
 			std::string indexString{ std::to_string(i) };
 
 			mShaderDeferred.use();
-			mShaderDeferred.setInt("GBuffer_GroundWorldPosShellIndex", 4);
+			mShaderDeferred.setInt("GBuffer_GroundWorldPosShellProgress", 4);
 			mShaderDeferred.setInt("GBuffer_WorldPosMountain", 5);
-			mShaderDeferred.setInt("GBUFFER_NormalDoesTexelExist", 6); // TOD Make lowercase, it's like this in the shader too
+			mShaderDeferred.setInt("GBuffer_NormalDoesTexelExist", 6);
 			mShaderDeferred.setInt("images[" + indexString + "]", i);
 			mShaderTerrainGeometry.use();
 			mShaderTerrainGeometry.setInt("images[" + indexString + "]", i);

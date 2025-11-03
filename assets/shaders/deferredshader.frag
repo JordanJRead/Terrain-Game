@@ -22,15 +22,15 @@ vec3 getWaterAlbedo(vec3 worldPos) {
 	return albedo;
 }
 
-uniform sampler2D GBuffer_GroundWorldPosShellIndex;
+uniform sampler2D GBuffer_GroundWorldPosShellProgress;
 uniform sampler2D GBuffer_WorldPosMountain;
-uniform sampler2D GBUFFER_NormalDoesTexelExist;
+uniform sampler2D GBuffer_NormalDoesTexelExist;
 
-vec3 getTerrainAlbedo(vec3 groundWorldPos, int shellIndex, float mountain, bool doesShellExist) {
+vec4 getTerrainAlbedoWet(vec3 groundWorldPos, float shellProgress, float mountain, bool doesShellExist) {
 	vec2 flatWorldPos = groundWorldPos.xz;
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, true);
 	
-	bool isShell = shellIndex >= 0;
+	bool isShell = shellProgress != 0;
 
 	// Terrain
 	float groundHeight = groundWorldPos.y;
@@ -46,7 +46,6 @@ vec3 getTerrainAlbedo(vec3 groundWorldPos, int shellIndex, float mountain, bool 
 	bool isGrass = !isSnow;
 	float grassperlin = perlin(flatWorldPos * 0.1, 0).x;
 	vec3 shellAlbedo = isSnow ? colours.snowColour : (colours.grassColour1 * grassperlin + colours.grassColour2 * (1 - grassperlin));
-	float shellProgress = float(shellIndex + 1) / artisticParams.shellCount;
 	shellAlbedo = shellAlbedo - shellAlbedo * (1 - shellProgress) * artisticParams.shellAmbientOcclusion;
 	
 	// Terrain at center of texel
@@ -76,20 +75,59 @@ vec3 getTerrainAlbedo(vec3 groundWorldPos, int shellIndex, float mountain, bool 
 		albedo = shellAlbedo;
 	}
 
-	return albedo;
+	return vec4(albedo, wet);
 }
 
 void main() {
-	vec4 groundWorldPosShellIndex = texture(GBuffer_GroundWorldPosShellIndex, texCoord);
+	vec4 groundWorldPosShellProgress = texture(GBuffer_GroundWorldPosShellProgress, texCoord);
 	vec4 worldPosMountain = texture(GBuffer_WorldPosMountain, texCoord);
-	vec4 normalDoesTexelExist = texture(GBUFFER_NormalDoesTexelExist, texCoord);
-	FragColor = vec4(groundWorldPosShellIndex.w == -2 ? vec3(0, 0, 1) : vec3(1, 0, 0), 1); //TODO water detecting isnt working?
-	return;
-	bool isWater = groundWorldPosShellIndex.w == -2;
-	if (isWater) {
-		FragColor = vec4(getWaterAlbedo(worldPosMountain.xyz), 1);
+	vec4 normalDoesTexelExist = texture(GBuffer_NormalDoesTexelExist, texCoord);
+
+	vec3 normal = normalDoesTexelExist.xyz;
+	vec3 worldPos = worldPosMountain.xyz;
+	vec3 groundWorldPos = groundWorldPosShellProgress.xyz;
+	bool doesTexelExist = bool(normalDoesTexelExist.w);
+	float mountain = worldPosMountain.w;
+	float shellProgress = groundWorldPosShellProgress.w;
+
+	bool isWater = groundWorldPosShellProgress.w == -2;
+	bool isSky = groundWorldPosShellProgress.w == -3;
+
+	if (isSky) {
+		FragColor = vec4(0.2, 0.2, 1, 1);
 	}
 	else {
-		FragColor = vec4(getTerrainAlbedo(groundWorldPosShellIndex.xyz, int(groundWorldPosShellIndex.w), worldPosMountain.w, bool(normalDoesTexelExist.w)), 1);
+		if (isWater) {
+			vec3 waterAlbedo = getWaterAlbedo(worldPos);
+
+			// Specular
+			vec3 viewDir = normalize(perFrameInfo.cameraPos - worldPos);
+			vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
+			float spec = pow(max(dot(normal, halfWay), 0), waterParams.specExp);
+			
+			vec3 diffuseColour = max(dot(normal, perFrameInfo.dirToSun), 0) * colours.sunColour * waterAlbedo;
+			vec3 specularColour = spec * colours.sunColour;
+			vec3 ambientColour = 0.05 * colours.sunColour * waterAlbedo;
+
+			FragColor = vec4(diffuseColour + specularColour + ambientColour, 1);
+		}
+		else {
+			vec4 terrainAlbedoWet = getTerrainAlbedoWet(groundWorldPosShellProgress.xyz, groundWorldPosShellProgress.w, worldPosMountain.w, bool(normalDoesTexelExist.w));
+			vec3 terrainAlbedo = terrainAlbedoWet.xyz;
+			float wet = terrainAlbedoWet.w;
+			
+			vec3 viewDir = normalize(perFrameInfo.cameraPos - groundWorldPos);
+			vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
+			bool isShell = shellProgress != 0;
+			float spec = isShell ? 0 : pow(max(dot(normal, halfWay), 0), waterParams.specExp);
+			spec *= wet * wet;
+			
+			vec3 diffuseColour = max(dot(normal, perFrameInfo.dirToSun), 0) * colours.sunColour * terrainAlbedo;
+			vec3 specularColour = spec * colours.sunColour;
+			vec3 ambientColour = 0.05 * colours.sunColour * terrainAlbedo;
+
+			FragColor = vec4(diffuseColour + specularColour + ambientColour, 1);
+		}
+		vec3 normal = normalDoesTexelExist.xyz;
 	}
 }

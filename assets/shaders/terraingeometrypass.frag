@@ -7,7 +7,7 @@ in VertOut {
 	flat int shellIndex;
 } fragIn;
 
-layout(location=0) out vec4 OutGroundWorldPosShellIndex;
+layout(location=0) out vec4 OutGroundWorldPosShellProgress;
 layout(location=1) out vec4 OutWorldPosMountain;
 layout(location=2) out vec4 OutNormalDoesTexelExist;
 
@@ -28,7 +28,6 @@ void main() {
 	mountain = pullup(mountain);
 	mountain = extreme(mountain);
 
-	OutGroundWorldPosShellIndex = vec4(fragIn.groundWorldPos, fragIn.shellIndex);
 	OutWorldPosMountain = vec4(fragIn.worldPos, mountain);
 	
 	bool isShell = fragIn.shellIndex >= 0;
@@ -45,6 +44,7 @@ void main() {
 	bool isSnow = actualSnowHeight < groundHeight && mountain > artisticParams.mountainSnowCutoff;
 	bool isGrass = !isSnow;
 	float shellProgress = float(fragIn.shellIndex + 1) / artisticParams.shellCount;
+	OutGroundWorldPosShellProgress = vec4(fragIn.groundWorldPos, shellProgress);
 
 	// Shell blade height
 	float shellScale = isGrass ? artisticParams.grassNoiseScale : artisticParams.snowNoiseScale;
@@ -94,7 +94,7 @@ void main() {
 		shellCutoff += extreme(mountain); // Grass can't grow on mountains
 
 	bool doesShellExist = shallowEnough && randomTexelHeight >= shellCutoff && wet == 0;
-	if (isShell && !doesShellExist);
-		//discard;
+	if (isShell && !doesShellExist)
+		discard;
 	OutNormalDoesTexelExist = vec4(isGrass && isShell ? shellNormal : normal, doesShellExist);
 }

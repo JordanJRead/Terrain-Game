@@ -9,13 +9,13 @@
 template <int ColourTextureCount>
 class Framebuffer {
 public:
-	Framebuffer(int width, int height) {
+	Framebuffer(int width, int height, int glInternalFormat) {
 		glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 
 		unsigned int attachments[ColourTextureCount];
 		for (int i{ 0 }; i < ColourTextureCount; ++i) {
 			glBindTexture(GL_TEXTURE_2D, mColourTextures[i]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, 0, glInternalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
