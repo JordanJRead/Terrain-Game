@@ -111,8 +111,6 @@ public:
 	}
 
 	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer<1>& targetFramebuffer) {
-		mDeferredRenderer.useFramebuffer();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
 			mMinTerrainHeight = getMinHeight(uiManager);
@@ -170,7 +168,6 @@ public:
 
 			if (hasImageChanged || hasTerrainChanged) {
 				mImages[i].updateTexture(mScreenQuad, mTerrainImageShader); // binds another shader
-				mTerrainShader.use();
 			}
 		}
 		mTerrainImagesInfo.updateGPU({ {uiManager.mImageWorldSizes[0].data(), uiManager.mImageWorldSizes[1].data(), uiManager.mImageWorldSizes[2].data(), uiManager.mImageWorldSizes[3].data()}, mImageWorldPositions });
@@ -194,6 +191,8 @@ public:
 		float minChunkHeight{ getMinHeight(uiManager) };
 		glm::vec3 cameraForward{ camera.getForward() };
 
+		mDeferredRenderer.useFramebuffer();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// For each chunk
 		int visibleChunks{ 0 };
 		int chunkCount{ uiManager.mChunkCount.data() };
@@ -221,8 +220,8 @@ public:
 					bool highQuality{ !(chunkDist > uiManager.mVertexLODDistance.data()) };
 					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
 
-					mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
-					mTerrainShader.setFloat("planeWorldWidth", chunkWidth);
+					//mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
+					//mTerrainShader.setFloat("planeWorldWidth", chunkWidth);
 
 					currPlane.useVertexArray();
 
@@ -244,14 +243,18 @@ public:
 					}
 
 					// Draw terrain
-					mDeferredRenderer.useTerrainGeometryShaderPass();
+					glDisable(GL_BLEND);
+					mDeferredRenderer.useShaderTerrainGeometryPass();
+					mDeferredRenderer.setTerrainPlaneInfo({ chunkPos.x, 0, chunkPos.z }, chunkWidth);
 					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
 
 					// Draw water
-					mDeferredRenderer.useWaterGeometryShaderPass();
+					glDisable(GL_BLEND);
+					mDeferredRenderer.useShaderWaterGeometryPass();
+					mDeferredRenderer.setWaterPlaneInfo({ chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }, chunkWidth);
 					mReallyLowQualityPlane.useVertexArray();
-					mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }); // TODO should use a different xz value
-					mWaterShader.setFloat("planeWorldWidth", chunkWidth);
+					//mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }); // TODO should use a different xz value
+					//mWaterShader.setFloat("planeWorldWidth", chunkWidth);
 					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
 
 					mArtisticParams.updateGPU({ uiManager });

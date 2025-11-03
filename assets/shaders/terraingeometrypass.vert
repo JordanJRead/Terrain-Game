@@ -13,7 +13,7 @@ out VertOut {
 #include "_headerterraininfo.glsl"
 
 // Per plane
-uniform float planeWorldWidth;
+uniform float planeWorldWidth; 
 uniform vec3 planePos;
 
 void main() {

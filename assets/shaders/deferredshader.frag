@@ -83,7 +83,8 @@ void main() {
 	vec4 groundWorldPosShellIndex = texture(GBuffer_GroundWorldPosShellIndex, texCoord);
 	vec4 worldPosMountain = texture(GBuffer_WorldPosMountain, texCoord);
 	vec4 normalDoesTexelExist = texture(GBUFFER_NormalDoesTexelExist, texCoord);
-
+	FragColor = vec4(groundWorldPosShellIndex.w == -2 ? vec3(0, 0, 1) : vec3(1, 0, 0), 1); //TODO water detecting isnt working?
+	return;
 	bool isWater = groundWorldPosShellIndex.w == -2;
 	if (isWater) {
 		FragColor = vec4(getWaterAlbedo(worldPosMountain.xyz), 1);

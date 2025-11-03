@@ -94,7 +94,7 @@ void main() {
 		shellCutoff += extreme(mountain); // Grass can't grow on mountains
 
 	bool doesShellExist = shallowEnough && randomTexelHeight >= shellCutoff && wet == 0;
-	if (isShell && !doesShellExist)
-		discard;
+	if (isShell && !doesShellExist);
+		//discard;
 	OutNormalDoesTexelExist = vec4(isGrass && isShell ? shellNormal : normal, doesShellExist);
 }
