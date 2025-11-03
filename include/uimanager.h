@@ -195,6 +195,9 @@ public:
 			// Colours
 			ImGui::Begin("Colours");
 
+			ImGui::Checkbox("Deferred Rendering", mIsDeferredRendering.getDataPtr());
+			mIsDeferredRendering.update();
+
 			ImGui::ColorPicker3("Dirt", (float*)mDirtColour.getDataPtr());
 			mDirtColour.update();
 
@@ -301,6 +304,7 @@ public:
 	UIElement<float> mDayTime{ 0.5 };
 
 	// Colours
+	UIElement<bool>      mIsDeferredRendering{ true };
 	UIElement<glm::vec3> mDirtColour    { {40 / 255.0, 21 / 255.0, 10  / 255.0} };
 	UIElement<glm::vec3> mMountainColour{ {34 / 255.0, 34 / 255.0, 34 / 255.0} };
 	UIElement<glm::vec3> mGrassColour1  { {0   / 255.0, 56 / 255.0, 0   / 255.0} };

@@ -172,15 +172,16 @@ public:
 		}
 		mTerrainImagesInfo.updateGPU({ {uiManager.mImageWorldSizes[0].data(), uiManager.mImageWorldSizes[1].data(), uiManager.mImageWorldSizes[2].data(), uiManager.mImageWorldSizes[3].data()}, mImageWorldPositions });
 
-		//framebuffer.use();
-
 		// Render skybox
-		//mSkyboxShader.use();
-		//mDaySkybox.bindTexture(7);
-		//mCubeVertices.useVertexArray();
-		//glDisable(GL_DEPTH_TEST);
-		//glDrawElements(GL_TRIANGLES, mCubeVertices.getIndexCount(), GL_UNSIGNED_INT, 0);
-		//glEnable(GL_DEPTH_TEST);
+		if (!uiManager.mIsDeferredRendering.data()) {
+			targetFramebuffer.use();
+			mSkyboxShader.use();
+			mDaySkybox.bindTexture(7);
+			mCubeVertices.useVertexArray();
+			glDisable(GL_DEPTH_TEST);
+			glDrawElements(GL_TRIANGLES, mCubeVertices.getIndexCount(), GL_UNSIGNED_INT, 0);
+			glEnable(GL_DEPTH_TEST);
+		}
 
 		for (int i{ 0 }; i < mImages.size(); ++i) {
 			mImages[i].bindImage(i);
@@ -191,9 +192,14 @@ public:
 		float minChunkHeight{ getMinHeight(uiManager) };
 		glm::vec3 cameraForward{ camera.getForward() };
 
-		mDeferredRenderer.useFramebuffer();
-		glClearColor(0, 0, 0, -3);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if (uiManager.mIsDeferredRendering.data()) {
+			mDeferredRenderer.useFramebuffer();
+			glClearColor(0, 0, 0, -3);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
+		else {
+			targetFramebuffer.use();
+		}
 		// For each chunk
 		int visibleChunks{ 0 };
 		int chunkCount{ uiManager.mChunkCount.data() };
@@ -244,15 +250,29 @@ public:
 					}
 
 					// Draw terrain
-					glDisable(GL_BLEND);
-					mDeferredRenderer.useShaderTerrainGeometryPass();
-					mDeferredRenderer.setTerrainPlaneInfo({ chunkPos.x, 0, chunkPos.z }, chunkWidth);
+					if (uiManager.mIsDeferredRendering.data()) {
+						glDisable(GL_BLEND);
+						mDeferredRenderer.useShaderTerrainGeometryPass();
+						mDeferredRenderer.setTerrainPlaneInfo({ chunkPos.x, 0, chunkPos.z }, chunkWidth);
+					}
+					else {
+						mTerrainShader.use();
+						mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
+						mTerrainShader.setFloat("planeWorldWidth", chunkWidth);
+					}
 					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
 
 					// Draw water
-					glDisable(GL_BLEND);
-					mDeferredRenderer.useShaderWaterGeometryPass();
-					mDeferredRenderer.setWaterPlaneInfo({ chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }, chunkWidth);
+					if (uiManager.mIsDeferredRendering.data()) {
+						glDisable(GL_BLEND);
+						mDeferredRenderer.useShaderWaterGeometryPass();
+						mDeferredRenderer.setWaterPlaneInfo({ chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }, chunkWidth);
+					}
+					else {
+						mWaterShader.use();
+						mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z });
+						mWaterShader.setFloat("planeWorldWidth", chunkWidth);
+					}
 					mReallyLowQualityPlane.useVertexArray();
 					//mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }); // TODO should use a different xz value
 					//mWaterShader.setFloat("planeWorldWidth", chunkWidth);
@@ -262,7 +282,8 @@ public:
 				}
 			}
 		}
-		mDeferredRenderer.doDeferredShading(targetFramebuffer, mScreenQuad);
+		if (uiManager.mIsDeferredRendering.data())
+			mDeferredRenderer.doDeferredShading(targetFramebuffer, mScreenQuad);
 	}
 
 	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
