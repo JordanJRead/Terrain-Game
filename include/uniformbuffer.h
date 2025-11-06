@@ -134,7 +134,7 @@ namespace BufferTypes {
 			, grassColour2{ uiManager.mGrassColour2.data(), 1 }
 			, snowColour{ uiManager.mSnowColour.data(), 1 }
 			, waterColour{ uiManager.mWaterColour.data(), 1 }
-			, sunColour{ uiManager.mSunColour.data(), 1 }
+			, sunColour{ uiManager.mSunColour.data() * uiManager.mHDRScale.data(), 1}
 		{
 		}
 		bool operator==(const ColourParams&) const = default;
@@ -156,6 +156,10 @@ namespace BufferTypes {
 			, cameraPos{ camera.getPosition(), 1 }
 			, dirToSun{ _dirToSun, 0 }
 			, time{ _time }
+			, fovX{ camera.getFOVX() }
+			, fovY{ camera.getFOVY() }
+			, yaw{ camera.getYaw() }
+			, pitch{ camera.getPitch() }
 		{ }
 		bool operator==(const PerFrameInfo&) const = default;
 
@@ -164,6 +168,10 @@ namespace BufferTypes {
 		glm::vec4 cameraPos;
 		glm::vec4 dirToSun;
 		float time;
+		float fovX;
+		float fovY;
+		float yaw;
+		float pitch;
 	};
 
 	struct TerrainImagesInfo {
@@ -175,6 +183,37 @@ namespace BufferTypes {
 
 		std::array<float, 4> imageScales;
 		std::array<glm::vec2, 4> imagePositions;
+	};
+
+	struct AtmosphereInfo {
+		AtmosphereInfo() : maxRadius{ -1 } {}
+		AtmosphereInfo(const UIManager& uiManager)
+			: maxRadius{ (4 * uiManager.mAtmosphereHeight.data() * uiManager.mAtmosphereHeight.data() + uiManager.mAtmosphereWidth.data() * uiManager.mAtmosphereWidth.data()) / (8 * uiManager.mAtmosphereHeight.data())}
+			, minRadius{ maxRadius - uiManager.mAtmosphereHeight.data() }
+			, centerY{ uiManager.mAtmosphereHeight.data() - maxRadius }
+			, rayleighDensityFalloff{ uiManager.mAtmosphereRayleighDensityFalloff.data() }
+			, mieDensityFalloff{ uiManager.mAtmosphereMieDensityFalloff.data() }
+			, rayleighDensityScale{ uiManager.mAtmosphereRayleighDensityScale.data() * 0.0001F }
+			, mieDensityScale{ uiManager.mAtmosphereMieDensityScale.data() * 0.0001F }
+			, rayleighScattering{ uiManager.mAtmosphereRayleighScattering.data(), 1}
+			, mieScattering{ uiManager.mAtmosphereMieScattering.data(), 1 }
+			, rayleighG{ uiManager.mAtmosphereRayleighG.data() }
+			, mieG{ uiManager.mAtmosphereMieG.data() }
+		{
+		}
+		bool operator==(const AtmosphereInfo&) const = default;
+
+		glm::vec4 rayleighScattering;
+		glm::vec4 mieScattering;
+		float maxRadius;
+		float minRadius;
+		float centerY;
+		float rayleighDensityFalloff;
+		float mieDensityFalloff;
+		float rayleighDensityScale;
+		float mieDensityScale;
+		float rayleighG;
+		float mieG;
 	};
 }
 

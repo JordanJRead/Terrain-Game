@@ -16,7 +16,7 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	, mScreenWidth{ screenWidth }
 	, mScreenHeight{ screenHeight }
 	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition(), std::array<glm::vec2, 4> {glm::vec2{0}, glm::vec2{0}, glm::vec2{0}}, mUIManager }
-	, mFramebuffer{ screenWidth, screenHeight, GL_RGBA16 }
+	, mFramebuffer{ screenWidth, screenHeight, GL_RGBA32F }
 {
 	std::vector<float> vertexData{
 	-1, -1,
