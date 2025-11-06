@@ -192,6 +192,46 @@ public:
 
 			ImGui::End();
 
+
+			// Atmosphere
+			ImGui::Begin("Atmosphere");
+
+			ImGui::DragFloat("Atmosphere height", mAtmosphereHeight.getDataPtr());
+			mAtmosphereHeight.update();
+
+			ImGui::DragFloat("Atmosphere width", mAtmosphereWidth.getDataPtr(), 1000);
+			mAtmosphereWidth.update();
+			
+			ImGui::DragFloat("Rayleigh density falloff", mAtmosphereRayleighDensityFalloff.getDataPtr(), 0.001);
+			mAtmosphereRayleighDensityFalloff.update();
+
+			ImGui::DragFloat("Mie density falloff", mAtmosphereMieDensityFalloff.getDataPtr(), 0.001);
+			mAtmosphereMieDensityFalloff.update();
+
+			ImGui::DragFloat("Rayleigh density scale", mAtmosphereRayleighDensityScale.getDataPtr(), 0.01);
+			mAtmosphereRayleighDensityScale.update();
+
+			ImGui::DragFloat("Mie density scale", mAtmosphereMieDensityScale.getDataPtr(), 0.01);
+			mAtmosphereMieDensityScale.update();
+
+			ImGui::DragFloat3("Rayleigh scattering", (float*)mAtmosphereRayleighScattering.getDataPtr(), 1);
+			mAtmosphereRayleighScattering.update();
+
+			ImGui::DragFloat3("Mie scattering", (float*)mAtmosphereMieScattering.getDataPtr(), 1);
+			mAtmosphereMieScattering.update();
+
+			ImGui::DragFloat("Rayleigh G", mAtmosphereRayleighG.getDataPtr(), 0.001);
+			mAtmosphereRayleighG.update();
+
+			ImGui::DragFloat("Mie G", mAtmosphereMieG.getDataPtr(), 0.001);
+			mAtmosphereMieG.update();
+
+			ImGui::DragFloat("HDR scale", mHDRScale.getDataPtr(), 0.1);
+			mHDRScale.update();
+
+			ImGui::End();
+
+
 			// Colours
 			ImGui::Begin("Colours");
 
@@ -253,7 +293,7 @@ public:
 			// Day
 			ImGui::Begin("Day");
 
-			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001, 0.1, 0.9);
+			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001, 0, 2);
 			mDayTime.update();
 
 			ImGui::End();
@@ -369,6 +409,19 @@ public:
 	UIElement<float> mMountainSnowCutoff{ 0.9 };
 	UIElement<float> mSnowLineEase{ 4.5 };
 	UIElement<float> mShellAmbientOcclusion{ 0.2 };
+
+	// Atmosphere Parameters
+	UIElement<float> mAtmosphereHeight{ 3345 };
+	UIElement<float> mAtmosphereWidth{ 94100 };
+	UIElement<float> mAtmosphereRayleighDensityFalloff{ 1 };
+	UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
+	UIElement<float> mAtmosphereRayleighDensityScale{ 0.021 };
+	UIElement<float> mAtmosphereMieDensityScale{ 0.22 };
+	UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 33.6, 88} };
+	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
+	UIElement<float> mAtmosphereRayleighG{ 0 };
+	UIElement<float> mAtmosphereMieG{ 0.957 };
+	UIElement<float> mHDRScale{ 2 };
 };
 
 #endif

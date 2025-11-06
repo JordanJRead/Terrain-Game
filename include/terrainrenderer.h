@@ -121,6 +121,7 @@ public:
 		mWaterParams.updateGPU(uiManager);
 		mColourParams.updateGPU(uiManager);
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
+		mAtmosphereInfo.updateGPU(uiManager);
 		mTerrainShader.use();
 
 		// Update plane types
@@ -274,8 +275,6 @@ public:
 						mWaterShader.setFloat("planeWorldWidth", chunkWidth);
 					}
 					mReallyLowQualityPlane.useVertexArray();
-					//mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }); // TODO should use a different xz value
-					//mWaterShader.setFloat("planeWorldWidth", chunkWidth);
 					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
 
 					mArtisticParams.updateGPU({ uiManager });
@@ -353,6 +352,7 @@ private:
 	UniformBuffer<BufferTypes::ColourParams> mColourParams{ 3 };
 	UniformBuffer<BufferTypes::PerFrameInfo> mPerFrameInfo{ 4 };
 	UniformBuffer<BufferTypes::TerrainImagesInfo> mTerrainImagesInfo{ 5, true };
+	UniformBuffer<BufferTypes::AtmosphereInfo> mAtmosphereInfo{ 6 };
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;

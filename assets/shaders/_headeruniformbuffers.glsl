@@ -72,11 +72,29 @@ layout(std140, binding = 4) uniform PerFrameInfo {
 	vec3 cameraPos; float g;
 	vec3 dirToSun; float gg;
 	float time;
+	float fovX;
+	float fovY;
+	float yaw;
+	float pitch;
 } perFrameInfo;
 
 layout(std430, binding = 5) buffer TerrainImagesInfo {
 	float imageScales[IMAGECOUNT];
 	vec2 imagePositions[IMAGECOUNT];
 } terrainImagesInfo;
+
+layout(std140, binding = 6) uniform AtmosphereInfo {
+	vec3 rayleighScattering; float fregerfg;
+	vec3 mieScattering; float gwrefwe;
+	float maxRadius;
+	float minRadius;
+	float centerY;
+	float rayleighDensityFalloff;
+	float mieDensityFalloff;
+	float rayleighDensityScale;
+	float mieDensityScale;
+	float rayleighG;
+	float mieG;
+} atmosphereInfo;
 
 #endif

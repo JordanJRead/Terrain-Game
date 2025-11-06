@@ -22,6 +22,10 @@ public:
 	float getFarPlaneDist() const { return mFar; }
 	float getXNear() const { return mXNear; }
 	float getYNear() const { return mYNear; }
+	float getFOVX() const { return 2 * atan(tan(mFOVYRad / 2) * mAspectRatio); }
+	float getFOVY() const { return mFOVYRad; }
+	float getYaw() const { return mYaw; }
+	float getPitch() const { return mPitch; }
 
 private:
 	float mPitch{ 0 }; // In radians
