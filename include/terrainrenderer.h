@@ -292,7 +292,6 @@ public:
 	float getHeightAtPoint(const glm::vec2& worldPos, const UIManager& uiManager) const {
 		glm::vec2 pos = worldPos / uiManager.mTerrainScale.data();
 		float mountain = MathHelper::perlin(pos * uiManager.mMountainFrequency.data(), 0);
-
 		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
 		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
@@ -308,11 +307,11 @@ public:
 		river = pow(river, uiManager.mRiverExponent.data());
 
 		river *= uiManager.mRiverStrength.data();
-		river *= (mountain * 5 + 1);
+		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
 		// Lakes
 		float lake = MathHelper::perlin(pos * uiManager.mLakeFrequency.data(), 1);
-
+		
 		lake = MathHelper::extreme(lake);
 
 		lake = pow(lake, uiManager.mLakeExponent.data());
@@ -320,7 +319,7 @@ public:
 		lake *= uiManager.mLakeStrength.data();
 		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
-		float terrainHeight = 0;
+		float terrainInfo = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
 		float spread = 1;
@@ -329,18 +328,18 @@ public:
 			glm::vec2 samplePos = pos * spread;
 			float perlinData = MathHelper::perlin(samplePos, 0);
 
-			terrainHeight += amplitude * perlinData;
-
+			terrainInfo += amplitude * perlinData;
 			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
 			spread *= uiManager.mTerrainSpreadFactor.data();
 		}
 
-		float finalOutput = 0;
-		finalOutput = terrainHeight * mountain;
+		terrainInfo *= mountain;
 
-		finalOutput -= river;
-		finalOutput -= lake;
-		return finalOutput;
+		terrainInfo -= river;
+
+		terrainInfo -= lake;
+
+		return terrainInfo;
 	}
 
 private:
