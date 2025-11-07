@@ -46,7 +46,7 @@ public:
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		mDayTime.mData += deltaTime * 0.1;
+		//mDayTime.mData += deltaTime * 0.01;
 		if (visible) {
 
 			// FPS

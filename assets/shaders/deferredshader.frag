@@ -227,7 +227,7 @@ void main() {
 
 	if (isSky) {
 		if (dot(cameraRayDir, perFrameInfo.dirToSun) > 0.999) {
-			FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, true, vec3(0, 0, 0), colours.sunColour), 1);
+			FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, true, vec3(0, 0, 0), colours.sunColour * 100), 1);
 		}
 		else {
 			FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0, 0, 0), vec3(0, 0, 0)), 1);
