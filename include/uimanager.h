@@ -372,7 +372,7 @@ public:
 
 	// Plane Chunking
 	UIElement<float> mChunkWidth{ 16 };
-	UIElement<int>    mChunkCount{ 40 };
+	UIElement<int>    mChunkCount{ 55 };
 	UIElement<int>    mLowQualityPlaneVertices{ 20 };
 	UIElement<int>    mHighQualityPlaneQualityScale{ 6 };
 	UIElement<float> mVertexLODDistance{ 110 };
@@ -392,8 +392,8 @@ public:
 
 	// Artistic Parameters
 	UIElement<float> mTerrainScale{ 58 };
-	UIElement<float> mViewDistance{ 328 };
-	UIElement<float> mFogEncroachment{ 68 };
+	UIElement<float> mViewDistance{ 457 };
+	UIElement<float> mFogEncroachment{ 87 };
 	UIElement<float> mGrassDotCutoff{ 0.6 };
 	UIElement<float> mSnowDotCutoff{ 0.3 };
 	UIElement<int>   mShellCount{ 30 };
