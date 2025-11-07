@@ -356,7 +356,7 @@ public:
 	// Terrain Parameters
 	UIElement<int>    mTerrainOctaveCount        { 15 };
 	UIElement<int>    mTerrainSmoothOctaveCount  { 15 };
-	UIElement<float> mTerrainAmplitude	         { 80 };
+	UIElement<float> mTerrainAmplitude	         { 250 };
 	UIElement<float> mTerrainAmplitudeMultiplier{ 0.4 };
 	UIElement<float> mTerrainSpreadFactor       { 2 };
 	UIElement<float> mMountainFrequency         { 0.2 };
@@ -365,8 +365,8 @@ public:
 	UIElement<float> mRiverFrequency              { 0.05 };
 	UIElement<float> mRiverStrength               { 20 };
 	UIElement<float> mRiverExponent{ 32 };
-	UIElement<float> mWaterEatingMountain{ 5 };
-	UIElement<float> mLakeFrequency{ 0.04 };
+	UIElement<float> mWaterEatingMountain{ 30 };
+	UIElement<float> mLakeFrequency{ 0.06 };
 	UIElement<float> mLakeStrength{ 40 };
 	UIElement<float> mLakeExponent{ 100 }; // 100 for quintic, 5 not
 
@@ -391,7 +391,7 @@ public:
 	UIElement<float> mWaterShininess{ 200 };
 
 	// Artistic Parameters
-	UIElement<float> mTerrainScale{ 22 };
+	UIElement<float> mTerrainScale{ 58 };
 	UIElement<float> mViewDistance{ 328 };
 	UIElement<float> mFogEncroachment{ 68 };
 	UIElement<float> mGrassDotCutoff{ 0.6 };
@@ -402,7 +402,7 @@ public:
 	UIElement<float> mSnowNoiseScale{ 1 };
 	UIElement<float> mShellMaxCutoff{ 1 };
 	UIElement<float> mShellBaseCutoff{ 0.2 };
-	UIElement<float> mSnowHeight{ 28 };
+	UIElement<float> mSnowHeight{ 65 };
 	UIElement<float> mSeaFoam{ 0.4 };
 	UIElement<float> mSnowLineNoiseScale{ 0.3 };
 	UIElement<float> mSnowLineNoiseAmplitude{ 2.75 };
