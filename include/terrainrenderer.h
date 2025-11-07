@@ -517,11 +517,11 @@ private:
 			} };
 
 		for (size_t i{ 0 }; i < obbCorners.size(); ++i) {
-			obbCorners[i] = camera.getViewMatrix() * glm::vec4{ obbCorners[i], 1 }; // ?
+			obbCorners[i] = camera.getViewMatrix() * glm::vec4{ obbCorners[i], 1 };
 		}
 
 		OBB obb{ obbCorners };
-
+		 
 		std::array<glm::vec3, 5> frustumNormals{ {
 			{ 0.0, 0.0, 1 },
 			{ 0.0, -near, yNear },

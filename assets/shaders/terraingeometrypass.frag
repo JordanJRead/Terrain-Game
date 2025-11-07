@@ -21,7 +21,8 @@ uniform samplerCube skybox;
 
 void main() {
 	vec2 flatWorldPos = fragIn.groundWorldPos.xz;
-	vec4 terrainInfo = getTerrainInfo(flatWorldPos, true);
+	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
+	vec4 smoothTerrainInfo = getTerrainInfo(flatWorldPos, true);
 	float mountain = terrainInfo.a;
 	mountain = extreme(mountain);
 	mountain = pullup(mountain);
@@ -34,7 +35,8 @@ void main() {
 
 	// Terrain
 	float groundHeight = fragIn.groundWorldPos.y;
-	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
+	vec3 normal       = normalize(vec3(-terrainInfo.y,       1, -terrainInfo.z));
+	vec3 smoothNormal = normalize(vec3(-smoothTerrainInfo.y, 1, -smoothTerrainInfo.z));
 
 	
 	vec3 groundAlbedo = colours.dirtColour * (1 - mountain) + mountain * colours.mountainColour;
@@ -84,7 +86,8 @@ void main() {
 	}
 
 	float currDot = dot(normal, vec3(0, 1, 0));
-	bool shallowEnough = currDot >= currDotCutoff;
+	float smoothDot = dot(smoothNormal, vec3(0, 1, 0));
+	bool shallowEnough = smoothDot >= currDotCutoff;
 
 	// Get smaller at harder dots
 	randomTexelHeight *= ((currDot - currDotCutoff) / (1 - currDotCutoff));

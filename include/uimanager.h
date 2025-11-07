@@ -46,7 +46,7 @@ public:
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
+		mDayTime.mData += deltaTime * 0.1;
 		if (visible) {
 
 			// FPS
@@ -355,7 +355,7 @@ public:
 
 	// Terrain Parameters
 	UIElement<int>    mTerrainOctaveCount        { 15 };
-	UIElement<int>    mTerrainSmoothOctaveCount  { 15 };
+	UIElement<int>    mTerrainSmoothOctaveCount  { 6 };
 	UIElement<float> mTerrainAmplitude	         { 250 };
 	UIElement<float> mTerrainAmplitudeMultiplier{ 0.4 };
 	UIElement<float> mTerrainSpreadFactor       { 2 };
@@ -415,7 +415,7 @@ public:
 	UIElement<float> mAtmosphereWidth{ 94100 };
 	UIElement<float> mAtmosphereRayleighDensityFalloff{ 1 };
 	UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
-	UIElement<float> mAtmosphereRayleighDensityScale{ 0.021 };
+	UIElement<float> mAtmosphereRayleighDensityScale{ 0.041 };
 	UIElement<float> mAtmosphereMieDensityScale{ 0.22 };
 	UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 33.6, 88} };
 	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };

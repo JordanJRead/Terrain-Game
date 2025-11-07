@@ -20,7 +20,7 @@ in flat int shellIndex;
 
 void main() {
 	vec2 flatWorldPos = fragIn.groundWorldPos.xz;
-	vec4 terrainInfo = getTerrainInfo(flatWorldPos, true);
+	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	
 	bool isShell = shellIndex >= 0;
 

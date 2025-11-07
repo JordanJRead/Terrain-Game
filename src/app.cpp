@@ -99,8 +99,7 @@ void App::loop() {
 		glDrawElements(GL_TRIANGLES, mScreenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);
 		glEnable(GL_DEPTH_TEST);
 
-		if (mIsUIVisible)
-			mUIManager.render(deltaTime, mIsUIVisible);
+		mUIManager.render(deltaTime, mIsUIVisible);
 
 		// Debug physics plane
 		//PlaneGPU gpuPlane{ physicsPlane };
