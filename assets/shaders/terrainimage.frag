@@ -36,7 +36,7 @@ vec4 createTerrainInfo(vec2 pos) {
 	river.yz *= scale;
 	river.yz *= terrainParams.riverScale;
 	river *= terrainParams.riverStrength;
-	river.yz = river.yz * (mountain.x * 5 + 1) + 5 * mountain.yz * river.x;
+	river.yz = river.yz * (mountain.x * terrainParams.waterEatingMountain + 1) + terrainParams.waterEatingMountain * mountain.yz * river.x;
 	river.x *= (mountain.x * terrainParams.waterEatingMountain + 1);
 
 	// Lakes
@@ -51,7 +51,7 @@ vec4 createTerrainInfo(vec2 pos) {
 	lake.yz *= scale;
 	lake.yz *= terrainParams.lakeScale;
 	lake *= terrainParams.lakeStrength;
-	lake.yz = lake.yz * (mountain.x * 5 + 1) + 5 * mountain.yz * lake.x;
+	lake.yz = lake.yz * (mountain.x * terrainParams.waterEatingMountain + 1) + terrainParams.waterEatingMountain * mountain.yz * lake.x;
 	lake.x *= (mountain.x * terrainParams.waterEatingMountain + 1);
 
 	vec3 terrainInfo = vec3(0, 0, 0);
