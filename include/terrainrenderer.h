@@ -29,7 +29,8 @@ class TerrainRenderer {
 public:
 	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos, std::array<glm::vec2, ImageCount> imageWorldPositions, const UIManager& uiManager)
 		: mLowQualityPlane{ uiManager.mLowQualityPlaneVertices.data() }
-		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() } // ?
+		, mMediumQualityPlane{ uiManager.mMediumQualityPlaneQualityScale.data() }
+		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() } // ? temporary i think?
 		, mReallyLowQualityPlane{ 2 }
 
 		, mTerrainImageShader{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
@@ -134,6 +135,11 @@ public:
 			mHighQualityPlane.rebuild(highQualityVerticesPerEdge);
 		}
 
+		int mediumQualityVerticesPerEdge{ uiManager.mMediumQualityPlaneQualityScale.data() * (uiManager.mLowQualityPlaneVertices.data() - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this
+		if (mediumQualityVerticesPerEdge != mMediumQualityPlane.getVerticesPerEdge()) {
+			mMediumQualityPlane.rebuild(mediumQualityVerticesPerEdge);
+		}
+
 		// Update images
 		for (int i{ 0 }; i < ImageCount; ++i) {
 
@@ -202,6 +208,7 @@ public:
 			targetFramebuffer.use();
 		}
 		// For each chunk
+		int verticesDrawn{ 0 };
 		int visibleChunks{ 0 };
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mChunkWidth.data() };
@@ -225,8 +232,9 @@ public:
 				if (isVisible) {
 					visibleChunks += 1;
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
-					bool highQuality{ !(chunkDist > uiManager.mVertexLODDistance.data()) };
-					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : mLowQualityPlane };
+					bool highQuality{ chunkDist < uiManager.mVertexLODDistanceNear.data() };
+					bool mediumQuality{ chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
+					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : (mediumQuality ? mMediumQualityPlane : mLowQualityPlane) };
 
 					//mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
 					//mTerrainShader.setFloat("planeWorldWidth", chunkWidth);
@@ -261,6 +269,7 @@ public:
 						mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
 						mTerrainShader.setFloat("planeWorldWidth", chunkWidth);
 					}
+					verticesDrawn += (newShellCount + 1) * currPlane.getIndexCount();
 					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
 
 					// Draw water
@@ -283,6 +292,7 @@ public:
 		}
 		if (uiManager.mIsDeferredRendering.data())
 			mDeferredRenderer.doDeferredShading(targetFramebuffer, mScreenQuad);
+		//std::cout << verticesDrawn << "\n";
 	}
 
 	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
@@ -368,6 +378,7 @@ private:
 	//glm::vec3 mDirToLight{ -0.008373, 0.089878, 0.995917 };
 
 	PlaneGPU mLowQualityPlane;
+	PlaneGPU mMediumQualityPlane;
 	PlaneGPU mHighQualityPlane;
 	PlaneGPU mReallyLowQualityPlane;
 
@@ -391,7 +402,6 @@ private:
 		float spread = 1;
 
 		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			;
 			float perlinData = 1;
 
 			terrainHeight += amplitude * perlinData;

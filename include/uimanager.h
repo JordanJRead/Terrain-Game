@@ -273,11 +273,17 @@ public:
 			ImGui::DragInt("Low quality plane vertices", mLowQualityPlaneVertices.getDataPtr(), 1, 2, 1000);
 			mLowQualityPlaneVertices.update();
 
+			ImGui::DragInt("Medium quality plane quality scale", mMediumQualityPlaneQualityScale.getDataPtr(), 1, 1, 100);
+			mMediumQualityPlaneQualityScale.update();
+
 			ImGui::DragInt("High quality plane quality scale", mHighQualityPlaneQualityScale.getDataPtr(), 1, 1, 100);
 			mHighQualityPlaneQualityScale.update();
 
-			ImGui::DragFloat("Vertex LOD dist", mVertexLODDistance.getDataPtr(), 1, 1, 1000);
-			mVertexLODDistance.update();
+			ImGui::DragFloat("Near vertex LOD dist", mVertexLODDistanceNear.getDataPtr(), 1, 1, 1000);
+			mVertexLODDistanceNear.update();
+
+			ImGui::DragFloat("Far vertex LOD dist", mVertexLODDistanceFar.getDataPtr(), 1, 1, 1000);
+			mVertexLODDistanceFar.update();
 
 			ImGui::DragFloat("Shell LOD dist", mShellLODDistance.getDataPtr(), 1, 1, 1000);
 			mShellLODDistance.update();
@@ -327,10 +333,10 @@ public:
 
 	// Terrain Images
 	std::array<UIElement<float>, 4> mImageWorldSizes{
-		UIElement<float>{ 1 },
-		UIElement<float>{ 4 },
-		UIElement<float>{ 12 },
-		UIElement<float>{ 36 }
+		UIElement<float>{ 2 },
+		UIElement<float>{ 14 },
+		UIElement<float>{ 53 },
+		UIElement<float>{ 282 }
 	};
 
 	std::array<UIElement<int>, 4> mImagePixelDimensions{
@@ -371,11 +377,13 @@ public:
 	UIElement<float> mLakeExponent{ 100 }; // 100 for quintic, 5 not
 
 	// Plane Chunking
-	UIElement<float> mChunkWidth{ 16 };
+	UIElement<float> mChunkWidth{ 256 };
 	UIElement<int>    mChunkCount{ 55 };
 	UIElement<int>    mLowQualityPlaneVertices{ 20 };
-	UIElement<int>    mHighQualityPlaneQualityScale{ 6 };
-	UIElement<float> mVertexLODDistance{ 110 };
+	UIElement<int>    mMediumQualityPlaneQualityScale{ 16 };
+	UIElement<int>    mHighQualityPlaneQualityScale{ 20 };
+	UIElement<float> mVertexLODDistanceNear{ 110 };
+	UIElement<float> mVertexLODDistanceFar{ 1000 };
 	UIElement<float> mShellLODDistance{ 60 };
 	UIElement<float> mWaterHeight{ -1.5 };
 	UIElement<bool> mFrustumCulling{ true };
@@ -392,8 +400,8 @@ public:
 
 	// Artistic Parameters
 	UIElement<float> mTerrainScale{ 58 };
-	UIElement<float> mViewDistance{ 457 };
-	UIElement<float> mFogEncroachment{ 87 };
+	UIElement<float> mViewDistance{ 6766 };
+	UIElement<float> mFogEncroachment{ 730 };
 	UIElement<float> mGrassDotCutoff{ 0.6 };
 	UIElement<float> mSnowDotCutoff{ 0.3 };
 	UIElement<int>   mShellCount{ 30 };
@@ -415,8 +423,8 @@ public:
 	UIElement<float> mAtmosphereWidth{ 136100 };
 	UIElement<float> mAtmosphereRayleighDensityFalloff{ 1 };
 	UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
-	UIElement<float> mAtmosphereRayleighDensityScale{ 0.002 };
-	UIElement<float> mAtmosphereMieDensityScale{ 0.22 };
+	UIElement<float> mAtmosphereRayleighDensityScale{ 0.004 };
+	UIElement<float> mAtmosphereMieDensityScale{ 0.06 };
 	UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 106, 594} };
 	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
 	UIElement<float> mAtmosphereRayleighG{ 0 };
