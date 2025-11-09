@@ -411,17 +411,29 @@ public:
 	UIElement<float> mShellAmbientOcclusion{ 0.2 };
 
 	// Atmosphere Parameters
-	UIElement<float> mAtmosphereHeight{ 3345 };
-	UIElement<float> mAtmosphereWidth{ 94100 };
+	UIElement<float> mAtmosphereHeight{ 3498 };
+	UIElement<float> mAtmosphereWidth{ 136100 };
 	UIElement<float> mAtmosphereRayleighDensityFalloff{ 1 };
 	UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
-	UIElement<float> mAtmosphereRayleighDensityScale{ 0.041 };
+	UIElement<float> mAtmosphereRayleighDensityScale{ 0.002 };
 	UIElement<float> mAtmosphereMieDensityScale{ 0.22 };
-	UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 33.6, 88} };
+	UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 106, 594} };
 	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957 };
 	UIElement<float> mHDRScale{ 2 };
+
+	//UIElement<float> mAtmosphereHeight{ 2140 };
+	//UIElement<float> mAtmosphereWidth{ 140100 };
+	//UIElement<float> mAtmosphereRayleighDensityFalloff{ 1 };
+	//UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
+	//UIElement<float> mAtmosphereRayleighDensityScale{ 0.002 };
+	//UIElement<float> mAtmosphereMieDensityScale{ 0.22 };
+	//UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 189, 594} };
+	//UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
+	//UIElement<float> mAtmosphereRayleighG{ 0 };
+	//UIElement<float> mAtmosphereMieG{ 0.957 };
+	//UIElement<float> mHDRScale{ 2 };
 };
 
 #endif

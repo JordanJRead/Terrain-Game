@@ -126,7 +126,62 @@ vec3 perlin(vec2 pos, int reroll) {
 
 	return vec3(noise, tangents.x, tangents.y);
 }
+/*
+float perlin3d(vec3 pos, int reroll) {
+	int x0 = getClosestInt(floor(pos.x));
+	int x1 = getClosestInt(ceil(pos.x));
+	int y0 = getClosestInt(floor(pos.y));
+	int y1 = getClosestInt(ceil(pos.y));
+	int z0 = getClosestInt(floor(pos.z));
+	int z1 = getClosestInt(ceil(pos.z));
 
+	vec3 p000 = vec3(x0, y0, z0);
+
+	vec3 relPoint = pos - p000;
+	// TODO label 3d point
+	uint rui00 = rand(labelPoint(x0, y0));
+	uint rui10 = rand(labelPoint(x1, y0));
+	uint rui01 = rand(labelPoint(x0, y1));
+	uint rui11 = rand(labelPoint(x1, y1));
+
+	for (int i = 0; i < reroll; ++i) {
+		rui00 = rand(rui00);
+		rui10 = rand(rui10);
+		rui01 = rand(rui01);
+		rui11 = rand(rui11);
+	}
+
+	float r00 = randToFloat(rui00);
+	float r10 = randToFloat(rui10);
+	float r01 = randToFloat(rui01);
+	float r11 = randToFloat(rui11);
+
+	vec2 g00 = randUnitVector(r00);
+	vec2 g10 = randUnitVector(r10);
+	vec2 g01 = randUnitVector(r01);
+	vec2 g11 = randUnitVector(r11);
+
+	vec2 v00 = relPoint;
+	vec2 v11 = relPoint - vec2(1, 1);
+	vec2 v10 = relPoint - vec2(1, 0);
+	vec2 v01 = relPoint - vec2(0, 1);
+
+	float d00 = dot(v00, g00);
+	float d10 = dot(v10, g10);
+	float d01 = dot(v01, g01);
+	float d11 = dot(v11, g11);
+
+	// From https://iquilezles.org/articles/gradientnoise/ and Acerola's github
+	vec2 u = quinticInterpolation(relPoint);
+	vec2 du = quinticDerivative(relPoint);
+	float noise = d00 + u.x * (d10 - d00) + u.y * (d01 - d00) + u.x * u.y * (d00 - d10 - d01 + d11);
+	noise = noise / 1.414 + 0.5;
+	vec2 tangents = g00 + u.x * (g10 - g00) + u.y * (g01 - g00) + u.x * u.y * (g00 - g10 - g01 + g11) + du * (u.yx * (d00 - d10 - d01 + d11) + vec2(d10, d01) - d00);
+	tangents /= 1.414;
+
+	return vec3(noise, tangents.x, tangents.y);
+}
+*/
 float extreme(float x) {
 	return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
 }
