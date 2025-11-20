@@ -8,8 +8,10 @@
 #include "camera.h"
 #include <iostream>
 #include <array>
+#include "imagecount.h"
 
 namespace BufferTypes {
+	
 	struct TerrainParams {
 		TerrainParams() : octaveCount{ -1 } {}
 		TerrainParams(const UIManager& uiManager)
@@ -175,14 +177,14 @@ namespace BufferTypes {
 	};
 
 	struct TerrainImagesInfo {
-		TerrainImagesInfo() : imageScales{ 0, 0, 0, 0} {}
-		TerrainImagesInfo(const std::array<float ,4>& _imageScales, const std::array<glm::vec2, 4>& _imagePositions)
+		TerrainImagesInfo() : imageScales{ {0} } {}
+		TerrainImagesInfo(const std::array<float, ImageCount>& _imageScales, const std::array<glm::vec2, ImageCount>& _imagePositions)
 			: imageScales{ _imageScales }
 			, imagePositions{ _imagePositions } { }
 		bool operator==(const TerrainImagesInfo&) const = default;
 
-		std::array<float, 4> imageScales;
-		std::array<glm::vec2, 4> imagePositions;
+		std::array<glm::vec2, ImageCount> imagePositions;
+		std::array<float, ImageCount> imageScales;
 	};
 
 	struct AtmosphereInfo {

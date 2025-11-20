@@ -21,13 +21,11 @@
 #include "framebuffer.h"
 #include "uniformbuffer.h"
 #include "deferredrenderer.h"
-
-constexpr int ImageCount{ 4 };
-//template <int ImageCount>
+#include "imagecount.h"
 
 class TerrainRenderer {
 public:
-	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos, std::array<glm::vec2, ImageCount> imageWorldPositions, const UIManager& uiManager)
+	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos, const UIManager& uiManager)
 		: mLowQualityPlane{ uiManager.mLowQualityPlaneVertices.data() }
 		, mMediumQualityPlane{ uiManager.mMediumQualityPlaneQualityScale.data() }
 		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() } // ? temporary i think?
@@ -38,13 +36,12 @@ public:
 		, mWaterShader{ "assets/shaders/water.vert", "assets/shaders/water.frag" }
 		, mSkyboxShader{ "assets/shaders/skybox.vert", "assets/shaders/skybox.frag" }
 
-		, mImageWorldPositions{ imageWorldPositions }
-
 		, mImages{ {
 			{uiManager.mImagePixelDimensions[0].data(), uiManager.mImageWorldSizes[0].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 0, uiManager)},
 			{uiManager.mImagePixelDimensions[1].data(), uiManager.mImageWorldSizes[1].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 1, uiManager)},
 			{uiManager.mImagePixelDimensions[2].data(), uiManager.mImageWorldSizes[2].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 2, uiManager)},
-			{uiManager.mImagePixelDimensions[3].data(), uiManager.mImageWorldSizes[3].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 3, uiManager)}
+			{uiManager.mImagePixelDimensions[3].data(), uiManager.mImageWorldSizes[3].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 3, uiManager)},
+			{uiManager.mImagePixelDimensions[4].data(), uiManager.mImageWorldSizes[4].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 4, uiManager)}
 		} }
 
 		, mDaySkybox{ {
@@ -93,9 +90,9 @@ public:
 
 		// Set shader uniforms
 		mWaterShader.use();
-		mWaterShader.setInt("skybox", 7);
+		mWaterShader.setInt("skybox", 8);
 		mTerrainShader.use();
-		mTerrainShader.setInt("skybox", 7);
+		mTerrainShader.setInt("skybox", 8);
 		for (int i{ 0 }; i < ImageCount; ++i) {
 			std::string indexString{ std::to_string(i) };
 
@@ -108,7 +105,7 @@ public:
 		}
 
 		mSkyboxShader.use();
-		mSkyboxShader.setInt("skybox", 7);
+		mSkyboxShader.setInt("skybox", 8);
 	}
 
 	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer<1>& targetFramebuffer) {
@@ -135,7 +132,7 @@ public:
 			mHighQualityPlane.rebuild(highQualityVerticesPerEdge);
 		}
 
-		int mediumQualityVerticesPerEdge{ uiManager.mMediumQualityPlaneQualityScale.data() * (uiManager.mLowQualityPlaneVertices.data() - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this
+		int mediumQualityVerticesPerEdge{ uiManager.mMediumQualityPlaneQualityScale.data() * (uiManager.mLowQualityPlaneVertices.data() - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this`	
 		if (mediumQualityVerticesPerEdge != mMediumQualityPlane.getVerticesPerEdge()) {
 			mMediumQualityPlane.rebuild(mediumQualityVerticesPerEdge);
 		}
@@ -177,20 +174,20 @@ public:
 				mImages[i].updateTexture(mScreenQuad, mTerrainImageShader); // binds another shader
 			}
 		}
-		mTerrainImagesInfo.updateGPU({ {uiManager.mImageWorldSizes[0].data(), uiManager.mImageWorldSizes[1].data(), uiManager.mImageWorldSizes[2].data(), uiManager.mImageWorldSizes[3].data()}, mImageWorldPositions });
+		mTerrainImagesInfo.updateGPU({ uiManager.getImageSizes(), mImageWorldPositions });
 
 		// Render skybox
 		if (!uiManager.mIsDeferredRendering.data()) {
 			targetFramebuffer.use();
 			mSkyboxShader.use();
-			mDaySkybox.bindTexture(7);
+			mDaySkybox.bindTexture(8);
 			mCubeVertices.useVertexArray();
 			glDisable(GL_DEPTH_TEST);
 			glDrawElements(GL_TRIANGLES, mCubeVertices.getIndexCount(), GL_UNSIGNED_INT, 0);
 			glEnable(GL_DEPTH_TEST);
 		}
 
-		for (int i{ 0 }; i < mImages.size(); ++i) {
+		for (int i{ 0 }; i < ImageCount; ++i) {
 			mImages[i].bindImage(i);
 		}
 

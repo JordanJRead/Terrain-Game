@@ -7,6 +7,7 @@
 #include "framebuffer.h"
 #include "vertexarray.h"
 #include "glad/glad.h"
+#include "imagecount.h"
 
 class DeferredRenderer {
 public:
@@ -16,13 +17,14 @@ public:
 		, mShaderWaterGeometry{ "assets/shaders/watergeometrypass.vert", "assets/shaders/watergeometrypass.frag" }
 		, mShaderDeferred{ "assets/shaders/deferredshader.vert", "assets/shaders/deferredshader.frag" }
 	{
-		for (int i{ 0 }; i < 4; ++i) {
+		mShaderDeferred.use();
+		mShaderDeferred.setInt("GBuffer_GroundWorldPosShellProgress", 5);
+		mShaderDeferred.setInt("GBuffer_WorldPosMountain", 6);
+		mShaderDeferred.setInt("GBuffer_NormalDoesTexelExist", 7);
+		for (int i{ 0 }; i < ImageCount; ++i) {
 			std::string indexString{ std::to_string(i) };
 
 			mShaderDeferred.use();
-			mShaderDeferred.setInt("GBuffer_GroundWorldPosShellProgress", 4);
-			mShaderDeferred.setInt("GBuffer_WorldPosMountain", 5);
-			mShaderDeferred.setInt("GBuffer_NormalDoesTexelExist", 6);
 			mShaderDeferred.setInt("images[" + indexString + "]", i);
 			mShaderTerrainGeometry.use();
 			mShaderTerrainGeometry.setInt("images[" + indexString + "]", i);
@@ -43,9 +45,9 @@ public:
 	}
 	void doDeferredShading(const Framebuffer<1>& targetFramebuffer, const VertexArray& screenQuad) {
 		mFramebuffer.use();
-		mFramebuffer.bindColourTexture(0, 4);
-		mFramebuffer.bindColourTexture(1, 5);
-		mFramebuffer.bindColourTexture(2, 6);
+		mFramebuffer.bindColourTexture(0, 5); // TODO
+		mFramebuffer.bindColourTexture(1, 6);
+		mFramebuffer.bindColourTexture(2, 7);
 
 		mShaderDeferred.use();
 		targetFramebuffer.use();

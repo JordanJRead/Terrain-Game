@@ -8,6 +8,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include <string>
 #include <GLFW/glfw3.h>
+#include "imagecount.h"
 
 class UIManager {
 private:
@@ -306,13 +307,13 @@ public:
 
 			// Terrain Images
 			ImGui::Begin("Terrain Images");
-			for (int i{ 0 }; i < 4; ++i) {
+			for (int i{ 0 }; i < ImageCount; ++i) {
 				std::string indexString{ std::to_string(i + 1) };
 
 				ImGui::DragFloat(("World size " + indexString).c_str(), mImageWorldSizes[i].getDataPtr(), 1, 1, 100000);
 				mImageWorldSizes[i].update();
 
-				if (i != 3 && mImageWorldSizes[i + 1].data() < mImageWorldSizes[i].data()) {
+				if (i != ImageCount - 1 && mImageWorldSizes[i + 1].data() < mImageWorldSizes[i].data()) {
 					mImageWorldSizes[i + 1].mData = mImageWorldSizes[i].data();
 				}
 
@@ -332,19 +333,29 @@ public:
 	double mDisplayDeltaTime{ 1 };
 
 	// Terrain Images
-	std::array<UIElement<float>, 4> mImageWorldSizes{
-		UIElement<float>{ 2 },
-		UIElement<float>{ 14 },
-		UIElement<float>{ 53 },
-		UIElement<float>{ 282 }
+	std::array<UIElement<float>, ImageCount> mImageWorldSizes{
+		UIElement<float>{ 1 },
+		UIElement<float>{ 4 },
+		UIElement<float>{ 12 },
+		UIElement<float>{ 64 },
+		UIElement<float>{ 220 }
 	};
 
-	std::array<UIElement<int>, 4> mImagePixelDimensions{
+	std::array<UIElement<int>, ImageCount> mImagePixelDimensions{
 		UIElement<int>{ 2500 },
 		UIElement<int>{ 2500 },
 		UIElement<int>{ 2500 },
+		UIElement<int>{ 5000 },
 		UIElement<int>{ 5000 }
 	};
+
+	std::array<float, ImageCount> getImageSizes() const {
+		std::array<float, ImageCount> output;
+		for (int i{ 0 }; i < ImageCount; ++i) {
+			output[i] = mImageWorldSizes[i].mData;
+		}
+		return output;
+	}
 
 	// Day
 	UIElement<float> mDayTime{ 0.5 };
@@ -378,10 +389,10 @@ public:
 
 	// Plane Chunking
 	UIElement<float> mChunkWidth{ 256 };
-	UIElement<int>    mChunkCount{ 55 };
-	UIElement<int>    mLowQualityPlaneVertices{ 20 };
-	UIElement<int>    mMediumQualityPlaneQualityScale{ 16 };
-	UIElement<int>    mHighQualityPlaneQualityScale{ 20 };
+	UIElement<int>    mChunkCount{ 40 };
+	UIElement<int>    mLowQualityPlaneVertices{ 40 };
+	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?
+	UIElement<int>    mHighQualityPlaneQualityScale{ 10 };
 	UIElement<float> mVertexLODDistanceNear{ 110 };
 	UIElement<float> mVertexLODDistanceFar{ 1000 };
 	UIElement<float> mShellLODDistance{ 60 };
@@ -400,7 +411,7 @@ public:
 
 	// Artistic Parameters
 	UIElement<float> mTerrainScale{ 58 };
-	UIElement<float> mViewDistance{ 6766 };
+	UIElement<float> mViewDistance{ 5000 };
 	UIElement<float> mFogEncroachment{ 730 };
 	UIElement<float> mGrassDotCutoff{ 0.6 };
 	UIElement<float> mSnowDotCutoff{ 0.3 };

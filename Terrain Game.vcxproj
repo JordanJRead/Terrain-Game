@@ -173,6 +173,7 @@
   <ItemGroup>
     <ClInclude Include="include\deferredrenderer.h" />
     <ClInclude Include="include\framebuffer.h" />
+    <ClInclude Include="include\imagecount.h" />
     <ClInclude Include="include\mathhelper.h" />
     <ClInclude Include="include\OpenGLObjects\RBO.h" />
     <ClInclude Include="include\physics.h" />

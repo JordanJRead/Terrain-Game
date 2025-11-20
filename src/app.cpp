@@ -8,14 +8,14 @@
 #include <array>
 #include "glm/glm.hpp"
 #include "planephysics.h"
-#include "planegpu.h"
+#include "planegpu.h"`
 
 App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	: mCamera{ screenWidth, screenHeight, {0, 20, 0} } // x = 2883548 for farlands
 	, mWindow{ window }
 	, mScreenWidth{ screenWidth }
 	, mScreenHeight{ screenHeight }
-	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition(), std::array<glm::vec2, 4> {glm::vec2{0}, glm::vec2{0}, glm::vec2{0}}, mUIManager }
+	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition(), mUIManager }
 	, mFramebuffer{ screenWidth, screenHeight, GL_RGBA32F }
 {
 	std::vector<float> vertexData{
@@ -74,7 +74,7 @@ void App::loop() {
 		prevFrame = glfwGetTime();
 		//-385 1703 - cool thing
 		// Physics
-		PlanePhysics physicsPlane{ 5, mCamera.getPosition(), 2, mTerrainRenderer, mUIManager};
+		PlanePhysics physicsPlane{ 30, mCamera.getPosition(), 10, mTerrainRenderer, mUIManager};
 
 		/// Input
 		handleInput();
