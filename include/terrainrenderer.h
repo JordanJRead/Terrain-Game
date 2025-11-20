@@ -68,8 +68,8 @@ public:
 			} }
 		, mDeferredRenderer{ screenWidth, screenHeight }
 	{
-		mMinTerrainHeight = getMinHeight(uiManager);
-		mMaxTerrainHeight = getMaxHeight(uiManager);
+		mMinTerrainHeight = -1000;// getMinHeight(uiManager);
+		mMaxTerrainHeight = 1000;// getMaxHeight(uiManager);
 
 		std::vector<float> vertexData{
 		-1, -1,
@@ -111,8 +111,8 @@ public:
 	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer<1>& targetFramebuffer) {
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
-			mMinTerrainHeight = getMinHeight(uiManager);
-			mMaxTerrainHeight = getMaxHeight(uiManager);
+			//mMinTerrainHeight = getMinHeight(uiManager);
+			//mMaxTerrainHeight = getMaxHeight(uiManager);
 		}
 		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
 		mArtisticParams.updateGPU(uiManager);
@@ -191,9 +191,6 @@ public:
 			mImages[i].bindImage(i);
 		}
 
-		float maxChunkHeight{ getMaxHeight(uiManager) };
-
-		float minChunkHeight{ getMinHeight(uiManager) };
 		glm::vec3 cameraForward{ camera.getForward() };
 
 		if (uiManager.mIsDeferredRendering.data()) {
@@ -216,12 +213,12 @@ public:
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
-				std::array<float, 2> yVals{ minChunkHeight, maxChunkHeight };
+				std::array<float, 2> yVals{ mMinTerrainHeight, mMaxTerrainHeight};
 				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0, chunkPos.z + chunkWidth / 2.0 };
 
 				bool isVisible{ false };
 				if (uiManager.mFrustumCulling.data())
-					isVisible = isAABBInFrustum(camera, { {chunkPos.x - chunkWidth / 2.0, minChunkHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, maxChunkHeight, chunkPos.z + chunkWidth / 2.0} });
+					isVisible = isAABBInFrustum(camera, { {chunkPos.x - chunkWidth / 2.0, mMinTerrainHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, mMaxTerrainHeight, chunkPos.z + chunkWidth / 2.0} });
 				else {
 					isVisible = true;
 				}
@@ -383,7 +380,6 @@ private:
 
 	float getMaxHeight(const UIManager& uiManager) {
 		float mountain = 1;
-
 		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
 		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
@@ -391,9 +387,27 @@ private:
 		// Rivers
 		float river = 0;
 
+		river *= 2;
+		river -= 1;
+		river = abs(river);
+		river = 1 - river;
+
+		river = pow(river, uiManager.mRiverExponent.data());
+
+		river *= uiManager.mRiverStrength.data();
+		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
+
+		// Lakes
 		float lake = 0;
 
-		float terrainHeight = 0;
+		lake = MathHelper::extreme(lake);
+
+		lake = pow(lake, uiManager.mLakeExponent.data());
+
+		lake *= uiManager.mLakeStrength.data();
+		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
+
+		float terrainInfo = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
 		float spread = 1;
@@ -401,37 +415,50 @@ private:
 		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
 			float perlinData = 1;
 
-			terrainHeight += amplitude * perlinData;
-
+			terrainInfo += amplitude * perlinData;
 			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
 			spread *= uiManager.mTerrainSpreadFactor.data();
 		}
 
-		float finalOutput = 0;
-		finalOutput = terrainHeight * mountain;
+		terrainInfo *= mountain;
 
-		finalOutput -= river;
-		finalOutput -= lake;
-		return finalOutput;
+		terrainInfo -= river;
+
+		terrainInfo -= lake;
+
+		return terrainInfo;
 	}
 
 	float getMinHeight(const UIManager& uiManager) {
 		float mountain = 0;
-
 		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
 		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
 		// Rivers
 		float river = 1;
+
+		river *= 2;
+		river -= 1;
+		river = abs(river);
+		river = 1 - river;
+
+		river = pow(river, uiManager.mRiverExponent.data());
+
 		river *= uiManager.mRiverStrength.data();
 		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
+		// Lakes
 		float lake = 1;
+
+		lake = MathHelper::extreme(lake);
+
+		lake = pow(lake, uiManager.mLakeExponent.data());
+
 		lake *= uiManager.mLakeStrength.data();
 		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
-		float terrainHeight = 0;
+		float terrainInfo = 0;
 
 		float amplitude = uiManager.mTerrainAmplitude.data();
 		float spread = 1;
@@ -439,18 +466,18 @@ private:
 		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
 			float perlinData = 0;
 
-			terrainHeight += amplitude * perlinData;
-
+			terrainInfo += amplitude * perlinData;
 			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
 			spread *= uiManager.mTerrainSpreadFactor.data();
 		}
 
-		float finalOutput = 0;
-		finalOutput = terrainHeight * mountain;
+		terrainInfo *= mountain;
 
-		finalOutput -= river;
-		finalOutput -= lake;
-		return finalOutput;
+		terrainInfo -= river;
+
+		terrainInfo -= lake;
+
+		return terrainInfo;
 	}
 
 	struct AABB {
