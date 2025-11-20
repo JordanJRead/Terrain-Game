@@ -265,7 +265,7 @@ public:
 			// Plane Chunking
 			ImGui::Begin("Plane Chunking");
 
-			ImGui::DragFloat("Span", mTerrainSpan.getDataPtr(), 1, 1, 10000);
+			ImGui::DragFloat("Span", mTerrainSpan.getDataPtr(), 1, 1, 100000);
 			mTerrainSpan.update();
 
 			ImGui::DragInt("Count", mChunkCount.getDataPtr(), 1, 1, 1000);
@@ -338,7 +338,7 @@ public:
 		UIElement<float>{ 4 },
 		UIElement<float>{ 12 },
 		UIElement<float>{ 64 },
-		UIElement<float>{ 220 }
+		UIElement<float>{ 300 }
 	};
 
 	std::array<UIElement<int>, ImageCount> mImagePixelDimensions{
@@ -389,7 +389,7 @@ public:
 
 	// Plane Chunking
 	UIElement<int>    mChunkCount{ 39 };
-	UIElement<float>  mTerrainSpan{ 4400 };
+	UIElement<float>  mTerrainSpan{ 15000 };
 	UIElement<float>    mLowQualityVertexDensity{ 0.15 };
 	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?
 	UIElement<int>    mHighQualityPlaneQualityScale{ 25 };
@@ -411,8 +411,8 @@ public:
 
 	// Artistic Parameters
 	UIElement<float> mTerrainScale{ 58 };
-	UIElement<float> mViewDistance{ 2100 };
-	UIElement<float> mFogEncroachment{ 540 };
+	UIElement<float> mViewDistance{ 7471 };
+	UIElement<float> mFogEncroachment{ 1180 };
 	UIElement<float> mGrassDotCutoff{ 0.6 };
 	UIElement<float> mSnowDotCutoff{ 0.3 };
 	UIElement<int>   mShellCount{ 30 };
