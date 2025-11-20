@@ -53,7 +53,7 @@ public:
 		targetFramebuffer.use();
 		screenQuad.use();
 		glDisable(GL_DEPTH_TEST);
-		glDrawElements(GL_TRIANGLES, screenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLE_STRIP, screenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);
 		glEnable(GL_DEPTH_TEST);
 	}
 

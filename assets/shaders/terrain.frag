@@ -5,6 +5,7 @@ in VertOut {
 	vec3 viewPos;
 	vec3 groundWorldPos;
 	vec3 worldPos;
+	flat bool isEdge;
 } fragIn;
 
 out vec4 FragColor;
@@ -19,6 +20,10 @@ uniform samplerCube skybox;
 in flat int shellIndex;
 
 void main() {
+	if (fragIn.isEdge) {
+		FragColor = vec4(1, 1, 1, 1);
+		return;
+	}
 	vec2 flatWorldPos = fragIn.groundWorldPos.xz;
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	

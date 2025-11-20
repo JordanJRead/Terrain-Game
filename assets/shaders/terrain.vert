@@ -7,6 +7,7 @@ out VertOut {
 	vec3 viewPos;
 	vec3 groundWorldPos;
 	vec3 worldPos;
+	flat bool isEdge;
 } vertOut;
 
 #include "_headeruniformbuffers.glsl"
@@ -33,6 +34,10 @@ void main() {
 
 	vertOut.worldPos = worldPos.xyz;
 	vertOut.viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;
-
+	
+	if ((0.5 - abs(vPos.x)) < 0.01 || (0.5 - abs(vPos.y)) < 0.01)
+		vertOut.isEdge = true;
+	else
+		vertOut.isEdge = false;
 	gl_Position = perFrameInfo.projectionMatrix * vec4(vertOut.viewPos, 1);
 }

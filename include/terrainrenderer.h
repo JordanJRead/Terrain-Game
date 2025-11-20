@@ -26,9 +26,9 @@
 class TerrainRenderer {
 public:
 	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos, const UIManager& uiManager)
-		: mLowQualityPlane{ uiManager.mLowQualityPlaneVertices.data() }
-		, mMediumQualityPlane{ uiManager.mMediumQualityPlaneQualityScale.data() }
-		, mHighQualityPlane{ uiManager.mHighQualityPlaneQualityScale.data() } // ? temporary i think?
+		: mLowQualityPlane{ 2 }
+		, mMediumQualityPlane{ 2 }
+		, mHighQualityPlane{ 2 } // ? temporary i think?
 		, mReallyLowQualityPlane{ 2 }
 
 		, mTerrainImageShader{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
@@ -122,17 +122,21 @@ public:
 		mAtmosphereInfo.updateGPU(uiManager);
 		mTerrainShader.use();
 
+		int chunkCount{ uiManager.mChunkCount.data() };
+		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
 		// Update plane types
-		if (uiManager.mLowQualityPlaneVertices.hasChanged()) {
-			mLowQualityPlane.rebuild(uiManager.mLowQualityPlaneVertices.data());
+		int lowQualityPlaneVerticesPerEdge{ (int)(chunkWidth * uiManager.mLowQualityVertexDensity.data()) };
+		if (lowQualityPlaneVerticesPerEdge < 2)
+			lowQualityPlaneVerticesPerEdge = 2;
+		if (lowQualityPlaneVerticesPerEdge != mLowQualityPlane.getVerticesPerEdge()) {
+			mLowQualityPlane.rebuild(lowQualityPlaneVerticesPerEdge);
 		}
-
-		int highQualityVerticesPerEdge{ uiManager.mHighQualityPlaneQualityScale.data() * (uiManager.mLowQualityPlaneVertices.data() - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this
+		int highQualityVerticesPerEdge{ uiManager.mHighQualityPlaneQualityScale.data() * (lowQualityPlaneVerticesPerEdge - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this
 		if (highQualityVerticesPerEdge != mHighQualityPlane.getVerticesPerEdge()) {
 			mHighQualityPlane.rebuild(highQualityVerticesPerEdge);
 		}
 
-		int mediumQualityVerticesPerEdge{ uiManager.mMediumQualityPlaneQualityScale.data() * (uiManager.mLowQualityPlaneVertices.data() - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this`	
+		int mediumQualityVerticesPerEdge{ uiManager.mMediumQualityPlaneQualityScale.data() * (lowQualityPlaneVerticesPerEdge - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this`	
 		if (mediumQualityVerticesPerEdge != mMediumQualityPlane.getVerticesPerEdge()) {
 			mMediumQualityPlane.rebuild(mediumQualityVerticesPerEdge);
 		}
@@ -204,12 +208,10 @@ public:
 		// For each chunk
 		int verticesDrawn{ 0 };
 		int visibleChunks{ 0 };
-		int chunkCount{ uiManager.mChunkCount.data() };
-		float chunkWidth{ uiManager.mChunkWidth.data() };
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
 
-				glm::vec3 chunkPos{ mLowQualityPlane.getClosestWorldVertexPos(camera.getPosition(), chunkWidth) - glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
+				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(camera.getPosition(), chunkWidth) - glm::vec3(x * chunkWidth, 0, z * chunkWidth)};
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };

@@ -265,14 +265,14 @@ public:
 			// Plane Chunking
 			ImGui::Begin("Plane Chunking");
 
-			ImGui::DragFloat("Width", mChunkWidth.getDataPtr(), 1, 1, 100);
-			mChunkWidth.update();
+			ImGui::DragFloat("Span", mTerrainSpan.getDataPtr(), 1, 1, 10000);
+			mTerrainSpan.update();
 
 			ImGui::DragInt("Count", mChunkCount.getDataPtr(), 1, 1, 1000);
 			mChunkCount.update();
 
-			ImGui::DragInt("Low quality plane vertices", mLowQualityPlaneVertices.getDataPtr(), 1, 2, 1000);
-			mLowQualityPlaneVertices.update();
+			ImGui::DragFloat("Low quality plane vertices", mLowQualityVertexDensity.getDataPtr(), 0.01 , 0, 100);
+			mLowQualityVertexDensity.update();
 
 			ImGui::DragInt("Medium quality plane quality scale", mMediumQualityPlaneQualityScale.getDataPtr(), 1, 1, 100);
 			mMediumQualityPlaneQualityScale.update();
@@ -388,12 +388,12 @@ public:
 	UIElement<float> mLakeExponent{ 100 }; // 100 for quintic, 5 not
 
 	// Plane Chunking
-	UIElement<float> mChunkWidth{ 256 };
-	UIElement<int>    mChunkCount{ 40 };
-	UIElement<int>    mLowQualityPlaneVertices{ 40 };
+	UIElement<int>    mChunkCount{ 39 };
+	UIElement<float>  mTerrainSpan{ 4400 };
+	UIElement<float>    mLowQualityVertexDensity{ 0.15 };
 	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?
-	UIElement<int>    mHighQualityPlaneQualityScale{ 10 };
-	UIElement<float> mVertexLODDistanceNear{ 110 };
+	UIElement<int>    mHighQualityPlaneQualityScale{ 25 };
+	UIElement<float> mVertexLODDistanceNear{ 256 };
 	UIElement<float> mVertexLODDistanceFar{ 1000 };
 	UIElement<float> mShellLODDistance{ 60 };
 	UIElement<float> mWaterHeight{ -1.5 };
