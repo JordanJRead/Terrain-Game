@@ -411,8 +411,8 @@ public:
 
 	// Artistic Parameters
 	UIElement<float> mTerrainScale{ 58 };
-	UIElement<float> mViewDistance{ 5000 };
-	UIElement<float> mFogEncroachment{ 730 };
+	UIElement<float> mViewDistance{ 2100 };
+	UIElement<float> mFogEncroachment{ 540 };
 	UIElement<float> mGrassDotCutoff{ 0.6 };
 	UIElement<float> mSnowDotCutoff{ 0.3 };
 	UIElement<int>   mShellCount{ 30 };
