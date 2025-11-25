@@ -24,7 +24,7 @@ vec4 getTerrainInfo(vec2 worldPos, bool smoothTerrain) {
 			return terrainInfo;
 		}
 	}
-	return vec4(0, 0, 0, 0);
+	return vec4(0, 0, 0, -1);
 }
 
 #endif

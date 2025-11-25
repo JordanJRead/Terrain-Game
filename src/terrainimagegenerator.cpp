@@ -4,12 +4,13 @@
 #include "vertexarray.h"
 #include "shader.h"
 
-TerrainImageGenerator::TerrainImageGenerator(int pixelDim, float worldSize, int screenWidth, int screenHeight, const glm::vec2& worldPos)
+TerrainImageGenerator::TerrainImageGenerator(int pixelDim, float worldSize, int screenWidth, int screenHeight, const glm::vec2& worldPos, bool isLast)
 	: mWorldSize{ worldSize }
 	, mScreenWidth{ screenWidth }
 	, mScreenHeight{ screenHeight }
 	, mPixelDim{ pixelDim }
 	, mWorldPos{ worldPos }
+	, mIsLast{ isLast }
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 
@@ -59,6 +60,22 @@ void TerrainImageGenerator::updateTexture(const VertexArray& screenQuad, const S
 	glDisable(GL_BLEND);
 	glDrawElements(GL_TRIANGLES, screenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);
 	glEnable(GL_BLEND);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	if (mIsLast) {
+		float* data = new float[mPixelDim * mPixelDim * 4];
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glReadPixels(0, 0, mPixelDim, mPixelDim, GL_RGBA, GL_FLOAT, data);
+
+		mMaxHeight = data[0];
+		for (size_t i{ 0 }; i < mPixelDim * mPixelDim * 4; i += 4) {
+			glm::vec4 pixelData{ data[i], data[i + 1], data[i + 2], data[i + 3] };
+			if (pixelData[0] > mMaxHeight)
+				mMaxHeight = pixelData[0];
+		}
+
+		delete[] data;
+	}
+
 	glViewport(0, 0, mScreenWidth, mScreenHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

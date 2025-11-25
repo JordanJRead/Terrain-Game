@@ -95,6 +95,10 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 	float mieDensityScale;
 	float rayleighG;
 	float mieG;
+	float shadowSkip;
+	int shadowMaxStepCount;
+	float shadowOffset;
+	int rayMarchMaxStepCount;
 } atmosphereInfo;
 
 #endif

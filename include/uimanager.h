@@ -230,6 +230,18 @@ public:
 			ImGui::DragFloat("HDR scale", mHDRScale.getDataPtr(), 0.1);
 			mHDRScale.update();
 
+			ImGui::DragFloat("Shadow skip", mShadowSkip.getDataPtr(), 0.1);
+			mShadowSkip.update();
+
+			ImGui::DragInt("Max shadow step count", mShadowMaxStepCount.getDataPtr());
+			mShadowMaxStepCount.update();
+
+			ImGui::DragFloat("Shadow offset", mShadowOffset.getDataPtr(), 0.1);
+			mShadowOffset.update();
+
+			ImGui::DragInt("Ray march max step count", mRayMarchMaxStepCount.getDataPtr());
+			mRayMarchMaxStepCount.update();
+
 			ImGui::End();
 
 
@@ -389,7 +401,7 @@ public:
 
 	// Plane Chunking
 	UIElement<int>    mChunkCount{ 39 };
-	UIElement<float>  mTerrainSpan{ 15000 };
+	UIElement<float>  mTerrainSpan{ 5000 };
 	UIElement<float>    mLowQualityVertexDensity{ 0.15 };
 	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?
 	UIElement<int>    mHighQualityPlaneQualityScale{ 25 };
@@ -411,8 +423,8 @@ public:
 
 	// Artistic Parameters
 	UIElement<float> mTerrainScale{ 58 };
-	UIElement<float> mViewDistance{ 7471 };
-	UIElement<float> mFogEncroachment{ 1180 };
+	UIElement<float> mViewDistance{ 2400 };
+	UIElement<float> mFogEncroachment{ 650 };
 	UIElement<float> mGrassDotCutoff{ 0.6 };
 	UIElement<float> mSnowDotCutoff{ 0.3 };
 	UIElement<int>   mShellCount{ 30 };
@@ -431,7 +443,7 @@ public:
 
 	// Atmosphere Parameters
 	UIElement<float> mAtmosphereHeight{ 3498 };
-	UIElement<float> mAtmosphereWidth{ 136100 };
+	UIElement<float> mAtmosphereWidth{ 262100 };
 	UIElement<float> mAtmosphereRayleighDensityFalloff{ 1 };
 	UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
 	UIElement<float> mAtmosphereRayleighDensityScale{ 0.004 };
@@ -441,6 +453,10 @@ public:
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957 };
 	UIElement<float> mHDRScale{ 2 };
+	UIElement<float> mShadowSkip{ 0.1 };
+	UIElement<int> mShadowMaxStepCount{ 500 };
+	UIElement<float> mShadowOffset{ 2.5 };
+	UIElement<int> mRayMarchMaxStepCount{ 10 };
 
 	//UIElement<float> mAtmosphereHeight{ 2140 };
 	//UIElement<float> mAtmosphereWidth{ 140100 };

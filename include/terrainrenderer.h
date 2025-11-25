@@ -41,7 +41,7 @@ public:
 			{uiManager.mImagePixelDimensions[1].data(), uiManager.mImageWorldSizes[1].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 1, uiManager)},
 			{uiManager.mImagePixelDimensions[2].data(), uiManager.mImageWorldSizes[2].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 2, uiManager)},
 			{uiManager.mImagePixelDimensions[3].data(), uiManager.mImageWorldSizes[3].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 3, uiManager)},
-			{uiManager.mImagePixelDimensions[4].data(), uiManager.mImageWorldSizes[4].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 4, uiManager)}
+			{uiManager.mImagePixelDimensions[4].data(), uiManager.mImageWorldSizes[4].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 4, uiManager), true}
 		} }
 
 		, mDaySkybox{ {

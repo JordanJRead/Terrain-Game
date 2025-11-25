@@ -130,7 +130,48 @@ float mieDensityAtPoint(vec3 pos) {
 	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensityScale;
 }
 
-vec3 transmittanceFromSunToPoint(vec3 pos) {
+#define SHADOW_HIT 0
+#define SHADOW_CLOSE_ENOUGH 1
+#define SHADOW_CLEAR 2
+#define SHADOW_TOO_LONG 3
+
+int isPointInShadow(vec3 pos) {
+	vec3 rayDir = normalize(perFrameInfo.dirToSun);
+	vec3 currentPos = pos + rayDir * atmosphereInfo.shadowOffset;
+	vec4 terrainInfo = getTerrainInfo(currentPos.xz, true);
+	float heightAboveGround = currentPos.y - terrainInfo.x;
+	for (int i = 0; i < atmosphereInfo.shadowMaxStepCount; ++i) {
+		vec4 terrainInfo = getTerrainInfo(currentPos.xz, true);
+		if (terrainInfo.w == -1 || (rayDir.y > 0 && currentPos.y > 100))
+			return SHADOW_CLEAR; // TODO figure out if higher than max height
+		heightAboveGround = currentPos.y - terrainInfo.x;
+		if (heightAboveGround <= 0)
+			return SHADOW_HIT;
+		vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
+		float notRunningIntoTerrain = (dot(rayDir, normal) + 1) * 0.5;
+
+		float distToTravel;
+		distToTravel = atmosphereInfo.shadowSkip * heightAboveGround;
+		if (heightAboveGround < 2) {
+			distToTravel = 1 * (notRunningIntoTerrain + 0.1);
+		}
+		else {
+			distToTravel = atmosphereInfo.shadowSkip * heightAboveGround * (heightAboveGround > 1 ? 3 : 1);
+		}
+		if (getTerrainInfo((currentPos + rayDir * distToTravel).xz, true).x < 10) {
+			distToTravel *= 0.2;
+		}
+		if (distToTravel < 0.0001)
+			return SHADOW_CLOSE_ENOUGH;
+		currentPos += rayDir * distToTravel;
+	}
+	return SHADOW_TOO_LONG;
+}
+
+vec3 transmittanceFromSunToPoint(vec3 pos, bool ambient = false) {
+	bool inShadow = isPointInShadow(pos) != SHADOW_CLEAR;
+	if (inShadow && !ambient)
+		return vec3(0);
 	vec2 ts = rayAtmosphereIntersection(pos, perFrameInfo.dirToSun);
 	if (ts.x < 0 && ts.y < 0)
 		return vec3(1, 1 , 1);
@@ -155,6 +196,8 @@ vec3 transmittanceFromSunToPoint(vec3 pos) {
 
 		samplePos += perFrameInfo.dirToSun * dx;
 	}
+	if (inShadow)
+		return transmittance * 0.5;
 	return transmittance;
 }
 
@@ -177,7 +220,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	vec3 a = rayPos + rayDir * t0;
 	vec3 b = rayPos + rayDir * t1;
 
-	int stepCount = 10;
+	int stepCount = atmosphereInfo.rayMarchMaxStepCount;
 	float totalDistance = t1 - t0;
 	float dx = totalDistance / stepCount;
 
@@ -185,7 +228,6 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	vec3 transmittance = vec3(1, 1, 1);
 	vec3 inScatteredLight = vec3(0, 0, 0);
 	for (int n = 0; n < stepCount; ++n) {
-		
 		float rayleighDensity = rayleighDensityAtPoint(samplePos);
 		float mieDensity = mieDensityAtPoint(samplePos);
 		transmittance *= exp(-dx * (rayleighDensity * atmosphereInfo.rayleighScattering + mieDensity * atmosphereInfo.mieScattering));
@@ -199,7 +241,20 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	if (isSky && !isSun) {
 		return inScatteredLight;
 	}
-	return inScatteredLight + albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject) * transmittance;
+	/*
+	int shadowCode = isPointInShadow(worldPosOfVisibleObject);
+	if (shadowCode == SHADOW_HIT) {
+		return vec3(0, 0, 0);
+	}
+	if (shadowCode == SHADOW_CLOSE_ENOUGH) {
+		return vec3(0.3);
+	}
+	if (shadowCode == SHADOW_CLEAR)
+		return vec3(1);
+	if (shadowCode == SHADOW_TOO_LONG)
+		return vec3(1, 0, 1);
+	*/
+	return inScatteredLight + albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, true) * transmittance;
  }
 
 void main() {
@@ -230,7 +285,7 @@ void main() {
 			FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, true, vec3(0, 0, 0), colours.sunColour * 100), 1);
 		}
 		else {
-			FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0, 0, 0), vec3(0, 0, 0)), 1);
+			FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0, 0, 0), vec3(0, 0, 0)), 1); // Sky colour
 		}
 	}
 	else {
@@ -244,8 +299,7 @@ void main() {
 			
 			vec3 diffuseColour = max(dot(normal, perFrameInfo.dirToSun), 0) * colours.sunColour * waterAlbedo;
 			vec3 specularColour = spec * colours.sunColour;
-			vec3 ambientColour = 0.03 * colours.sunColour * waterAlbedo;
-			vec3 objectColour = diffuseColour + specularColour + ambientColour;
+			vec3 objectColour = diffuseColour + specularColour;
 
 			
 			// Reflections
@@ -287,8 +341,7 @@ void main() {
 			
 			vec3 diffuseColour = max(dot(normal, perFrameInfo.dirToSun), 0) * colours.sunColour * terrainAlbedo;
 			vec3 specularColour = spec * colours.sunColour;
-			vec3 ambientColour = 0.03 * colours.sunColour * terrainAlbedo;
-			vec3 objectColour = diffuseColour + specularColour + ambientColour;
+			vec3 objectColour = diffuseColour + specularColour;
 
 			// Fog
 			float distFromCamera = length(worldPos - perFrameInfo.cameraPos);

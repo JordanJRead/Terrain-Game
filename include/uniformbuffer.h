@@ -201,6 +201,10 @@ namespace BufferTypes {
 			, mieScattering{ uiManager.mAtmosphereMieScattering.data(), 1 }
 			, rayleighG{ uiManager.mAtmosphereRayleighG.data() }
 			, mieG{ uiManager.mAtmosphereMieG.data() }
+			, shadowSkip{ uiManager.mShadowSkip.data() }
+			, shadowMaxStepCount{ uiManager.mShadowMaxStepCount.data() }
+			, shadowOffset{ uiManager.mShadowOffset.data() }
+			, rayMarchMaxStepCount{ uiManager.mRayMarchMaxStepCount.data() }
 		{
 		}
 		bool operator==(const AtmosphereInfo&) const = default;
@@ -216,6 +220,10 @@ namespace BufferTypes {
 		float mieDensityScale;
 		float rayleighG;
 		float mieG;
+		float shadowSkip;
+		int shadowMaxStepCount;
+		float shadowOffset;
+		int rayMarchMaxStepCount;
 	};
 }
 
