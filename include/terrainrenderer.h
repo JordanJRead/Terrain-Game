@@ -220,7 +220,7 @@ public:
 
 				bool isVisible{ false };
 				if (uiManager.mFrustumCulling.data())
-					isVisible = isAABBInFrustum(camera, { {chunkPos.x - chunkWidth / 2.0, mMinTerrainHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, mMaxTerrainHeight, chunkPos.z + chunkWidth / 2.0} });
+					isVisible = camera.isAABBVisible({ {chunkPos.x - chunkWidth / 2.0, mMinTerrainHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, mMaxTerrainHeight, chunkPos.z + chunkWidth / 2.0} });
 				else {
 					isVisible = true;
 				}
@@ -480,123 +480,6 @@ private:
 		terrainInfo -= lake;
 
 		return terrainInfo;
-	}
-
-	struct AABB {
-		glm::vec3 mMin;
-		glm::vec3 mMax;
-	};
-
-	struct OBB {
-		OBB(const std::array<glm::vec3, 4>& orderedCorners)
-			: mAxes{ { orderedCorners[1] - orderedCorners[0], orderedCorners[2] - orderedCorners[0], orderedCorners[3] - orderedCorners[0] } }
-			, mCenter{ orderedCorners[0] + 0.5f * (mAxes[0] + mAxes[1] + mAxes[2]) }
-			, mExtents{ glm::length(mAxes[0]), glm::length(mAxes[1]), glm::length(mAxes[2]) }
-		{
-			mAxes[0] /= mExtents.x;
-			mAxes[1] /= mExtents.y;
-			mAxes[2] /= mExtents.z;
-			mExtents *= 0.5;
-		}
-
-		std::array<glm::vec3, 3> mAxes;
-		glm::vec3 mExtents;
-		glm::vec3 mCenter;
-	};
-
-	static bool doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec3& axis, float xNear, float yNear, float near, float far) {
-		float MoX = fabsf(axis.x);
-		float MoY = fabsf(axis.y);
-		float MoZ = axis.z;
-
-		constexpr float epsilon = 1e-4;
-		if (MoX < epsilon && MoY < epsilon && fabsf(MoZ) < epsilon) return true;
-
-		float MoC = glm::dot(axis, obb.mCenter);
-
-		float obb_radius = 0.0f;
-		for (size_t i = 0; i < 3; i++) {
-			obb_radius += fabsf(glm::dot(axis, obb.mAxes[i])) * obb.mExtents[i];
-		}
-
-		float obb_min = MoC - obb_radius;
-		float obb_max = MoC + obb_radius;
-
-		// Frustum projection
-		float p = xNear * MoX + yNear * MoY;
-		float tau_0 = near * MoZ - p;
-		float tau_1 = near * MoZ + p;
-		if (tau_0 < 0.0f) {
-			tau_0 *= far / near;
-		}
-		if (tau_1 > 0.0f) {
-			tau_1 *= far / near;
-		}
-
-		if (obb_min > tau_1 || obb_max < tau_0) {
-			return false;
-		}
-	}
-
-	// https://bruop.github.io/improved_frustum_culling/
-	static bool isAABBInFrustum(const Camera& camera, const AABB& aabb) {
-		float xNear = camera.getXNear();
-		float yNear = camera.getYNear();
-		float near = -camera.getNearPlaneDist();
-		float far = -camera.getFarPlaneDist();
-
-		std::array<glm::vec3, 4> obbCorners{ {
-				aabb.mMin,
-			   {aabb.mMax.x, aabb.mMin.y, aabb.mMin.z},
-			   {aabb.mMin.x, aabb.mMax.y, aabb.mMin.z},
-			   {aabb.mMin.x, aabb.mMin.y, aabb.mMax.z}
-			} };
-
-		for (size_t i{ 0 }; i < obbCorners.size(); ++i) {
-			obbCorners[i] = camera.getViewMatrix() * glm::vec4{ obbCorners[i], 1 };
-		}
-
-		OBB obb{ obbCorners };
-		 
-		std::array<glm::vec3, 5> frustumNormals{ {
-			{ 0.0, 0.0, 1 },
-			{ 0.0, -near, yNear },
-			{ 0.0, near, yNear },
-			{ -near, 0.0f, xNear },
-			{ near, 0.0f, xNear }
-		} };
-
-		for (const glm::vec3& frustumNormal : frustumNormals) {
-			if (!doesOBBOverlapFrustumAlongAxis(obb, frustumNormal, xNear, yNear, near, far)) {
-				return false;
-			}
-		}
-
-		for (const glm::vec3& obbAxis : obb.mAxes) {
-			if (!doesOBBOverlapFrustumAlongAxis(obb, obbAxis, xNear, yNear, near, far)) {
-				return false;
-			}
-		}
-
-		std::array<glm::vec3, 18> edgeCrosses;
-
-		for (size_t obbAxisIndex{ 0 }; obbAxisIndex < 3; ++obbAxisIndex) {
-			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 1, 0, 0 });
-			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, 0 });
-
-			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, near });
-			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, near });
-			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, 1, near });
-			edgeCrosses[obbAxisIndex + 0] = glm::cross(obb.mAxes[obbAxisIndex], { 0, yNear, near });
-		}
-
-		for (const glm::vec3& edgeCross : edgeCrosses) {
-			if (!doesOBBOverlapFrustumAlongAxis(obb, edgeCross, xNear, yNear, near, far)) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 };
 

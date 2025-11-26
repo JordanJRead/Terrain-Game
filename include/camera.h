@@ -5,8 +5,32 @@
 #include "GLFW/glfw3.h"
 #include <iostream>
 #include <physicsobject.h>
+#include <array>
 
 class PlanePhysics;
+
+
+struct AABB {
+	glm::vec3 mMin;
+	glm::vec3 mMax;
+};
+
+struct OBB {
+	OBB(const std::array<glm::vec3, 4>& orderedCorners)
+		: mAxes{ { orderedCorners[1] - orderedCorners[0], orderedCorners[2] - orderedCorners[0], orderedCorners[3] - orderedCorners[0] } }
+		, mCenter{ orderedCorners[0] + 0.5f * (mAxes[0] + mAxes[1] + mAxes[2]) }
+		, mExtents{ glm::length(mAxes[0]), glm::length(mAxes[1]), glm::length(mAxes[2]) }
+	{
+		mAxes[0] /= mExtents.x;
+		mAxes[1] /= mExtents.y;
+		mAxes[2] /= mExtents.z;
+		mExtents *= 0.5;
+	}
+
+	std::array<glm::vec3, 3> mAxes;
+	glm::vec3 mExtents;
+	glm::vec3 mCenter;
+};
 
 class Camera {
 public:
@@ -26,8 +50,10 @@ public:
 	float getFOVY() const { return mFOVYRad; }
 	float getYaw() const { return mYaw; }
 	float getPitch() const { return mPitch; }
+	bool isAABBVisible(const AABB& aabb) const;
 
 private:
+	static bool doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec3& axis, float xNear, float yNear, float near, float far);
 	float mPitch{ 0 }; // In radians
 	float mYaw{ 0 }; // In radians
 	float mSens;
