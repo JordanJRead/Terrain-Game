@@ -61,12 +61,6 @@ public:
 			ImGui::DragFloat("Terrain scale", mTerrainScale.getDataPtr());
 			mTerrainScale.update();
 
-			ImGui::DragFloat("View distance", mViewDistance.getDataPtr(), 1, 0, 10000);
-			mViewDistance.update();
-
-			ImGui::DragFloat("Fog encroachment", mFogEncroachment.getDataPtr(), 1, 0, int(mViewDistance.data()));
-			mFogEncroachment.update();
-
 			ImGui::DragFloat("Grass dot cutoff", mGrassDotCutoff.getDataPtr(), 0.005, 0, 1);
 			mGrassDotCutoff.update();
 
@@ -389,7 +383,7 @@ public:
 
 	// Plane Chunking
 	UIElement<int>    mChunkCount{ 39 };
-	UIElement<float>  mTerrainSpan{ 15000 };
+	UIElement<float>  mTerrainSpan{ 5000 };
 	UIElement<float>    mLowQualityVertexDensity{ 0.15 };
 	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?
 	UIElement<int>    mHighQualityPlaneQualityScale{ 25 };
@@ -411,8 +405,6 @@ public:
 
 	// Artistic Parameters
 	UIElement<float> mTerrainScale{ 58 };
-	UIElement<float> mViewDistance{ 7471 };
-	UIElement<float> mFogEncroachment{ 1180 };
 	UIElement<float> mGrassDotCutoff{ 0.6 };
 	UIElement<float> mSnowDotCutoff{ 0.3 };
 	UIElement<int>   mShellCount{ 30 };

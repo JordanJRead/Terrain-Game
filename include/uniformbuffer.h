@@ -54,8 +54,8 @@ namespace BufferTypes {
 		ArtisticParams() : shellCount{ -1 } {}
 		ArtisticParams(const UIManager& uiManager)
 			: terrainScale{ uiManager.mTerrainScale.data() }
-			, maxViewDistance{ uiManager.mViewDistance.data() }
-			, fogEncroach{ uiManager.mFogEncroachment.data() }
+			, maxViewDistance{ uiManager.mTerrainSpan.data() * 0.5f * 0.95f }
+			, fogEncroach{ maxViewDistance * 0.1f }
 			, grassDotCutoff{ uiManager.mGrassDotCutoff.data() }
 			, snowDotCutoff{ uiManager.mSnowDotCutoff.data() }
 			, shellCount{ uiManager.mShellCount.data() }
