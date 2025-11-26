@@ -45,12 +45,6 @@ public:
 		} }
 
 		, mDaySkybox{ {
-				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_2_Left+X.png",
-				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_3_Right-X.png",
-				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_4_Up+Y.png",
-				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_5_Down-Y.png",
-				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_0_Front+Z.png",
-				//"assets/AllSkyFree/Epic_GloriousPink/Epic_GloriousPink_Cam_1_Back-Z.png"
 				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_2_Left+X.png",
 				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_3_Right-X.png",
 				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_4_Up+Y.png",
@@ -68,8 +62,11 @@ public:
 			} }
 		, mDeferredRenderer{ screenWidth, screenHeight }
 	{
-		mMinTerrainHeight = -1000;// getMinHeight(uiManager);
-		mMaxTerrainHeight = 1000;// getMaxHeight(uiManager);
+		mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
+		mMaxTerrainHeight = getHeightWithPerlin(uiManager, mMaxPerlinValues);
+
+		//mMinPerlin = getMinHeightPerlinValues(uiManager);
+		//mMaxPerlin = getMaxHeightPerlinValues(uiManager);
 
 		std::vector<float> vertexData{
 		-1, -1,
@@ -111,8 +108,8 @@ public:
 	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer<1>& targetFramebuffer) {
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
-			//mMinTerrainHeight = getMinHeight(uiManager);
-			//mMaxTerrainHeight = getMaxHeight(uiManager);
+			mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
+			mMaxTerrainHeight = getHeightWithPerlin(uiManager, mMaxPerlinValues);
 		}
 		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
 		mArtisticParams.updateGPU(uiManager);
@@ -198,24 +195,30 @@ public:
 		glm::vec3 cameraForward{ camera.getForward() };
 
 		if (uiManager.mIsDeferredRendering.data()) {
-			mDeferredRenderer.useFramebuffer();
+			mDeferredRenderer.mFramebuffer.use();
 			glClearColor(0, 0, 0, -3);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			renderTerrain(camera, mDeferredRenderer.mShaderTerrainGeometry, mDeferredRenderer.mShaderWaterGeometry, uiManager);
+			mDeferredRenderer.doDeferredShading(targetFramebuffer, mScreenQuad);
 		}
 		else {
 			targetFramebuffer.use();
+			renderTerrain(camera, mTerrainShader, mWaterShader, uiManager);
 		}
-		// For each chunk
-		int verticesDrawn{ 0 };
-		int visibleChunks{ 0 };
+	}
+
+	void renderTerrain(const Camera& camera, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager) {
+		int chunkCount{ uiManager.mChunkCount.data() };
+		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
+
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
 
-				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(camera.getPosition(), chunkWidth) - glm::vec3(x * chunkWidth, 0, z * chunkWidth)};
+				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(camera.getPosition(), chunkWidth) - glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
-				std::array<float, 2> yVals{ mMinTerrainHeight, mMaxTerrainHeight};
+				std::array<float, 2> yVals{ mMinTerrainHeight, mMaxTerrainHeight };
 				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0, chunkPos.z + chunkWidth / 2.0 };
 
 				bool isVisible{ false };
@@ -226,14 +229,10 @@ public:
 				}
 
 				if (isVisible) {
-					visibleChunks += 1;
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
 					bool highQuality{ chunkDist < uiManager.mVertexLODDistanceNear.data() };
 					bool mediumQuality{ chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
 					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : (mediumQuality ? mMediumQualityPlane : mLowQualityPlane) };
-
-					//mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
-					//mTerrainShader.setFloat("planeWorldWidth", chunkWidth);
 
 					currPlane.useVertexArray();
 
@@ -255,30 +254,17 @@ public:
 					}
 
 					// Draw terrain
-					if (uiManager.mIsDeferredRendering.data()) {
-						glDisable(GL_BLEND);
-						mDeferredRenderer.useShaderTerrainGeometryPass();
-						mDeferredRenderer.setTerrainPlaneInfo({ chunkPos.x, 0, chunkPos.z }, chunkWidth);
-					}
-					else {
-						mTerrainShader.use();
-						mTerrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
-						mTerrainShader.setFloat("planeWorldWidth", chunkWidth);
-					}
-					verticesDrawn += (newShellCount + 1) * currPlane.getIndexCount();
+					glDisable(GL_BLEND);
+					terrainShader.use();
+					terrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
+					terrainShader.setFloat("planeWorldWidth", chunkWidth);
 					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
 
 					// Draw water
-					if (uiManager.mIsDeferredRendering.data()) {
-						glDisable(GL_BLEND);
-						mDeferredRenderer.useShaderWaterGeometryPass();
-						mDeferredRenderer.setWaterPlaneInfo({ chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }, chunkWidth);
-					}
-					else {
-						mWaterShader.use();
-						mWaterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z });
-						mWaterShader.setFloat("planeWorldWidth", chunkWidth);
-					}
+					waterShader.use();
+					waterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z });
+					waterShader.setFloat("planeWorldWidth", chunkWidth);
+
 					mReallyLowQualityPlane.useVertexArray();
 					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
 
@@ -286,9 +272,6 @@ public:
 				}
 			}
 		}
-		if (uiManager.mIsDeferredRendering.data())
-			mDeferredRenderer.doDeferredShading(targetFramebuffer, mScreenQuad);
-		//std::cout << verticesDrawn << "\n";
 	}
 
 	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
@@ -349,8 +332,6 @@ public:
 	}
 
 private:
-	// The chunk collection consists of a square of chunkCount * chunkCount chunks, each having a width of chunkWidth
-
 	UniformBuffer<BufferTypes::TerrainParams> mTerrainParams{ 0 };
 	UniformBuffer<BufferTypes::ArtisticParams> mArtisticParams{ 1 };
 	UniformBuffer<BufferTypes::WaterParams> mWaterParams{ 2 };
@@ -362,6 +343,8 @@ private:
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;
 	float mMaxTerrainHeight;
+	std::array<float, 4> mMinPerlinValues{ {1, 0, 1, 0} };
+	std::array<float, 4> mMaxPerlinValues{ {1, 0, 0, 1} };
 
 	Shader mTerrainImageShader;
 	Shader mTerrainShader;
@@ -371,7 +354,6 @@ private:
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
 	DeferredRenderer mDeferredRenderer;
-	//glm::vec3 mDirToLight{ -0.008373, 0.089878, 0.995917 };
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;
@@ -380,65 +362,54 @@ private:
 
 	VertexArray mScreenQuad;
 
-	float getMaxHeight(const UIManager& uiManager) {
-		float mountain = 1;
-		mountain = pow(mountain, uiManager.mMountainExponent.data());
-
-		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
-
-		// Rivers
-		float river = 0;
-
-		river *= 2;
-		river -= 1;
-		river = abs(river);
-		river = 1 - river;
-
-		river = pow(river, uiManager.mRiverExponent.data());
-
-		river *= uiManager.mRiverStrength.data();
-		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
-
-		// Lakes
-		float lake = 0;
-
-		lake = MathHelper::extreme(lake);
-
-		lake = pow(lake, uiManager.mLakeExponent.data());
-
-		lake *= uiManager.mLakeStrength.data();
-		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
-
-		float terrainInfo = 0;
-
-		float amplitude = uiManager.mTerrainAmplitude.data();
-		float spread = 1;
-
-		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			float perlinData = 1;
-
-			terrainInfo += amplitude * perlinData;
-			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
-			spread *= uiManager.mTerrainSpreadFactor.data();
+	std::array<float, 4> getMaxHeightPerlinValues(const UIManager& uiManager) {
+		std::array<float, 4> maxPerlinValues{ 1, 0, 0, 1 };
+		float maxHeight{ getHeightWithPerlin(uiManager, maxPerlinValues) };
+		for (int i1{ 0 }; i1 <= 100; ++i1) {
+			for (int i2{ 0 }; i2 <= 100; ++i2) {
+				for (int i3{ 0 }; i3 <= 100; ++i3) {
+					for (int i4{ 0 }; i4 <= 100; ++i4) {
+						std::array<float, 4> testPerlinValues{ {i1 / 100, i2 / 100, i3 / 100, i4 / 100} };
+						float height{ getHeightWithPerlin(uiManager, testPerlinValues) };
+						if (height > maxHeight) {
+							maxPerlinValues = testPerlinValues;
+							maxHeight = height;
+						}
+					}
+				}
+			}
 		}
-
-		terrainInfo *= mountain;
-
-		terrainInfo -= river;
-
-		terrainInfo -= lake;
-
-		return terrainInfo;
+		return maxPerlinValues;
 	}
 
-	float getMinHeight(const UIManager& uiManager) {
-		float mountain = 0;
+	std::array<float, 4> getMinHeightPerlinValues(const UIManager& uiManager) {
+		std::array<float, 4> minPerlinValues{ 0, 1, 1, 0 };
+		float minHeight{ getHeightWithPerlin(uiManager, minPerlinValues) };
+		for (int i1{ 0 }; i1 <= 100; ++i1) {
+			for (int i2{ 0 }; i2 <= 100; ++i2) {
+				for (int i3{ 0 }; i3 <= 100; ++i3) {
+					for (int i4{ 0 }; i4 <= 100; ++i4) {
+						std::array<float, 4> testPerlinValues{ {i1 / 100, i2 / 100, i3 / 100, i4 / 100} };
+						float height{ getHeightWithPerlin(uiManager, testPerlinValues) };
+						if (height < minHeight) {
+							minPerlinValues = testPerlinValues;
+							minHeight = height;
+						}
+					}
+				}
+			}
+		}
+		return minPerlinValues;
+	}
+
+	float getHeightWithPerlin(const UIManager& uiManager, const std::array<float, 4>& perlinValues) {
+		float mountain = perlinValues[0];
 		mountain = pow(mountain, uiManager.mMountainExponent.data());
 
 		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
 
 		// Rivers
-		float river = 1;
+		float river = perlinValues[1];
 
 		river *= 2;
 		river -= 1;
@@ -451,7 +422,7 @@ private:
 		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
 
 		// Lakes
-		float lake = 1;
+		float lake = perlinValues[2];
 
 		lake = MathHelper::extreme(lake);
 
@@ -466,7 +437,7 @@ private:
 		float spread = 1;
 
 		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			float perlinData = 0;
+			float perlinData = perlinValues[3];
 
 			terrainInfo += amplitude * perlinData;
 			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();

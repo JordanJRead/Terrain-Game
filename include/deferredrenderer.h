@@ -32,17 +32,6 @@ public:
 			mShaderWaterGeometry.setInt("images[" + indexString + "]", i);
 		}
 	}
-	void useFramebuffer() { mFramebuffer.use(); }
-	void useShaderTerrainGeometryPass() { mShaderTerrainGeometry.use(); }
-	void useShaderWaterGeometryPass() { mShaderWaterGeometry.use(); }
-	void setTerrainPlaneInfo(const glm::vec3& planePos, float planeWidth) {
-		mShaderTerrainGeometry.setVector3("planePos", planePos);
-		mShaderTerrainGeometry.setFloat("planeWorldWidth", planeWidth);
-	}
-	void setWaterPlaneInfo(const glm::vec3& planePos, float planeWidth) {
-		mShaderWaterGeometry.setVector3("planePos", planePos);
-		mShaderWaterGeometry.setFloat("planeWorldWidth", planeWidth);
-	}
 	void doDeferredShading(const Framebuffer<1>& targetFramebuffer, const VertexArray& screenQuad) {
 		mFramebuffer.use();
 		mFramebuffer.bindColourTexture(0, 5); // TODO
@@ -57,7 +46,6 @@ public:
 		glEnable(GL_DEPTH_TEST);
 	}
 
-private:
 	Shader mShaderTerrainGeometry;
 	Shader mShaderWaterGeometry;
 	Shader mShaderDeferred;
