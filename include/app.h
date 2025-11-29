@@ -1,7 +1,7 @@
 #ifndef APP_H
 #define APP_H
 
-#include "camera.h"
+#include "cameraplayer.h"
 #include "shader.h"
 #include "GLFW/glfw3.h"
 #include "imgui_impl_glfw.h"
@@ -19,7 +19,7 @@ private:
 	int mScreenWidth;
 	int mScreenHeight;
 	bool mIsUIVisible{ true };
-	Camera mCamera;
+	CameraPlayer mCamera;
 	UIManager mUIManager;
 	TerrainRenderer mTerrainRenderer;
 	GLFWwindow* mWindow;

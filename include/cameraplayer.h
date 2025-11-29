@@ -1,19 +1,15 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef CAMERA_PLAYER_H
+#define CAMERA_PLAYER_H
 
 #include "glm/glm.hpp"
 #include "GLFW/glfw3.h"
 #include <iostream>
 #include <physicsobject.h>
 #include <array>
+#include "aabb.h"
+#include "camerai.h"
 
 class PlanePhysics;
-
-
-struct AABB {
-	glm::vec3 mMin;
-	glm::vec3 mMax;
-};
 
 struct OBB {
 	OBB(const std::array<glm::vec3, 4>& orderedCorners)
@@ -32,15 +28,18 @@ struct OBB {
 	glm::vec3 mCenter;
 };
 
-class Camera {
+class CameraPlayer : public CameraI {
 public:
-	Camera(int screenWidth, int screenHeight, const glm::vec3& position = { 0, 0, 0 }, float speed = 10, float sens = 0.005f);
+	CameraPlayer(int screenWidth, int screenHeight, const glm::vec3& position = { 0, 0, 0 }, float speed = 10, float sens = 0.005f);
+
+	glm::vec3 getPosition() const override { return mPosition; }
+	bool isAABBVisible(const AABB& aabb) const override;
+	glm::mat4 getViewMatrix() const override;
+	glm::mat4 getProjectionMatrix() const override;
+
 	void mouseCallback(GLFWwindow* window, double xPos, double yPos, bool isCursorHidden);
 	void move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlane);
 	void toggleFreecam();
-	glm::mat4 getViewMatrix() const;
-	glm::mat4 getProjectionMatrix() const;
-	glm::vec3 getPosition() const { return mPosition; }
 	glm::vec3 getForward() const;
 	float getNearPlaneDist() const { return mNear; }
 	float getFarPlaneDist() const { return mFar; }
@@ -50,7 +49,6 @@ public:
 	float getFOVY() const { return mFOVYRad; }
 	float getYaw() const { return mYaw; }
 	float getPitch() const { return mPitch; }
-	bool isAABBVisible(const AABB& aabb) const;
 
 private:
 	static bool doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec3& axis, float xNear, float yNear, float near, float far);

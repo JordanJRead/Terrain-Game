@@ -1,11 +1,11 @@
-#include "camera.h"
+#include "cameraplayer.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "GLFW/glfw3.h"
 #include "physics.h"
 #include "planephysics.h"
 
-Camera::Camera(int screenWidth, int screenHeight, const glm::vec3& position, float speed, float sens)
+CameraPlayer::CameraPlayer(int screenWidth, int screenHeight, const glm::vec3& position, float speed, float sens)
 	: mPosition{ position }
 	, mSpeed{ speed } 
 	, mSens{ sens }
@@ -14,7 +14,7 @@ Camera::Camera(int screenWidth, int screenHeight, const glm::vec3& position, flo
 	mYaw = 3.1415926535897932384626433832795 / 2.0f;
 }
 
-void Camera::mouseCallback(GLFWwindow* window, double xPos, double yPos, bool isCursorHidden) {
+void CameraPlayer::mouseCallback(GLFWwindow* window, double xPos, double yPos, bool isCursorHidden) {
 	static float pi{ 3.1415926535897932384626433832795 };
 
 	if (!isCursorHidden) {
@@ -43,16 +43,16 @@ void Camera::mouseCallback(GLFWwindow* window, double xPos, double yPos, bool is
 	mPrevY = yPos;
 }
 
-glm::mat4 Camera::getViewMatrix() const {
+glm::mat4 CameraPlayer::getViewMatrix() const {
 	glm::vec3 forward{ getForward() };
 	return glm::lookAt(mPosition, mPosition + forward, { 0, 1, 0 });
 }
 
-glm::mat4 Camera::getProjectionMatrix() const {
+glm::mat4 CameraPlayer::getProjectionMatrix() const {
 	return glm::perspective(mFOVYRad, mAspectRatio, mNear, mFar);
 } 
 
-glm::vec3 Camera::getForward() const {
+glm::vec3 CameraPlayer::getForward() const {
 	return {
 		 glm::cos(mYaw) * glm::cos(mPitch),
 		 glm::sin(mPitch),
@@ -60,11 +60,11 @@ glm::vec3 Camera::getForward() const {
 	};
 }
 
-void Camera::toggleFreecam() {
+void CameraPlayer::toggleFreecam() {
 	mIsFreecam = !mIsFreecam;
 }
 
-void Camera::move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlane) {
+void CameraPlayer::move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlane) {
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
 		mSpeed += 100 * deltaTime;
 	}
@@ -129,7 +129,7 @@ void Camera::move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlan
 		mPosition += displacement;
 }
 
-bool Camera::doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec3& axis, float xNear, float yNear, float near, float far) {
+bool CameraPlayer::doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec3& axis, float xNear, float yNear, float near, float far) {
 	float MoX = fabsf(axis.x);
 	float MoY = fabsf(axis.y);
 	float MoZ = axis.z;
@@ -164,7 +164,7 @@ bool Camera::doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec3& axi
 }
 
 // https://bruop.github.io/improved_frustum_culling/
-bool Camera::isAABBVisible(const AABB& aabb) const {
+bool CameraPlayer::isAABBVisible(const AABB& aabb) const {
 
 	std::array<glm::vec3, 4> obbCorners{ {
 			aabb.mMin,

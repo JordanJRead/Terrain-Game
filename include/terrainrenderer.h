@@ -12,7 +12,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
-#include "camera.h"
+#include "cameraplayer.h"
 #include <iostream>
 #include "cubemap.h"
 #include "cubevertices.h"
@@ -22,6 +22,7 @@
 #include "uniformbuffer.h"
 #include "deferredrenderer.h"
 #include "imagecount.h"
+#include "camerai.h"
 
 class TerrainRenderer {
 public:
@@ -105,7 +106,7 @@ public:
 		mSkyboxShader.setInt("skybox", 8);
 	}
 
-	void render(const Camera& camera, float time, const UIManager& uiManager, const Framebuffer<1>& targetFramebuffer) {
+	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const Framebuffer<1>& targetFramebuffer) {
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
 			mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
@@ -192,8 +193,6 @@ public:
 			mImages[i].bindImage(i);
 		}
 
-		glm::vec3 cameraForward{ camera.getForward() };
-
 		if (uiManager.mIsDeferredRendering.data()) {
 			mDeferredRenderer.mFramebuffer.use();
 			glClearColor(0, 0, 0, -3);
@@ -207,14 +206,14 @@ public:
 		}
 	}
 
-	void renderTerrain(const Camera& camera, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager) {
+	void renderTerrain(const CameraI& camera, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager) {
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
 
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
-
-				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(camera.getPosition(), chunkWidth) - glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
+				
+				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(camera.getPosition(), chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };

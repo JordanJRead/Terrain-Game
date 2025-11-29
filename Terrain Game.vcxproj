@@ -148,7 +148,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\app.cpp" />
     <ClCompile Include="src\mathhelper.cpp" />
-    <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\cameraplayer.cpp" />
     <ClCompile Include="src\cubemap.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\physics.cpp" />
@@ -171,6 +171,9 @@
     <Library Include="libraries\glfw3dll.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\aabb.h" />
+    <ClInclude Include="include\cameracascaded.h" />
+    <ClInclude Include="include\camerai.h" />
     <ClInclude Include="include\deferredrenderer.h" />
     <ClInclude Include="include\framebuffer.h" />
     <ClInclude Include="include\imagecount.h" />

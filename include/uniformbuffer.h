@@ -5,7 +5,7 @@
 #include "OpenGLObjects/BUF.h"
 #include "uimanager.h"
 #include "glm/glm.hpp"
-#include "camera.h"
+#include "cameraplayer.h"
 #include <iostream>
 #include <array>
 #include "imagecount.h"
@@ -152,7 +152,7 @@ namespace BufferTypes {
 
 	struct PerFrameInfo {
 		PerFrameInfo() : time{ -1 } {}
-		PerFrameInfo(const Camera& camera, glm::vec3 _dirToSun, float _time)
+		PerFrameInfo(const CameraPlayer& camera, glm::vec3 _dirToSun, float _time)
 			: viewMatrix{ camera.getViewMatrix() }
 			, projectionMatrix{ camera.getProjectionMatrix() }
 			, cameraPos{ camera.getPosition(), 1 }
