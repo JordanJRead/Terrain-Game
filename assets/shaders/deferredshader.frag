@@ -177,7 +177,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	vec3 a = rayPos + rayDir * t0;
 	vec3 b = rayPos + rayDir * t1;
 
-	int stepCount = 10;
+	int stepCount = 100;
 	float totalDistance = t1 - t0;
 	float dx = totalDistance / stepCount;
 
@@ -193,7 +193,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 		// In-scattering
 		vec3 sunlightHittingHere = transmittanceFromSunToPoint(samplePos) * colours.sunColour;
 		float cosTheta = dot(rayDir, perFrameInfo.dirToSun);
-		inScatteredLight += 50 * sunlightHittingHere * (rayleighDensity * atmosphereInfo.rayleighScattering * phase(cosTheta, atmosphereInfo.rayleighG) + mieDensity * atmosphereInfo.mieScattering * phase(cosTheta, atmosphereInfo.mieG)) * transmittance * dx;
+		inScatteredLight += 1 * sunlightHittingHere * (rayleighDensity * atmosphereInfo.rayleighScattering * phase(cosTheta, atmosphereInfo.rayleighG) + mieDensity * atmosphereInfo.mieScattering * phase(cosTheta, atmosphereInfo.mieG)) * transmittance * dx;
 		samplePos += rayDir * dx;
 	}
 	if (isSky && !isSun) {

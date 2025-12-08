@@ -3,10 +3,12 @@
 
 #include "camerai.h"
 #include "cameraplayer.h"
+#include <array>
+#include "glm/glm.hpp"
 
-class CameraCascade : public CameraI {
+class CameraCascaded : public CameraI {
 public:
-	CameraCascade(const CameraPlayer& playerCamera, float min, float max);
+	CameraCascaded(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max);
 
 	glm::vec3 getPosition() const override { return mPosition; }
 	bool isAABBVisible(const AABB& aabb) const override { return true; }

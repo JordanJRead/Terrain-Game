@@ -147,6 +147,7 @@
     <ClCompile Include="include\uimanager.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\app.cpp" />
+    <ClCompile Include="src\cameracascaded.cpp" />
     <ClCompile Include="src\mathhelper.cpp" />
     <ClCompile Include="src\cameraplayer.cpp" />
     <ClCompile Include="src\cubemap.cpp" />
