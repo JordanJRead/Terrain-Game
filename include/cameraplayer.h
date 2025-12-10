@@ -45,10 +45,11 @@ public:
 	float getFarPlaneDist() const { return mFar; }
 	float getXNear() const { return mXNear; }
 	float getYNear() const { return mYNear; }
-	float getFOVX() const { return 2 * atan(tan(mFOVYRad / 2) * mAspectRatio); }
-	float getFOVY() const { return mFOVYRad; }
-	float getYaw() const { return mYaw; }
-	float getPitch() const { return mPitch; }
+	float getFOVX() const override { return 2 * atan(tan(mFOVYRad / 2) * mAspectRatio); }
+	float getFOVY() const override { return mFOVYRad; }
+	float getYaw() const override { return mYaw; }
+	float getPitch() const override { return mPitch; }
+	std::array<glm::vec3, 8> getFrustumPointsCameraSpace() const;
 
 private:
 	static bool doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec3& axis, float xNear, float yNear, float near, float far);

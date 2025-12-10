@@ -186,6 +186,7 @@
     <ClInclude Include="include\planephysics.h" />
     <ClInclude Include="include\planeunit.h" />
     <ClInclude Include="include\shaderheader.h" />
+    <ClInclude Include="include\shadowmapper.h" />
     <ClInclude Include="include\uniformbuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

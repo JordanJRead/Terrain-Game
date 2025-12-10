@@ -219,3 +219,21 @@ bool CameraPlayer::isAABBVisible(const AABB& aabb) const {
 
 	return true;
 }
+
+std::array<glm::vec3, 8> CameraPlayer::getFrustumPointsCameraSpace() const {
+	std::array<glm::vec3, 8> frustumPoints;
+	frustumPoints[0] = { -mXNear, -mYNear, -mNear };
+	frustumPoints[1] = { mXNear, -mYNear, -mNear };
+	frustumPoints[2] = { -mXNear,  mYNear, -mNear };
+	frustumPoints[3] = { mXNear,  mYNear, -mNear };
+
+	float xFar{ mFar * glm::tan(getFOVX() / 2.0f) };
+	float yFar{ mFar * glm::tan(getFOVY() / 2.0f) };
+
+	frustumPoints[4] = { -xFar, -yFar, -mFar };
+	frustumPoints[5] = { xFar, -yFar, -mFar };
+	frustumPoints[6] = { -xFar,  yFar, -mFar };
+	frustumPoints[7] = { xFar,  yFar, -mFar };
+
+	return frustumPoints;
+}

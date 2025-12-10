@@ -152,7 +152,7 @@ namespace BufferTypes {
 
 	struct PerFrameInfo {
 		PerFrameInfo() : time{ -1 } {}
-		PerFrameInfo(const CameraPlayer& camera, glm::vec3 _dirToSun, float _time)
+		PerFrameInfo(const CameraI& camera, glm::vec3 _dirToSun, float _time)
 			: viewMatrix{ camera.getViewMatrix() }
 			, projectionMatrix{ camera.getProjectionMatrix() }
 			, cameraPos{ camera.getPosition(), 1 }

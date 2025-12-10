@@ -5,15 +5,21 @@
 #include "cameraplayer.h"
 #include <array>
 #include "glm/glm.hpp"
+#include "uimanager.h"
 
 class CameraCascaded : public CameraI {
 public:
-	CameraCascaded(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max);
+	void updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB, const glm::mat4& inverveViewMatrix);
 
 	glm::vec3 getPosition() const override { return mPosition; }
 	bool isAABBVisible(const AABB& aabb) const override { return true; }
 	glm::mat4 getViewMatrix() const override { return mViewMatrix; }
 	glm::mat4 getProjectionMatrix() const override { return mProjectionMatrix; }
+
+	float getFOVX() const override { return 0; }
+	float getFOVY() const override { return 0; }
+	float getYaw() const override { return 0; }
+	float getPitch() const override { return 0; }
 
 private:
 	glm::vec3 mPosition;

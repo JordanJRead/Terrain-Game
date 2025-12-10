@@ -23,6 +23,8 @@
 #include "deferredrenderer.h"
 #include "imagecount.h"
 #include "camerai.h"
+#include "aabb.h"
+#include "shadowmapper.h"
 
 class TerrainRenderer {
 public:
@@ -116,7 +118,6 @@ public:
 		mArtisticParams.updateGPU(uiManager);
 		mWaterParams.updateGPU(uiManager);
 		mColourParams.updateGPU(uiManager);
-		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		mAtmosphereInfo.updateGPU(uiManager);
 		mTerrainShader.use();
 
@@ -197,16 +198,29 @@ public:
 			mDeferredRenderer.mFramebuffer.use();
 			glClearColor(0, 0, 0, -3);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			renderTerrain(camera, mDeferredRenderer.mShaderTerrainGeometry, mDeferredRenderer.mShaderWaterGeometry, uiManager);
+			renderTerrain(camera, mDeferredRenderer.mShaderTerrainGeometry, mDeferredRenderer.mShaderWaterGeometry, uiManager, dirToSun, time);
+
+			mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
+			for (size_t i{ 0 }; i < 3; ++i) {
+				const CameraI& depthCamera{ mShadowMapper.getCamera(i) };
+				const Framebuffer<0>& depthFramebuffer{ mShadowMapper.getFramebuffer(i) };
+				depthFramebuffer.use();
+				glClearColor(0, 0, 0, 0);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				//renderTerrain(depthCamera, mShadowMapper.terrainDepthShader, mShadowMapper.waterDepthShader, uiManager, dirToSun, time, false);
+			}
+
+			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 			mDeferredRenderer.doDeferredShading(targetFramebuffer, mScreenQuad);
 		}
 		else {
 			targetFramebuffer.use();
-			renderTerrain(camera, mTerrainShader, mWaterShader, uiManager);
+			renderTerrain(camera, mTerrainShader, mWaterShader, uiManager, dirToSun, time);
 		}
 	}
 
-	void renderTerrain(const CameraI& camera, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager) {
+	void renderTerrain(const CameraI& camera, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool doShells = true) {
+		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
 
@@ -237,19 +251,24 @@ public:
 
 					// LOD shell count
 					int newShellCount{ uiManager.mShellCount.data() };
-					int oldShellCount{ uiManager.mShellCount.data() };
-					float shellLODDistance{ uiManager.mShellLODDistance.data() };
-					if (chunkDist > shellLODDistance * 4) {
-						newShellCount = oldShellCount > 3 ? 3 : oldShellCount;
-						mArtisticParams.updateGPU({ uiManager, newShellCount });
+					if (doShells) {
+						int oldShellCount{ uiManager.mShellCount.data() };
+						float shellLODDistance{ uiManager.mShellLODDistance.data() };
+						if (chunkDist > shellLODDistance * 4) {
+							newShellCount = oldShellCount > 3 ? 3 : oldShellCount;
+							mArtisticParams.updateGPU({ uiManager, newShellCount });
+						}
+						if (chunkDist > shellLODDistance * 2) {
+							newShellCount = oldShellCount > 7 ? 7 : oldShellCount;
+							mArtisticParams.updateGPU({ uiManager, newShellCount });
+						}
+						else if (chunkDist > shellLODDistance) {
+							newShellCount = oldShellCount > 10 ? 10 : oldShellCount;
+							mArtisticParams.updateGPU({ uiManager, newShellCount });
+						}
 					}
-					if (chunkDist > shellLODDistance * 2) {
-						newShellCount = oldShellCount > 7 ? 7 : oldShellCount;
-						mArtisticParams.updateGPU({ uiManager, newShellCount });
-					}
-					else if (chunkDist > shellLODDistance) {
-						newShellCount = oldShellCount > 10 ? 10 : oldShellCount;
-						mArtisticParams.updateGPU({ uiManager, newShellCount });
+					else {
+						newShellCount = 0;
 					}
 
 					// Draw terrain
@@ -271,6 +290,14 @@ public:
 				}
 			}
 		}
+	}
+
+	AABB getSceneWorldAABB(const glm::vec3& playerCameraPos, const UIManager& uiManager) const {
+		glm::vec3 minPosition{ -uiManager.mTerrainSpan.data() / 2, mMinTerrainHeight, -uiManager.mTerrainSpan.data() / 2 };
+		glm::vec3 maxPosition{  uiManager.mTerrainSpan.data() / 2, mMaxTerrainHeight,  uiManager.mTerrainSpan.data() / 2 };
+		minPosition += playerCameraPos;
+		maxPosition += playerCameraPos;
+		return AABB{ minPosition * 1.1f, maxPosition * 1.1f};
 	}
 
 	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
@@ -353,6 +380,7 @@ private:
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
 	DeferredRenderer mDeferredRenderer;
+	ShadowMapper<3> mShadowMapper{ {0.25, 0.75} };
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;

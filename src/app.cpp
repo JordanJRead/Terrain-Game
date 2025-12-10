@@ -8,7 +8,7 @@
 #include <array>
 #include "glm/glm.hpp"
 #include "planephysics.h"
-#include "planegpu.h"`
+#include "planegpu.h"
 
 App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	: mCamera{ screenWidth, screenHeight, {0, 20, 0} } // x = 2883548 for farlands

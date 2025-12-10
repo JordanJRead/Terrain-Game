@@ -177,7 +177,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	vec3 a = rayPos + rayDir * t0;
 	vec3 b = rayPos + rayDir * t1;
 
-	int stepCount = 100;
+	int stepCount = 10;
 	float totalDistance = t1 - t0;
 	float dx = totalDistance / stepCount;
 

@@ -5,12 +5,12 @@
 #include "glm/mat4x4.hpp"
 #include "cameracascaded.h"
 
-CameraCascaded::CameraCascaded(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max) {
+void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB, const glm::mat4& inverveViewMatrix) {
 	// frustumPoints defines lower left, lower right, upper left, upper right, then repeat for far plane
 
 	// Get world pos of frustum slice
 	std::array<glm::vec3, 8> frustumSliceWorldPositions;
-	glm::vec3 center;
+	glm::vec3 center{ 0, 0, 0 };
 	for (size_t i{ 0 }; i < 4; ++i) {
 		frustumSliceWorldPositions[i]     = frustumPoints[i] + min * (frustumPoints[i + 4] - frustumPoints[i]);
 		frustumSliceWorldPositions[i + 4] = frustumPoints[i] + max * (frustumPoints[i + 4] - frustumPoints[i]);
@@ -20,8 +20,7 @@ CameraCascaded::CameraCascaded(const glm::vec3& dirToLight, const std::array<glm
 
 	// Create view matrix
 	mPosition = center + dirToLight;
-	glm::mat4 mViewMatrix = glm::lookAt(mPosition, center, { 0, 1, 0 });
-	glm::mat4 inverseViewMatrix{ glm::inverse(mViewMatrix) };
+	mViewMatrix = glm::lookAt(mPosition, center, { 0, 1, 0 });
 
 	// Get light space pos of frustum slice
 	std::array<glm::vec3, 8> frustumSliceLightPositions;
@@ -51,11 +50,18 @@ CameraCascaded::CameraCascaded(const glm::vec3& dirToLight, const std::array<glm
 	// Get ortho positions in world space
 	std::array<glm::vec3, 4> orthoFrontPlaneWorldPositions;
 	for (size_t i{ 0 }; i < 4; ++i) {
-		orthoFrontPlaneWorldPositions[i] = inverseViewMatrix * glm::vec4{ orthoFrontPlaneLightPositions[i], 1 };
+		orthoFrontPlaneWorldPositions[i] = inverveViewMatrix * glm::vec4{ orthoFrontPlaneLightPositions[i], 1 };
 	}
-	// Get scene aabb
-	// Get all four t values
-	// Find max
-	// Increment maxZ by that (if positive)
-	// Wait would it be maxZ or minZ?
+
+	float t1{ sceneAABB.rayFarthestIntersect(orthoFrontPlaneWorldPositions[0], dirToLight) };
+	float t2{ sceneAABB.rayFarthestIntersect(orthoFrontPlaneWorldPositions[1], dirToLight) };
+	float t3{ sceneAABB.rayFarthestIntersect(orthoFrontPlaneWorldPositions[2], dirToLight) };
+	float t4{ sceneAABB.rayFarthestIntersect(orthoFrontPlaneWorldPositions[3], dirToLight) };
+
+	float maxT{ fmax(fmax(t1, t2), fmax(t3, t4)) };
+	if (maxT < 0)
+		maxT = 0;
+	maxZ += maxT;
+
+	mProjectionMatrix = glm::ortho(minX, maxX, minY, maxY, -maxZ, -minZ);
 }
