@@ -207,7 +207,7 @@ public:
 				depthFramebuffer.use();
 				glClearColor(0, 0, 0, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				renderTerrain(depthCamera, mShadowMapper.terrainDepthShader, mShadowMapper.waterDepthShader, uiManager, dirToSun, time, false);
+				renderTerrain(depthCamera, mShadowMapper.terrainDepthShader, mShadowMapper.waterDepthShader, uiManager, dirToSun, time, true);
 			}
 
 			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
@@ -219,7 +219,7 @@ public:
 		}
 	}
 
-	void renderTerrain(const CameraI& camera, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool doShells = true) {
+	void renderTerrain(const CameraI& camera, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -251,7 +251,7 @@ public:
 
 					// LOD shell count
 					int newShellCount{ uiManager.mShellCount.data() };
-					if (doShells) {
+					if (!depthPass) {
 						int oldShellCount{ uiManager.mShellCount.data() };
 						float shellLODDistance{ uiManager.mShellLODDistance.data() };
 						if (chunkDist > shellLODDistance * 4) {
