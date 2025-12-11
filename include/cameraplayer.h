@@ -65,7 +65,7 @@ private:
 	float mNear{ 0.1f };
 	float mYNear{ mNear * glm::tan(mFOVYRad / 2.0f) };
 	float mXNear{ mYNear * mAspectRatio };
-	float mFar{ 10000.0f };
+	float mFar{ 100.0f };
 
 	glm::vec3 mPosition;
 

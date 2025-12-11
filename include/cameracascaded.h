@@ -9,7 +9,7 @@
 
 class CameraCascaded : public CameraI {
 public:
-	void updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB, const glm::mat4& inverveViewMatrix);
+	void updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB);
 
 	glm::vec3 getPosition() const override { return mPosition; }
 	bool isAABBVisible(const AABB& aabb) const override { return true; }

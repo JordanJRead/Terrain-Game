@@ -85,6 +85,7 @@ void App::loop() {
 		glClearColor(0.5f, 0.5f, 0.5f, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, mScreenWidth, mScreenHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Terrain
@@ -92,6 +93,7 @@ void App::loop() {
 
 		// Gamma
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, mScreenWidth, mScreenHeight);
 		mGammaShader.use();
 		mFramebuffer.bindColourTexture(0, 0);
 		mScreenQuad.use();

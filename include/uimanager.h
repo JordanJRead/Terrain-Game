@@ -352,7 +352,7 @@ public:
 	}
 
 	// Day
-	UIElement<float> mDayTime{ 0.5 };
+	UIElement<float> mDayTime{ 0.75 };
 
 	// Colours
 	UIElement<bool>      mIsDeferredRendering{ true };

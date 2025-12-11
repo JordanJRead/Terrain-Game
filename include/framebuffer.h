@@ -11,7 +11,10 @@ class Framebuffer {
 public:
 	Framebuffer(Framebuffer&&) = default;
 	Framebuffer& operator=(Framebuffer&&) = default;
-	Framebuffer(int width, int height, int glInternalFormat) {
+	Framebuffer(int width, int height, int glInternalFormat)
+		: mWidth{ width }
+		, mHeight{ height }
+	{
 		glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 
 		// Colour textures
@@ -49,6 +52,7 @@ public:
 	}
 	void use() const {
 		glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+		glViewport(0, 0, mWidth, mHeight);
 	}
 	void bindColourTexture(int colourTextureIndex, int unit) const {
 		glActiveTexture(GL_TEXTURE0 + unit);
@@ -59,6 +63,8 @@ private:
 	FBO mFBO;
 	std::array<TEX, ColourTextureCount> mColourTextures;
 	RBO mDepthStencil;
+	int mWidth;
+	int mHeight;
 };
 
 #endif

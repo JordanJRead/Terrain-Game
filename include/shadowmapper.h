@@ -42,7 +42,7 @@ public:
 				max = 1;
 			else
 				max = mSplits[i];
-			camera.updateCamera(dirToLight, frustumPoints, min, max, sceneAABB, inverseViewMatrix);
+			camera.updateCamera(dirToLight, frustumPoints, min, max, sceneAABB);
 		}
 	}
 

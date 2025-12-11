@@ -207,7 +207,7 @@ public:
 				depthFramebuffer.use();
 				glClearColor(0, 0, 0, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				//renderTerrain(depthCamera, mShadowMapper.terrainDepthShader, mShadowMapper.waterDepthShader, uiManager, dirToSun, time, false);
+				renderTerrain(depthCamera, mShadowMapper.terrainDepthShader, mShadowMapper.waterDepthShader, uiManager, dirToSun, time, false);
 			}
 
 			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
@@ -269,6 +269,7 @@ public:
 					}
 					else {
 						newShellCount = 0;
+						mArtisticParams.updateGPU({ uiManager, newShellCount });
 					}
 
 					// Draw terrain

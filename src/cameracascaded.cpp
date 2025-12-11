@@ -5,7 +5,7 @@
 #include "glm/mat4x4.hpp"
 #include "cameracascaded.h"
 
-void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB, const glm::mat4& inverveViewMatrix) {
+void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB) {
 	// frustumPoints defines lower left, lower right, upper left, upper right, then repeat for far plane
 
 	// Get world pos of frustum slice
@@ -21,6 +21,7 @@ void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<
 	// Create view matrix
 	mPosition = center + dirToLight;
 	mViewMatrix = glm::lookAt(mPosition, center, { 0, 1, 0 });
+	glm::mat4 inverseViewMatrix{ glm::inverse(mViewMatrix) };
 
 	// Get light space pos of frustum slice
 	std::array<glm::vec3, 8> frustumSliceLightPositions;
@@ -50,7 +51,7 @@ void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<
 	// Get ortho positions in world space
 	std::array<glm::vec3, 4> orthoFrontPlaneWorldPositions;
 	for (size_t i{ 0 }; i < 4; ++i) {
-		orthoFrontPlaneWorldPositions[i] = inverveViewMatrix * glm::vec4{ orthoFrontPlaneLightPositions[i], 1 };
+		orthoFrontPlaneWorldPositions[i] = inverseViewMatrix * glm::vec4{ orthoFrontPlaneLightPositions[i], 1 };
 	}
 
 	float t1{ sceneAABB.rayFarthestIntersect(orthoFrontPlaneWorldPositions[0], dirToLight) };
