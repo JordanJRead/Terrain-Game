@@ -2,7 +2,6 @@
 #define TERRAIN_H
 
 #include "OpenGLObjects/FBO.h"
-#include "OpenGLObjects/TEX.h"
 #include "glm/glm.hpp"
 #include "framebuffer.h"
 

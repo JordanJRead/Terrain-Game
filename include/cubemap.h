@@ -9,10 +9,7 @@
 class Cubemap {
 public:
 	Cubemap(const std::array<std::string_view, 6>& filePaths);
-	void bindTexture(int unit) {
-		glActiveTexture(GL_TEXTURE0 + unit);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, mTex);
-	}
+	void bindTexture(int unit) const;
 
 private:
 	TEX mTex;
