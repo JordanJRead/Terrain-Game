@@ -4,6 +4,7 @@
 #include "OpenGLObjects/FBO.h"
 #include "OpenGLObjects/TEX.h"
 #include "glm/glm.hpp"
+#include "framebuffer.h"
 
 class VertexArray;
 class Shader;
@@ -21,12 +22,9 @@ public:
 	void setWorldSize(float worldSize);
 	void setWorldPos(const glm::vec2& worldPos);
 	void updateTexture(const VertexArray& screenQuad, const Shader& terrainImageShader);
-	unsigned long long getTextureHandle() { return mTextureHandle; }
 
 private:
-	FBO mFBO;
-	TEX mColorTex;
-	unsigned long long mTextureHandle;
+	Framebuffer<1> mFramebuffer;
 
 	int mPixelDim;
 	float mWorldSize;

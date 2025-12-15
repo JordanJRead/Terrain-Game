@@ -10,32 +10,17 @@ TerrainImageGenerator::TerrainImageGenerator(int pixelDim, float worldSize, int 
 	, mScreenHeight{ screenHeight }
 	, mPixelDim{ pixelDim }
 	, mWorldPos{ worldPos }
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
-
-	glBindTexture(GL_TEXTURE_2D, mColorTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mPixelDim, mPixelDim, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mColorTex, 0);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
+	, mFramebuffer{ pixelDim, pixelDim, GL_RGBA32F, false }
+{}
 
 // Clears image
 void TerrainImageGenerator::updatePixelDim(int pixelDim) {
 	mPixelDim = pixelDim;
-	glBindTexture(GL_TEXTURE_2D, mColorTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mPixelDim, mPixelDim, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	mFramebuffer.updateDimensions(0, pixelDim, pixelDim);
 }
 
 void TerrainImageGenerator::bindImage(int unit) {
-	glActiveTexture(GL_TEXTURE0 + unit);
-	mColorTex.use(GL_TEXTURE_2D);
+	mFramebuffer.bindColourTexture(0, unit);
 }
 
 void TerrainImageGenerator::setWorldSize(float worldSize) {
@@ -48,7 +33,7 @@ void TerrainImageGenerator::setWorldPos(const glm::vec2& worldPos) {
 
 void TerrainImageGenerator::updateTexture(const VertexArray& screenQuad, const Shader& terrainImageShader) {
 	glViewport(0, 0, mPixelDim, mPixelDim);
-	glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
+	mFramebuffer.use();
 	glClear(GL_COLOR_BUFFER_BIT);
 	screenQuad.use();
 	terrainImageShader.use();

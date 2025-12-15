@@ -5,13 +5,14 @@
 #include "OpenGLObjects/TEX.h"
 #include "OpenGLObjects/RBO.h"
 #include <array>
+#include <iostream>
 
 template <int ColourTextureCount>
 class Framebuffer {
 public:
 	Framebuffer(Framebuffer&&) = default;
 	Framebuffer& operator=(Framebuffer&&) = default;
-	Framebuffer(int width, int height, int glInternalFormat)
+	Framebuffer(int width, int height, int glInternalFormat, bool hasDepth = true)
 		: mWidth{ width }
 		, mHeight{ height }
 	{
@@ -43,9 +44,11 @@ public:
 		}
 
 		// Depth stencil
-		glBindRenderbuffer(GL_RENDERBUFFER, mDepthStencil);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepthStencil);
+		if (hasDepth) {
+			glBindRenderbuffer(GL_RENDERBUFFER, mDepthStencil);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, mDepthStencil);
+		}
 
 		// Finish
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -60,6 +63,13 @@ public:
 	void bindColourTexture(int colourTextureIndex, int unit) const {
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, mColourTextures[colourTextureIndex]);
+	}
+
+	void updateDimensions(int index, int width, int height) {
+		mWidth = width;
+		mHeight = height;
+		glBindTexture(GL_TEXTURE_2D, mColourTextures[index]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	}
 
 private:

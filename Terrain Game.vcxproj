@@ -173,21 +173,36 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\aabb.h" />
+    <ClInclude Include="include\app.h" />
     <ClInclude Include="include\cameracascaded.h" />
     <ClInclude Include="include\camerai.h" />
+    <ClInclude Include="include\cameraplayer.h" />
+    <ClInclude Include="include\cubemap.h" />
+    <ClInclude Include="include\cubevertices.h" />
     <ClInclude Include="include\deferredrenderer.h" />
     <ClInclude Include="include\framebuffer.h" />
     <ClInclude Include="include\imagecount.h" />
     <ClInclude Include="include\mathhelper.h" />
+    <ClInclude Include="include\OpenGLObjects\BUF.h" />
+    <ClInclude Include="include\OpenGLObjects\FBO.h" />
     <ClInclude Include="include\OpenGLObjects\RBO.h" />
+    <ClInclude Include="include\OpenGLObjects\TEX.h" />
+    <ClInclude Include="include\OpenGLObjects\VAO.h" />
     <ClInclude Include="include\physics.h" />
     <ClInclude Include="include\physicsobject.h" />
     <ClInclude Include="include\planei.h" />
     <ClInclude Include="include\planephysics.h" />
     <ClInclude Include="include\planeunit.h" />
+    <ClInclude Include="include\random.h" />
+    <ClInclude Include="include\shader.h" />
     <ClInclude Include="include\shaderheader.h" />
     <ClInclude Include="include\shadowmapper.h" />
+    <ClInclude Include="include\stb_include.h" />
+    <ClInclude Include="include\terrainimagegenerator.h" />
+    <ClInclude Include="include\terrainrenderer.h" />
+    <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\uniformbuffer.h" />
+    <ClInclude Include="include\vertexarray.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
