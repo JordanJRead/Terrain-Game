@@ -32,7 +32,10 @@ public:
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, mColourTextures[i], 0);
 				attachments[i] = GL_COLOR_ATTACHMENT0 + i;
 			}
-			glDrawBuffers(3, attachments);
+			if (ColourTextureCount == 1)
+				glDrawBuffer(GL_FRAMEBUFFER);
+			else
+				glDrawBuffers(3, attachments);
 		}
 		else {
 			glDrawBuffer(GL_NONE);

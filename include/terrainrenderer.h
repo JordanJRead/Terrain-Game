@@ -198,7 +198,7 @@ public:
 			mDeferredRenderer.mFramebuffer.use();
 			glClearColor(0, 0, 0, -3);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			renderTerrain(camera, mDeferredRenderer.mShaderTerrainGeometry, mDeferredRenderer.mShaderWaterGeometry, uiManager, dirToSun, time);
+			renderTerrain(camera, camera.getPosition(), mDeferredRenderer.mShaderTerrainGeometry, mDeferredRenderer.mShaderWaterGeometry, uiManager, dirToSun, time);
 
 			mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			for (size_t i{ 0 }; i < 3; ++i) {
@@ -207,7 +207,7 @@ public:
 				depthFramebuffer.use();
 				glClearColor(0, 0, 0, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				renderTerrain(depthCamera, mShadowMapper.terrainDepthShader, mShadowMapper.waterDepthShader, uiManager, dirToSun, time, true);
+				renderTerrain(depthCamera, camera.getPosition(), mShadowMapper.mTerrainDepthShader, mShadowMapper.mWaterDepthShader, uiManager, dirToSun, time, true);
 			}
 
 			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
@@ -215,11 +215,11 @@ public:
 		}
 		else {
 			targetFramebuffer.use();
-			renderTerrain(camera, mTerrainShader, mWaterShader, uiManager, dirToSun, time);
+			renderTerrain(camera, camera.getPosition(), mTerrainShader, mWaterShader, uiManager, dirToSun, time);
 		}
 	}
 
-	void renderTerrain(const CameraI& camera, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
+	void renderTerrain(const CameraI& camera, const glm::vec3& chunkCameraCenterPosition, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -227,7 +227,7 @@ public:
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
 				
-				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(camera.getPosition(), chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
+ 				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(chunkCameraCenterPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
@@ -381,7 +381,7 @@ private:
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
 	DeferredRenderer mDeferredRenderer;
-	ShadowMapper<3> mShadowMapper{ {0.25, 0.75} };
+	ShadowMapper<3> mShadowMapper{ {0.1, 0.5} };
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;
