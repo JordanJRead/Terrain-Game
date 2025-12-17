@@ -193,7 +193,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 		// In-scattering
 		vec3 sunlightHittingHere = transmittanceFromSunToPoint(samplePos) * colours.sunColour;
 		float cosTheta = dot(rayDir, perFrameInfo.dirToSun);
-		inScatteredLight += 1 * sunlightHittingHere * (rayleighDensity * atmosphereInfo.rayleighScattering * phase(cosTheta, atmosphereInfo.rayleighG) + mieDensity * atmosphereInfo.mieScattering * phase(cosTheta, atmosphereInfo.mieG)) * transmittance * dx;
+		inScatteredLight += 50 * sunlightHittingHere * (rayleighDensity * atmosphereInfo.rayleighScattering * phase(cosTheta, atmosphereInfo.rayleighG) + mieDensity * atmosphereInfo.mieScattering * phase(cosTheta, atmosphereInfo.mieG)) * transmittance * dx;
 		samplePos += rayDir * dx;
 	}
 	if (isSky && !isSun) {

@@ -436,7 +436,7 @@ public:
 	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957 };
-	UIElement<float> mHDRScale{ 2 };
+	UIElement<float> mHDRScale{ 15 };
 };
 
 #endif
