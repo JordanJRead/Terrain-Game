@@ -17,7 +17,7 @@ void ShaderWaterDeferred::setRenderData(const TerrainRenderer& terrainRenderer, 
 	for (; i < ImageCount; ++i) {
 		terrainRenderer.bindTerrainImage(i, i);
 	}
-	setVector3("planePos", { planePos.x, 0, planePos.z });
+	setVector3("planePos", planePos);
 	setFloat("planeWorldWidth", planeWidth);
 }
 

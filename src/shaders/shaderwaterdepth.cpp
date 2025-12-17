@@ -5,7 +5,7 @@ ShaderWaterDepth::ShaderWaterDepth(const std::string& vertPath, const std::strin
 
 void ShaderWaterDepth::setRenderData(const TerrainRenderer& terrainRenderer, const glm::vec3& planePos, float planeWidth, const Cubemap& skybox) const {
 	use();
-	setVector3("planePos", { planePos.x, 0, planePos.z });
+	setVector3("planePos", planePos);
 	setFloat("planeWorldWidth", planeWidth);
 }
 
