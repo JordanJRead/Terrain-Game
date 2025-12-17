@@ -1,14 +1,16 @@
 #include <string>
 #include <glad/glad.h>
-#include "shader.h"
+#include "shaders/shaderi.h"
 #include <sstream>
 #include <iostream>
 #include <fstream>
 #define STB_INCLUDE_IMPLEMENTATION
 #define STB_INCLUDE_LINE_GLSL
 #include "stb_include.h"
+#include "framebuffer.h"
+#include "vertexarray.h"
 
-Shader::Shader(const std::string& vertPath, const std::string& fragPath) {
+ShaderI::ShaderI(const std::string& vertPath, const std::string& fragPath) {
     
     // Read soruce code in
     char vertError[256];
@@ -69,4 +71,36 @@ Shader::Shader(const std::string& vertPath, const std::string& fragPath) {
     glDeleteShader(fragShader);
     free(vertSource);
     free(fragSource);
+}
+
+void ShaderI::internalRender(const Framebuffer& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount) const {
+    use();
+    framebuffer.use();
+    vertexArray.use();
+    if (!depth)
+        glDisable(GL_DEPTH_TEST);
+
+    if (instanceCount == 0)
+        glDrawElements(GL_TRIANGLES, vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0);
+    else
+        glDrawElementsInstanced(GL_TRIANGLES, vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0, instanceCount);
+
+    if (!depth)
+        glEnable(GL_DEPTH_TEST);
+}
+
+void ShaderI::internalRenderDefaultFramebuffer(const VertexArray& vertexArray, bool depth, int instanceCount) const {
+    use();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    vertexArray.use();
+    if (!depth)
+        glDisable(GL_DEPTH_TEST);
+
+    if (instanceCount == 0)
+        glDrawElements(GL_TRIANGLES, vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0);
+    else
+        glDrawElementsInstanced(GL_TRIANGLES, vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0, instanceCount);
+
+    if (!depth)
+        glEnable(GL_DEPTH_TEST);
 }

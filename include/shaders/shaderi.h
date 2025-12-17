@@ -6,13 +6,29 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <vector>
+#include <string>
+#include <string_view>
 
-class Shader {
+class Framebuffer;
+class VertexArray;
+
+class ShaderI {
 public:
-	Shader(const std::string& vertPath, const std::string& fragPath);
-	~Shader() { glDeleteProgram(mID); }
-	void use() const { glUseProgram(mID); }
+	ShaderI(const ShaderI&) = delete;
+	ShaderI(ShaderI&&) = delete;
 
+	ShaderI(const std::string& vertPath, const std::string& fragPath);
+	~ShaderI() { glDeleteProgram(mID); }
+	virtual void render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const = 0;
+
+protected:
+	unsigned int mID;
+
+	void internalRender(const Framebuffer& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = 0) const;
+
+	void internalRenderDefaultFramebuffer(const VertexArray& vertexArray, bool depth, int instanceCount = 0) const;
+
+	void use() const { glUseProgram(mID); }
 	void setMatrix4(std::string_view name, const glm::mat4& mat4) const {
 		glUniformMatrix4fv(glGetUniformLocation(mID, name.data()), 1, false, glm::value_ptr(mat4));
 	}
@@ -34,9 +50,6 @@ public:
 	void setBool(std::string_view name, bool b) const {
 		glUniform1ui(glGetUniformLocation(mID, name.data()), b);
 	}
-
-private:
-	unsigned int mID;
 };
 
 #endif

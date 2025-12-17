@@ -233,6 +233,9 @@ public:
 			ImGui::Checkbox("Deferred Rendering", mIsDeferredRendering.getDataPtr());
 			mIsDeferredRendering.update();
 
+			ImGui::Checkbox("Show physics plane", mShowPhysicsPlane.getDataPtr());
+			mShowPhysicsPlane.update();
+
 			ImGui::ColorPicker3("Dirt", (float*)mDirtColour.getDataPtr());
 			mDirtColour.update();
 
@@ -356,6 +359,7 @@ public:
 
 	// Colours
 	UIElement<bool>      mIsDeferredRendering{ true };
+	UIElement<bool>      mShowPhysicsPlane{ false };
 	UIElement<glm::vec3> mDirtColour    { {40 / 255.0, 21 / 255.0, 10  / 255.0} };
 	UIElement<glm::vec3> mMountainColour{ {34 / 255.0, 34 / 255.0, 34 / 255.0} };
 	UIElement<glm::vec3> mGrassColour1  { {0   / 255.0, 56 / 255.0, 0   / 255.0} };
@@ -433,18 +437,6 @@ public:
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957 };
 	UIElement<float> mHDRScale{ 2 };
-
-	//UIElement<float> mAtmosphereHeight{ 2140 };
-	//UIElement<float> mAtmosphereWidth{ 140100 };
-	//UIElement<float> mAtmosphereRayleighDensityFalloff{ 1 };
-	//UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
-	//UIElement<float> mAtmosphereRayleighDensityScale{ 0.002 };
-	//UIElement<float> mAtmosphereMieDensityScale{ 0.22 };
-	//UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 189, 594} };
-	//UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
-	//UIElement<float> mAtmosphereRayleighG{ 0 };
-	//UIElement<float> mAtmosphereMieG{ 0.957 };
-	//UIElement<float> mHDRScale{ 2 };
 };
 
 #endif

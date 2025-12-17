@@ -8,8 +8,9 @@
 #include <array>
 #include <vector>
 #include "framebuffer.h"
-#include "shader.h"
 #include "imagecount.h"
+#include "shaders/shaderterraindepth.h"
+#include "shaders/shaderwaterdepth.h"
 
 template <int CascadeCount>
 class ShadowMapper {
@@ -17,16 +18,7 @@ public:
 	ShadowMapper(const std::array<float, CascadeCount - 1>& splits) : mSplits{ splits }
 	{
 		for (size_t i{ 0 }; i < CascadeCount; ++i) {
-			mFramebuffers.emplace_back(2048, 2048, GL_RGBA32F); // Colour not used unless doing colour debugging
-		}
-
-		for (int i{ 0 }; i < ImageCount; ++i) {
-			std::string indexString{ std::to_string(i) };
-
-			mTerrainDepthShader.use();
-			mTerrainDepthShader.setInt("images[" + indexString + "]", i);
-			mWaterDepthShader.use();
-			mWaterDepthShader.setInt("images[" + indexString + "]", i);
+			mFramebuffers.emplace_back(0, 2048, 2048, GL_RGBA32F); // Colour not used unless doing colour debugging
 		}
 	}
 	void updateCameras(const glm::vec3& dirToLight, const CameraPlayer& playerCamera, const AABB& sceneAABB, const UIManager& uiManager) {
@@ -60,16 +52,16 @@ public:
 		return mCameras[i];
 	}
 
-	const Framebuffer<0>& getFramebuffer(int i) const {
+	const Framebuffer& getFramebuffer(int i) const {
 		return mFramebuffers[i];
 	}
 
-	Shader mTerrainDepthShader{ "assets/shaders/terraindepth.vert", "assets/shaders/terraindepth.frag" };
-	Shader mWaterDepthShader{ "assets/shaders/waterdepth.vert", "assets/shaders/waterdepth.frag" };
+	ShaderTerrainDepth mTerrainDepthShader{ "assets/shaders/terraindepth.vert", "assets/shaders/terraindepth.frag" };
+	ShaderWaterDepth mWaterDepthShader{ "assets/shaders/waterdepth.vert", "assets/shaders/waterdepth.frag" };
 
 private:
 	std::array<CameraCascaded, CascadeCount> mCameras;
-	std::vector<Framebuffer<0>> mFramebuffers;
+	std::vector<Framebuffer> mFramebuffers;
 	std::array<float, CascadeCount - 1> mSplits;
 };
 

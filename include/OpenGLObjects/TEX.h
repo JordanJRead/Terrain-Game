@@ -11,7 +11,10 @@ public:
 	TEX() { glGenTextures(1, &mID); }
 	~TEX() { if (mIsOwner) glDeleteTextures(1, &mID); }
 	operator unsigned int() const { return mID; }
-	void use(int target) const { glBindTexture(target, mID); }
+	void use(int target, int unit) const { 
+		glActiveTexture(GL_TEXTURE0 + unit);
+		glBindTexture(target, mID);
+	}
 
 	TEX(const TEX&) = delete;
 	TEX& operator=(const TEX&) = delete;

@@ -70,6 +70,8 @@ public:
 		mVertexArray.use();
 	}
 
+	const VertexArray& getVertexArray() { return mVertexArray; }
+
 	unsigned int getIndexCount() {
 		return mVertexArray.getIndexCount();
 	}

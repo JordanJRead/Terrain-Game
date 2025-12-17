@@ -21,5 +21,11 @@ Cubemap::Cubemap(const std::array<std::string_view, 6>& filePaths) {
 		}
 
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_SRGB, w, h, 0, c == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
+		stbi_image_free(data);
 	}
+}
+
+void Cubemap::bindTexture(int unit) const {
+	glActiveTexture(GL_TEXTURE0 + unit);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, mTex);
 }

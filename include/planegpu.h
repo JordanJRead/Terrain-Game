@@ -16,6 +16,7 @@ public:
 	void useVertexArray() { mVertexArray.use(); }
 	float getStepSize(float scale) const { return (1.0 / (mVerticesPerEdge - 1)) * scale; }
 	glm::vec3 getClosestWorldVertexPos(const glm::vec3 pos, float scale);
+	const VertexArray& getVertexArray() const { return mVertexArray; }
 
 private:
 	VertexArray mVertexArray;

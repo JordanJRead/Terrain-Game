@@ -1,7 +1,6 @@
 #ifndef TERRAIN_RENDERER_H
 #define TERRAIN_RENDERER_H
 
-#include "shader.h"
 #include "glm/glm.hpp"
 #include "vertexarray.h"
 #include "terrainimagegenerator.h"
@@ -25,6 +24,12 @@
 #include "camerai.h"
 #include "aabb.h"
 #include "shadowmapper.h"
+#include "shaders/shaderterrainimage.h"
+#include "shaders/shaderterrainforward.h"
+#include "shaders/shaderterrainchunki.h"
+#include "shaders/shaderwaterchunki.h"
+#include "shaders/shaderwaterforward.h"
+#include "shaders/shaderskybox.h"
 
 class TerrainRenderer {
 public:
@@ -34,8 +39,8 @@ public:
 		, mHighQualityPlane{ 2 } // ? temporary i think?
 		, mReallyLowQualityPlane{ 2 }
 
-		, mTerrainImageShader{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
-		, mTerrainShader{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
+		, mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
+		, mShaderTerrainForward{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
 		, mWaterShader{ "assets/shaders/water.vert", "assets/shaders/water.frag" }
 		, mSkyboxShader{ "assets/shaders/skybox.vert", "assets/shaders/skybox.frag" }
 
@@ -88,27 +93,26 @@ public:
 
 		mScreenQuad.create(vertexData, indices, attribs);
 
-		// Set shader uniforms
-		mWaterShader.use();
-		mWaterShader.setInt("skybox", 8);
-		mTerrainShader.use();
-		mTerrainShader.setInt("skybox", 8);
+		mTerrainParams.updateGPU({ uiManager });
+		mArtisticParams.updateGPU(uiManager);
+		mWaterParams.updateGPU(uiManager);
+		mColourParams.updateGPU(uiManager);
+		mAtmosphereInfo.updateGPU(uiManager);
+
 		for (int i{ 0 }; i < ImageCount; ++i) {
-			std::string indexString{ std::to_string(i) };
-
-			mTerrainShader.use();
-			mTerrainShader.setInt("images[" + indexString + "]", i);
-			mWaterShader.use();
-			mWaterShader.setInt("images[" + indexString + "]", i);
-
-			mImages[i].updateTexture(mScreenQuad, mTerrainImageShader);
+			mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage);
 		}
-
-		mSkyboxShader.use();
-		mSkyboxShader.setInt("skybox", 8);
 	}
 
-	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const Framebuffer<1>& targetFramebuffer) {
+	void bindTerrainImage(int i, int unit) const {
+		mImages[i].bindImage(unit);
+	}
+
+	const DeferredRenderer& getDeferredRenderer() const {
+		return mDeferredRenderer;
+	}
+
+	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const Framebuffer& targetFramebuffer) {
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
 			mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
@@ -119,7 +123,6 @@ public:
 		mWaterParams.updateGPU(uiManager);
 		mColourParams.updateGPU(uiManager);
 		mAtmosphereInfo.updateGPU(uiManager);
-		mTerrainShader.use();
 
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -174,20 +177,15 @@ public:
 			}
 
 			if (hasImageChanged || hasTerrainChanged) {
-				mImages[i].updateTexture(mScreenQuad, mTerrainImageShader); // binds another shader
+				mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage); // binds another shader
 			}
 		}
 		mTerrainImagesInfo.updateGPU({ uiManager.getImageSizes(), mImageWorldPositions });
 
 		// Render skybox
 		if (!uiManager.mIsDeferredRendering.data()) {
-			targetFramebuffer.use();
-			mSkyboxShader.use();
-			mDaySkybox.bindTexture(8);
-			mCubeVertices.useVertexArray();
-			glDisable(GL_DEPTH_TEST);
-			glDrawElements(GL_TRIANGLES, mCubeVertices.getIndexCount(), GL_UNSIGNED_INT, 0);
-			glEnable(GL_DEPTH_TEST);
+			mSkyboxShader.setRenderData(mDaySkybox);
+			mSkyboxShader.render(targetFramebuffer, mCubeVertices.getVertexArray());
 		}
 
 		for (int i{ 0 }; i < ImageCount; ++i) {
@@ -198,28 +196,27 @@ public:
 			mDeferredRenderer.mFramebuffer.use();
 			glClearColor(0, 0, 0, -3);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			renderTerrain(camera, camera.getPosition(), mDeferredRenderer.mShaderTerrainGeometry, mDeferredRenderer.mShaderWaterGeometry, uiManager, dirToSun, time);
+			renderTerrain(mDeferredRenderer.mFramebuffer, camera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, uiManager, dirToSun, time);
 
 			mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			for (size_t i{ 0 }; i < 3; ++i) {
 				const CameraI& depthCamera{ mShadowMapper.getCamera(i) };
-				const Framebuffer<0>& depthFramebuffer{ mShadowMapper.getFramebuffer(i) };
+				const Framebuffer& depthFramebuffer{ mShadowMapper.getFramebuffer(i) };
 				depthFramebuffer.use();
 				glClearColor(0, 0, 0, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				renderTerrain(depthCamera, camera.getPosition(), mShadowMapper.mTerrainDepthShader, mShadowMapper.mWaterDepthShader, uiManager, dirToSun, time, true);
+				renderTerrain(depthFramebuffer, depthCamera, camera.getPosition(), mShadowMapper.mTerrainDepthShader, mShadowMapper.mWaterDepthShader, uiManager, dirToSun, time, true);
 			}
 
 			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
-			mDeferredRenderer.doDeferredShading(targetFramebuffer, mScreenQuad);
+			mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
 		}
 		else {
-			targetFramebuffer.use();
-			renderTerrain(camera, camera.getPosition(), mTerrainShader, mWaterShader, uiManager, dirToSun, time);
+			renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mWaterShader, uiManager, dirToSun, time);
 		}
 	}
 
-	void renderTerrain(const CameraI& camera, const glm::vec3& chunkCameraCenterPosition, const Shader& terrainShader, const Shader& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
+	void renderTerrain(const Framebuffer& targetFramebuffer, const CameraI& camera, const glm::vec3& chunkCameraCenterPosition, ShaderTerrainChunkI& terrainShader, const ShaderWaterChunkI& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -247,8 +244,6 @@ public:
 					bool mediumQuality{ chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
 					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : (mediumQuality ? mMediumQualityPlane : mLowQualityPlane) };
 
-					currPlane.useVertexArray();
-
 					// LOD shell count
 					int newShellCount{ uiManager.mShellCount.data() };
 					if (!depthPass) {
@@ -264,7 +259,7 @@ public:
 						}
 						else if (chunkDist > shellLODDistance) {
 							newShellCount = oldShellCount > 10 ? 10 : oldShellCount;
-							mArtisticParams.updateGPU({ uiManager, newShellCount });
+							mArtisticParams.updateGPU({ uiManager, newShellCount }); // TODO move maxShellCount into uniform variable?
 						}
 					}
 					else {
@@ -274,18 +269,12 @@ public:
 
 					// Draw terrain
 					glDisable(GL_BLEND);
-					terrainShader.use();
-					terrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
-					terrainShader.setFloat("planeWorldWidth", chunkWidth);
-					glDrawElementsInstanced(GL_TRIANGLES, currPlane.getIndexCount(), GL_UNSIGNED_INT, 0, newShellCount + 1); // Draw each shell plus the base terrain
+					terrainShader.setRenderData(*this, { chunkPos.x, 0, chunkPos.z }, chunkWidth, newShellCount, mDaySkybox);
+					terrainShader.render(targetFramebuffer, currPlane.getVertexArray());
 
 					// Draw water
-					waterShader.use();
-					waterShader.setVector3("planePos", { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z });
-					waterShader.setFloat("planeWorldWidth", chunkWidth);
-
-					mReallyLowQualityPlane.useVertexArray();
-					glDrawElements(GL_TRIANGLES, mReallyLowQualityPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
+					waterShader.setRenderData(*this, { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }, chunkWidth, mDaySkybox);
+					waterShader.render(targetFramebuffer, mReallyLowQualityPlane.getVertexArray());
 
 					mArtisticParams.updateGPU({ uiManager });
 				}
@@ -373,10 +362,10 @@ private:
 	std::array<float, 4> mMinPerlinValues{ {1, 0, 1, 0} };
 	std::array<float, 4> mMaxPerlinValues{ {1, 0, 0, 1} };
 
-	Shader mTerrainImageShader;
-	Shader mTerrainShader;
-	Shader mWaterShader;
-	Shader mSkyboxShader;
+	ShaderTerrainImage mShaderTerrainImage;
+	ShaderTerrainForward mShaderTerrainForward;
+	ShaderWaterForward mWaterShader;
+	ShaderSkybox mSkyboxShader;
 	Cubemap mDaySkybox;
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
