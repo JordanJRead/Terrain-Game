@@ -4,8 +4,7 @@ layout(location = 0) in vec3 vWorldPos;
 
 out flat vec3 fragColor;
 
-uniform mat4 view;
-uniform mat4 proj;
+#include "_headeruniformbuffers.glsl"
 
 uint rand(uint n) {
 	uint state = n * 747796405u + 2891336453u;
@@ -19,6 +18,6 @@ float randToFloat(uint n) {
 }
 
 void main() {
-	gl_Position = proj * view * vec4(vWorldPos, 1);
+	gl_Position = perFrameInfo.projectionMatrix * perFrameInfo.viewMatrix * vec4(vWorldPos, 1);
 	fragColor = vec3(randToFloat(rand(gl_VertexID / 3)), randToFloat(rand(gl_VertexID / 3)), randToFloat(rand(gl_VertexID / 3)));
 }

@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include "vertexarray.h"
-#include "shader.h"
+#include "shaders/shaderterrainimage.h"
 
 TerrainImageGenerator::TerrainImageGenerator(int pixelDim, float worldSize, int screenWidth, int screenHeight, const glm::vec2& worldPos)
 	: mWorldSize{ worldSize }
@@ -10,7 +10,7 @@ TerrainImageGenerator::TerrainImageGenerator(int pixelDim, float worldSize, int 
 	, mScreenHeight{ screenHeight }
 	, mPixelDim{ pixelDim }
 	, mWorldPos{ worldPos }
-	, mFramebuffer{ pixelDim, pixelDim, GL_RGBA32F, false }
+	, mFramebuffer{ 1, pixelDim, pixelDim, GL_RGBA32F, false }
 {}
 
 // Clears image
@@ -19,7 +19,7 @@ void TerrainImageGenerator::updatePixelDim(int pixelDim) {
 	mFramebuffer.updateDimensions(0, pixelDim, pixelDim);
 }
 
-void TerrainImageGenerator::bindImage(int unit) {
+void TerrainImageGenerator::bindImage(int unit) const {
 	mFramebuffer.bindColourTexture(0, unit);
 }
 
@@ -31,19 +31,7 @@ void TerrainImageGenerator::setWorldPos(const glm::vec2& worldPos) {
 	mWorldPos = worldPos;
 }
 
-void TerrainImageGenerator::updateTexture(const VertexArray& screenQuad, const Shader& terrainImageShader) {
-	glViewport(0, 0, mPixelDim, mPixelDim);
-	mFramebuffer.use();
-	glClear(GL_COLOR_BUFFER_BIT);
-	screenQuad.use();
-	terrainImageShader.use();
-
-	terrainImageShader.setFloat("scale", mWorldSize);
-	terrainImageShader.setVector2("worldPos", mWorldPos);
-
-	glDisable(GL_BLEND);
-	glDrawElements(GL_TRIANGLES, screenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);
-	glEnable(GL_BLEND);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, mScreenWidth, mScreenHeight);
+void TerrainImageGenerator::updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader) { // move shader to be static?
+	terrainImageShader.setRenderData(mWorldPos, mWorldSize);
+	terrainImageShader.render(mFramebuffer, screenQuad);
 }

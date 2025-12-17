@@ -2,13 +2,14 @@
 #define APP_H
 
 #include "cameraplayer.h"
-#include "shader.h"
 #include "GLFW/glfw3.h"
 #include "imgui_impl_glfw.h"
 #include "terrainrenderer.h"
 #include "uimanager.h"
 #include "framebuffer.h"
 #include "vertexarray.h"
+#include "shaders/shaderphysics.h"
+#include "shaders/shadergamma.h"
 
 class App {
 public:
@@ -23,9 +24,9 @@ private:
 	UIManager mUIManager;
 	TerrainRenderer mTerrainRenderer;
 	GLFWwindow* mWindow;
-	Shader mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
-	Shader mGammaShader{ "assets/shaders/gamma.vert", "assets/shaders/gamma.frag" };
-	Framebuffer<1> mFramebuffer;
+	ShaderPhysics mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
+	ShaderGamma mGammaShader{ "assets/shaders/gamma.vert", "assets/shaders/gamma.frag" };
+	Framebuffer mFramebuffer;
 	VertexArray mScreenQuad;
 	bool mIsCursorHidden{ true };
 

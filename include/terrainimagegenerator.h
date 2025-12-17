@@ -4,14 +4,15 @@
 #include "OpenGLObjects/FBO.h"
 #include "glm/glm.hpp"
 #include "framebuffer.h"
+#include "shaders/shaderterrainimage.h"
 
 class VertexArray;
-class Shader;
+class ShaderI;
 
 class TerrainImageGenerator {
 public:
 	TerrainImageGenerator(int pixelDim, float worldSize, int screenWidth, int screenHeight, const glm::vec2& worldPos);
-	void bindImage(int unit);
+	void bindImage(int unit) const;
 
 	int getPixelDim() { return mPixelDim; }
 	float getWorldSize() { return mWorldSize; }
@@ -20,10 +21,10 @@ public:
 	void updatePixelDim(int pixelDim);
 	void setWorldSize(float worldSize);
 	void setWorldPos(const glm::vec2& worldPos);
-	void updateTexture(const VertexArray& screenQuad, const Shader& terrainImageShader);
+	void updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader); // TODO make shader static?
 
 private:
-	Framebuffer<1> mFramebuffer;
+	Framebuffer mFramebuffer;
 
 	int mPixelDim;
 	float mWorldSize;

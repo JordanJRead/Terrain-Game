@@ -5,23 +5,26 @@
 #include "OpenGLObjects/TEX.h"
 #include "OpenGLObjects/RBO.h"
 #include <array>
+#include <vector>
 #include <iostream>
 
-template <int ColourTextureCount>
 class Framebuffer {
 public:
 	Framebuffer(Framebuffer&&) = default;
 	Framebuffer& operator=(Framebuffer&&) = default;
-	Framebuffer(int width, int height, int glInternalFormat, bool hasDepth = true)
+	Framebuffer(int colourTextureCount, int width, int height, int glInternalFormat, bool hasDepth = true)
 		: mWidth{ width }
 		, mHeight{ height }
+		, mColourTextureCount{ colourTextureCount }
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 
 		// Colour textures
-		if (ColourTextureCount > 0) {
-			unsigned int attachments[ColourTextureCount == 0 ? 1 : ColourTextureCount]; // Makes the compiler happy
-			for (int i{ 0 }; i < ColourTextureCount; ++i) {
+		if (mColourTextureCount > 0) {
+			std::vector<unsigned int> attachments;
+			attachments.reserve(mColourTextureCount);
+			for (int i{ 0 }; i < mColourTextureCount; ++i) {
+				mColourTextures.emplace_back();
 				glBindTexture(GL_TEXTURE_2D, mColourTextures[i]);
 				glTexImage2D(GL_TEXTURE_2D, 0, glInternalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
@@ -31,12 +34,12 @@ public:
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, mColourTextures[i], 0);
-				attachments[i] = GL_COLOR_ATTACHMENT0 + i;
+				attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
 			}
-			if (ColourTextureCount == 1)
+			if (mColourTextureCount == 1)
 				glDrawBuffer(GL_FRAMEBUFFER);
 			else
-				glDrawBuffers(3, attachments);
+				glDrawBuffers(mColourTextureCount, attachments.data());
 		}
 		else {
 			glDrawBuffer(GL_NONE);
@@ -72,9 +75,14 @@ public:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, mWidth, mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	}
 
+	const TEX& getColourTex(int i) {
+		return mColourTextures[i];
+	}
+
 private:
+	int mColourTextureCount;
 	FBO mFBO;
-	std::array<TEX, ColourTextureCount> mColourTextures;
+	std::vector<TEX> mColourTextures;
 	RBO mDepthStencil;
 	int mWidth;
 	int mHeight;

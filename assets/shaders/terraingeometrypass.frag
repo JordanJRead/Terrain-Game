@@ -11,8 +11,6 @@ layout(location=0) out vec4 OutGroundWorldPosShellProgress;
 layout(location=1) out vec4 OutWorldPosMountain;
 layout(location=2) out vec4 OutNormalDoesTexelExist;
 
-uniform samplerCube skybox;
-
 #include "_headermath.glsl"
 #include "_headeruniformbuffers.glsl"
 #include "_headerterraininfo.glsl"

@@ -16,7 +16,7 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	, mScreenWidth{ screenWidth }
 	, mScreenHeight{ screenHeight }
 	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition(), mUIManager }
-	, mFramebuffer{ screenWidth, screenHeight, GL_RGBA32F }
+	, mFramebuffer{ 1, screenWidth, screenHeight, GL_RGBA32F }
 {
 	std::vector<float> vertexData{
 	-1, -1,
@@ -84,9 +84,6 @@ void App::loop() {
 		mFramebuffer.use();
 		glClearColor(0.5f, 0.5f, 0.5f, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, mScreenWidth, mScreenHeight);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Terrain
 		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mUIManager, mFramebuffer);
@@ -94,24 +91,15 @@ void App::loop() {
 		// Gamma
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, mScreenWidth, mScreenHeight);
-		mGammaShader.use();
-		mFramebuffer.bindColourTexture(0, 0);
-		mScreenQuad.use();
-		glDisable(GL_DEPTH_TEST);
-		glDrawElements(GL_TRIANGLES, mScreenQuad.getIndexCount(), GL_UNSIGNED_INT, 0);
-		glEnable(GL_DEPTH_TEST);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		mGammaShader.setRenderData(mFramebuffer.getColourTex(0));
+		mGammaShader.render(mScreenQuad);
 
 		mUIManager.render(deltaTime, mIsUIVisible);
 
 		// Debug physics plane
-		//PlaneGPU gpuPlane{ physicsPlane };
-		//mPhysicsShader.use();
-		//mPhysicsShader.setMatrix4("view", mCamera.getViewMatrix());
-		//mPhysicsShader.setMatrix4("proj", mCamera.getProjectionMatrix());
-		//gpuPlane.useVertexArray();
-		//glDisable(GL_DEPTH_TEST);
-		//glDrawElements(GL_TRIANGLES, gpuPlane.getIndexCount(), GL_UNSIGNED_INT, 0);
-		//glEnable(GL_DEPTH_TEST);
+		PlaneGPU gpuPlane{ physicsPlane };
+		mPhysicsShader.render(gpuPlane.getVertexArray());
 
 		glfwSwapBuffers(mWindow);
 		glfwPollEvents();

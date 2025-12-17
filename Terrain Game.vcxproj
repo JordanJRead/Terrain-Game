@@ -148,6 +148,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\app.cpp" />
     <ClCompile Include="src\cameracascaded.cpp" />
+    <ClCompile Include="src\deferredrenderer.cpp" />
     <ClCompile Include="src\mathhelper.cpp" />
     <ClCompile Include="src\cameraplayer.cpp" />
     <ClCompile Include="src\cubemap.cpp" />
@@ -164,7 +165,19 @@
     <ClCompile Include="src\imgui_widgets.cpp" />
     <ClCompile Include="src\planephysics.cpp" />
     <ClCompile Include="src\planeunit.cpp" />
-    <ClCompile Include="src\shader.cpp" />
+    <ClCompile Include="src\shaders\shaderi.cpp" />
+    <ClCompile Include="src\shaders\shaderdeferred.cpp" />
+    <ClCompile Include="src\shaders\shadergamma.cpp" />
+    <ClCompile Include="src\shaders\shaderphysics.cpp" />
+    <ClCompile Include="src\shaders\shaderskybox.cpp" />
+    <ClCompile Include="src\shaders\shaderterrainchunki.cpp" />
+    <ClCompile Include="src\shaders\shaderterraindeferred.cpp" />
+    <ClCompile Include="src\shaders\shaderterraindepth.cpp" />
+    <ClCompile Include="src\shaders\shaderterrainforward.cpp" />
+    <ClCompile Include="src\shaders\shaderterrainimage.cpp" />
+    <ClCompile Include="src\shaders\shaderwaterdeferred.cpp" />
+    <ClCompile Include="src\shaders\shaderwaterdepth.cpp" />
+    <ClCompile Include="src\shaders\shaderwaterforward.cpp" />
     <ClCompile Include="src\terrainimagegenerator.cpp" />
     <ClCompile Include="src\vertexarray.cpp" />
   </ItemGroup>
@@ -172,6 +185,10 @@
     <Library Include="libraries\glfw3dll.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\shaders\shaderterraindeferred.h" />
+    <ClInclude Include="include\shaders\shaderterraindepth.h" />
+    <ClInclude Include="include\shaders\shaderterrainchunki.h" />
+    <ClInclude Include="include\shaders\shaderskybox.h" />
     <ClInclude Include="include\aabb.h" />
     <ClInclude Include="include\app.h" />
     <ClInclude Include="include\cameracascaded.h" />
@@ -194,8 +211,17 @@
     <ClInclude Include="include\planephysics.h" />
     <ClInclude Include="include\planeunit.h" />
     <ClInclude Include="include\random.h" />
-    <ClInclude Include="include\shader.h" />
+    <ClInclude Include="include\shaders\shaderi.h" />
     <ClInclude Include="include\shaderheader.h" />
+    <ClInclude Include="include\shaders\shaderdeferred.h" />
+    <ClInclude Include="include\shaders\shadergamma.h" />
+    <ClInclude Include="include\shaders\shaderphysics.h" />
+    <ClInclude Include="include\shaders\shaderterrainforward.h" />
+    <ClInclude Include="include\shaders\shaderterrainimage.h" />
+    <ClInclude Include="include\shaders\shaderwaterchunki.h" />
+    <ClInclude Include="include\shaders\shaderwaterdeferred.h" />
+    <ClInclude Include="include\shaders\shaderwaterdepth.h" />
+    <ClInclude Include="include\shaders\shaderwaterforward.h" />
     <ClInclude Include="include\shadowmapper.h" />
     <ClInclude Include="include\stb_include.h" />
     <ClInclude Include="include\terrainimagegenerator.h" />
@@ -203,6 +229,7 @@
     <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\uniformbuffer.h" />
     <ClInclude Include="include\vertexarray.h" />
+    <ClInclude Include="src\shaders\shaderwaterchunki.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
