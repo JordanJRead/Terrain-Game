@@ -98,8 +98,10 @@ void App::loop() {
 		mUIManager.render(deltaTime, mIsUIVisible);
 
 		// Debug physics plane
-		PlaneGPU gpuPlane{ physicsPlane };
-		mPhysicsShader.render(gpuPlane.getVertexArray());
+		if (mUIManager.mShowPhysicsPlane.data()) {
+			PlaneGPU gpuPlane{ physicsPlane };
+			mPhysicsShader.render(gpuPlane.getVertexArray());
+		}
 
 		glfwSwapBuffers(mWindow);
 		glfwPollEvents();

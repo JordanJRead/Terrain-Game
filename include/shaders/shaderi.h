@@ -14,6 +14,9 @@ class VertexArray;
 
 class ShaderI {
 public:
+	ShaderI(const ShaderI&) = delete;
+	ShaderI(ShaderI&&) = delete;
+
 	ShaderI(const std::string& vertPath, const std::string& fragPath);
 	~ShaderI() { glDeleteProgram(mID); }
 	virtual void render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const = 0;

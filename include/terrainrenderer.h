@@ -267,12 +267,6 @@ public:
 						mArtisticParams.updateGPU({ uiManager, newShellCount });
 					}
 
-					/*
-					
-					terrainShader.setVector3("planePos", { chunkPos.x, 0, chunkPos.z });
-					terrainShader.setFloat("planeWorldWidth", chunkWidth);
-					*/
-
 					// Draw terrain
 					glDisable(GL_BLEND);
 					terrainShader.setRenderData(*this, { chunkPos.x, 0, chunkPos.z }, chunkWidth, newShellCount, mDaySkybox);
