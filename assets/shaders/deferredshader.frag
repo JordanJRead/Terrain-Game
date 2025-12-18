@@ -113,11 +113,6 @@ float rayleighDensityAtPoint(vec3 pos) {
 }
 
 float mieDensityAtPoint(vec3 pos) {
-
-	//if (pos.x > 0 && pos.x < 30 && pos.y > 49 && pos.y < 50 && pos.z > 0 && pos.z < 30) {
-	//	return perlin(pos.xz * 0.3, 0).x;
-	//}
-
 	vec3 atmosphereCenter = getAtmosphereCenter();
 	float distFromCenter = length(atmosphereCenter - pos);
 	if (distFromCenter < atmosphereInfo.minRadius) {

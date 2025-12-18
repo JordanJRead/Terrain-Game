@@ -17,7 +17,7 @@
 #include "cubevertices.h"
 #include "uimanager.h"
 #include "mathhelper.h"
-#include "framebuffer.h"
+#include "framebufferi.h"
 #include "uniformbuffer.h"
 #include "deferredrenderer.h"
 #include "imagecount.h"
@@ -111,8 +111,11 @@ public:
 	const DeferredRenderer& getDeferredRenderer() const {
 		return mDeferredRenderer;
 	}
+	const ShadowMapper<CascadeCount>& getShadowMapper() const {
+		return mShadowMapper;
+	}
 
-	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const Framebuffer& targetFramebuffer) {
+	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const FramebufferColour& targetFramebuffer) {
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
 			mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
@@ -199,9 +202,9 @@ public:
 			renderTerrain(mDeferredRenderer.mFramebuffer, camera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, uiManager, dirToSun, time);
 
 			mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			for (size_t i{ 0 }; i < 3; ++i) {
+			for (size_t i{ 0 }; i < CascadeCount; ++i) {
 				const CameraI& depthCamera{ mShadowMapper.getCamera(i) };
-				const Framebuffer& depthFramebuffer{ mShadowMapper.getFramebuffer(i) };
+				const FramebufferI& depthFramebuffer{ mShadowMapper.getFramebuffer(i) };
 				depthFramebuffer.use();
 				glClearColor(0, 0, 0, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -216,7 +219,7 @@ public:
 		}
 	}
 
-	void renderTerrain(const Framebuffer& targetFramebuffer, const CameraI& camera, const glm::vec3& chunkCameraCenterPosition, ShaderTerrainChunkI& terrainShader, const ShaderWaterChunkI& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
+	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& chunkCameraCenterPosition, ShaderTerrainChunkI& terrainShader, const ShaderWaterChunkI& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -370,7 +373,7 @@ private:
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
 	DeferredRenderer mDeferredRenderer;
-	ShadowMapper<3> mShadowMapper{ {0.1, 0.5} };
+	ShadowMapper<CascadeCount> mShadowMapper{ {0.1, 0.5} };
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;

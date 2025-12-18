@@ -9,6 +9,6 @@ void ShaderWaterDepth::setRenderData(const TerrainRenderer& terrainRenderer, con
 	setFloat("planeWorldWidth", planeWidth);
 }
 
-void ShaderWaterDepth::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderWaterDepth::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, true);
 }

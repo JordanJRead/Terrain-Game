@@ -15,6 +15,6 @@ void ShaderTerrainDeferred::setRenderData(const TerrainRenderer& terrainRenderer
 	mShellCount = shellCount;
 }
 
-void ShaderTerrainDeferred::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderTerrainDeferred::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, true, mShellCount + 1);
 }

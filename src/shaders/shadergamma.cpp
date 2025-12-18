@@ -10,7 +10,7 @@ void ShaderGamma::setRenderData(const TEX& sourceTexture) {
 	sourceTexture.use(GL_TEXTURE_2D, 0);
 }
 
-void ShaderGamma::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderGamma::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, false);
 }
 

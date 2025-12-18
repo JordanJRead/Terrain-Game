@@ -3,7 +3,7 @@
 #include "terrainrenderer.h"
 #include "cubemap.h"
 #include "vertexarray.h"
-#include "framebuffer.h"
+#include "framebufferi.h"
 
 #include <string>
 #include "shaders/shaderwaterchunki.h"
@@ -21,6 +21,6 @@ void ShaderWaterDeferred::setRenderData(const TerrainRenderer& terrainRenderer, 
 	setFloat("planeWorldWidth", planeWidth);
 }
 
-void ShaderWaterDeferred::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderWaterDeferred::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, true);
 }

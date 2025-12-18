@@ -11,7 +11,7 @@ class ShaderWaterDepth : public ShaderWaterChunkI {
 public:
 	ShaderWaterDepth(const std::string& vertPath, const std::string& fragPath);
 	void setRenderData(const TerrainRenderer& terrainRenderer, const glm::vec3& planePos, float planeWidth, const Cubemap& skybox) const override;
-	void render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const override;
+	void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const override;
 };
 
 #endif

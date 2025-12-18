@@ -1,6 +1,6 @@
 #include "shaders/shaderskybox.h"
 #include "cubemap.h"
-#include "framebuffer.h"
+#include "framebufferi.h"
 #include "vertexarray.h"
 
 ShaderSkybox::ShaderSkybox(const std::string& vertPath, const std::string& fragPath) : ShaderI{ vertPath, fragPath } {
@@ -12,6 +12,6 @@ void ShaderSkybox::setRenderData(const Cubemap& cubemap) {
 	cubemap.bindTexture(0);
 }
 
-void ShaderSkybox::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderSkybox::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, false);
 }

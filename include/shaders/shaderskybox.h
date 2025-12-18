@@ -11,7 +11,7 @@ public:
 
 	void setRenderData(const Cubemap& cubemap);
 
-	void render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const override;
+	void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const override;
 };
 
 #endif

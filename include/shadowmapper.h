@@ -7,7 +7,7 @@
 #include "uimanager.h"
 #include <array>
 #include <vector>
-#include "framebuffer.h"
+#include "framebufferdepth.h"
 #include "imagecount.h"
 #include "shaders/shaderterraindepth.h"
 #include "shaders/shaderwaterdepth.h"
@@ -18,7 +18,7 @@ public:
 	ShadowMapper(const std::array<float, CascadeCount - 1>& splits) : mSplits{ splits }
 	{
 		for (size_t i{ 0 }; i < CascadeCount; ++i) {
-			mFramebuffers.emplace_back(0, 2048, 2048, GL_RGBA32F); // Colour not used unless doing colour debugging
+			mFramebuffers.emplace_back(2048, 2048);
 		}
 	}
 	void updateCameras(const glm::vec3& dirToLight, const CameraPlayer& playerCamera, const AABB& sceneAABB, const UIManager& uiManager) {
@@ -52,8 +52,12 @@ public:
 		return mCameras[i];
 	}
 
-	const Framebuffer& getFramebuffer(int i) const {
+	const FramebufferDepth& getFramebuffer(int i) const {
 		return mFramebuffers[i];
+	}
+
+	void bindDepthTexture(int i, int unit) {
+		mFramebuffers[i].getDepthTexture().use(GL_TEXTURE_2D, unit);
 	}
 
 	ShaderTerrainDepth mTerrainDepthShader{ "assets/shaders/terraindepth.vert", "assets/shaders/terraindepth.frag" };
@@ -61,7 +65,7 @@ public:
 
 private:
 	std::array<CameraCascaded, CascadeCount> mCameras;
-	std::vector<Framebuffer> mFramebuffers;
+	std::vector<FramebufferDepth> mFramebuffers;
 	std::array<float, CascadeCount - 1> mSplits;
 };
 

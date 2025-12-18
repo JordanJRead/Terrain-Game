@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-class Framebuffer;
+class FramebufferI;
 class VertexArray;
 
 class ShaderI {
@@ -19,12 +19,12 @@ public:
 
 	ShaderI(const std::string& vertPath, const std::string& fragPath);
 	~ShaderI() { glDeleteProgram(mID); }
-	virtual void render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const = 0;
+	virtual void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const = 0;
 
 protected:
 	unsigned int mID;
 
-	void internalRender(const Framebuffer& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = 0) const;
+	void internalRender(const FramebufferI& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = 0) const;
 
 	void internalRenderDefaultFramebuffer(const VertexArray& vertexArray, bool depth, int instanceCount = 0) const;
 

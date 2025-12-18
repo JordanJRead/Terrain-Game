@@ -149,6 +149,9 @@
     <ClCompile Include="src\app.cpp" />
     <ClCompile Include="src\cameracascaded.cpp" />
     <ClCompile Include="src\deferredrenderer.cpp" />
+    <ClCompile Include="src\framebuffercolour.cpp" />
+    <ClCompile Include="src\framebufferdepth.cpp" />
+    <ClCompile Include="src\framebufferi.cpp" />
     <ClCompile Include="src\mathhelper.cpp" />
     <ClCompile Include="src\cameraplayer.cpp" />
     <ClCompile Include="src\cubemap.cpp" />
@@ -185,6 +188,8 @@
     <Library Include="libraries\glfw3dll.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\framebufferdepth.h" />
+    <ClInclude Include="include\framebufferi.h" />
     <ClInclude Include="include\shaders\shaderterraindeferred.h" />
     <ClInclude Include="include\shaders\shaderterraindepth.h" />
     <ClInclude Include="include\shaders\shaderterrainchunki.h" />
@@ -197,7 +202,7 @@
     <ClInclude Include="include\cubemap.h" />
     <ClInclude Include="include\cubevertices.h" />
     <ClInclude Include="include\deferredrenderer.h" />
-    <ClInclude Include="include\framebuffer.h" />
+    <ClInclude Include="include\framebuffercolour.h" />
     <ClInclude Include="include\imagecount.h" />
     <ClInclude Include="include\mathhelper.h" />
     <ClInclude Include="include\OpenGLObjects\BUF.h" />

@@ -4,7 +4,7 @@ ShaderPhysics::ShaderPhysics(const std::string& vertPath, const std::string& fra
 {
 }
 
-void ShaderPhysics::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderPhysics::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, false);
 }
 

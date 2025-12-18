@@ -19,6 +19,6 @@ void ShaderTerrainForward::setRenderData(const TerrainRenderer& terrainRenderer,
 	skybox.bindTexture(ImageCount);
 }
 
-void ShaderTerrainForward::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderTerrainForward::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, true, mShellCount + 1);
 }

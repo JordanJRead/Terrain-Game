@@ -6,7 +6,7 @@
 #include "imgui_impl_glfw.h"
 #include "terrainrenderer.h"
 #include "uimanager.h"
-#include "framebuffer.h"
+#include "framebuffercolour.h"
 #include "vertexarray.h"
 #include "shaders/shaderphysics.h"
 #include "shaders/shadergamma.h"
@@ -26,7 +26,7 @@ private:
 	GLFWwindow* mWindow;
 	ShaderPhysics mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
 	ShaderGamma mGammaShader{ "assets/shaders/gamma.vert", "assets/shaders/gamma.frag" };
-	Framebuffer mFramebuffer;
+	FramebufferColour mFramebuffer;
 	VertexArray mScreenQuad;
 	bool mIsCursorHidden{ true };
 

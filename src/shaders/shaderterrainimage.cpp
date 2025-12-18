@@ -9,7 +9,7 @@ void ShaderTerrainImage::setRenderData(const glm::vec2& worldPos, float worldSiz
 	setFloat("scale", worldSize);
 }
 
-void ShaderTerrainImage::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderTerrainImage::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	glDisable(GL_BLEND);
 	internalRender(framebuffer, vertexArray, false);
 }

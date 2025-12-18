@@ -14,7 +14,7 @@ void DeferredRenderer::bindGBufferTexture(int i, int unit) const {
 	mFramebuffer.bindColourTexture(i, unit);
 }
 
-void DeferredRenderer::doDeferredShading(const Framebuffer& targetFramebuffer, const TerrainRenderer& terrainRenderer, const VertexArray& screenQuad) {
+void DeferredRenderer::doDeferredShading(const FramebufferColour& targetFramebuffer, const TerrainRenderer& terrainRenderer, const VertexArray& screenQuad) {
 	mShaderDeferred.setRenderData(terrainRenderer);
 	mShaderDeferred.render(targetFramebuffer, screenQuad);
 }

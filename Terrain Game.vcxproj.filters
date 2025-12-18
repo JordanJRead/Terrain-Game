@@ -126,6 +126,15 @@
     <ClCompile Include="src\deferredrenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\framebuffercolour.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\framebufferi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\framebufferdepth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="libraries\glfw3dll.lib" />
@@ -149,7 +158,7 @@
     <ClInclude Include="include\mathhelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\framebuffer.h">
+    <ClInclude Include="include\framebuffercolour.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\OpenGLObjects\RBO.h">
@@ -264,6 +273,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\shaders\shaderwaterchunki.cpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\framebufferi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\framebufferdepth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

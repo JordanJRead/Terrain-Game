@@ -5,28 +5,37 @@
 
 ShaderDeferred::ShaderDeferred(const std::string& vertPath, const std::string& fragPath) : ShaderI{ vertPath, fragPath } {
 	use();
-	int i{ 0 };
-	for (; i < ImageCount; ++i) {
-		std::string indexString{ std::to_string(i) };
-		setInt("images[" + indexString + "]", i);
+	int textureUnit{ 0 };
+	for (; textureUnit < ImageCount; ++textureUnit) {
+		std::string indexString{ std::to_string(textureUnit) };
+		setInt("images[" + indexString + "]", textureUnit);
 	}
-	setInt("GBuffer_GroundWorldPosShellProgress", i++);
-	setInt("GBuffer_WorldPosMountain", i++);
-	setInt("GBuffer_NormalDoesTexelExist", i++);
+	setInt("GBuffer_GroundWorldPosShellProgress", textureUnit++);
+	setInt("GBuffer_WorldPosMountain", textureUnit++);
+	setInt("GBuffer_NormalDoesTexelExist", textureUnit++);
+	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
+		std::string indexString{ std::to_string(textureUnit) };
+		setInt("shadowMaps[" + indexString + "]", textureUnit++);
+	}
 }
 
 void ShaderDeferred::setRenderData(const TerrainRenderer& terrainRenderer) {
-	int i{ 0 };
-	for (; i < ImageCount; ++i) {
-		terrainRenderer.bindTerrainImage(i, i);
+	int textureUnit{ 0 };
+	for (; textureUnit < ImageCount; ++textureUnit) {
+		terrainRenderer.bindTerrainImage(textureUnit, textureUnit);
 	}
 
 	const DeferredRenderer& deferredRenderer{ terrainRenderer.getDeferredRenderer() };
-	deferredRenderer.bindGBufferTexture(0, i++);
-	deferredRenderer.bindGBufferTexture(1, i++);
-	deferredRenderer.bindGBufferTexture(2, i++);
+	deferredRenderer.bindGBufferTexture(0, textureUnit++);
+	deferredRenderer.bindGBufferTexture(1, textureUnit++);
+	deferredRenderer.bindGBufferTexture(2, textureUnit++);
+
+	const ShadowMapper<CascadeCount>& shadowMapper{ terrainRenderer.getShadowMapper() };
+	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
+		shadowMapper.getFramebuffer(cascadeI).getDepthTexture().use(GL_TEXTURE_2D, textureUnit++);
+	}
 }
 
-void ShaderDeferred::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderDeferred::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, false);
 }

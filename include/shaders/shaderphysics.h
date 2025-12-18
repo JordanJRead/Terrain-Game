@@ -6,7 +6,7 @@
 class ShaderPhysics : public ShaderI {
 public:
 	ShaderPhysics(const std::string& vertPath, const std::string& fragPath);
-	void render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const override;
+	void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const override;
 	void render(const VertexArray& vertexArray) const;
 };
 

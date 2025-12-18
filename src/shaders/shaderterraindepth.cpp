@@ -14,6 +14,6 @@ void ShaderTerrainDepth::setRenderData(const TerrainRenderer& terrainRenderer, c
 	setFloat("planeWorldWidth", planeWidth);
 }
 
-void ShaderTerrainDepth::render(const Framebuffer& framebuffer, const VertexArray& vertexArray) const {
+void ShaderTerrainDepth::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, true, 1);
 }

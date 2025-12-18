@@ -1,7 +1,7 @@
 #ifndef DEFERRED_RENDERER_H
 #define DEFERRED_RENDERER_H
 
-#include "framebuffer.h"
+#include "framebuffercolour.h"
 #include "shaders/shaderdeferred.h"
 #include "shaders/shaderterraindeferred.h"
 #include "shaders/shaderwaterdeferred.h"
@@ -13,12 +13,12 @@ class DeferredRenderer {
 public:
 	DeferredRenderer(int screenWidth, int screenHeight);
 	void bindGBufferTexture(int i, int unit) const;
-	void doDeferredShading(const Framebuffer& targetFramebuffer, const TerrainRenderer& terrainRenderer, const VertexArray& screenQuad);
+	void doDeferredShading(const FramebufferColour& targetFramebuffer, const TerrainRenderer& terrainRenderer, const VertexArray& screenQuad);
 
 	ShaderTerrainDeferred mShaderTerrainDeferred;
 	ShaderWaterDeferred mShaderWaterDeferred;
 	ShaderDeferred mShaderDeferred;
-	Framebuffer mFramebuffer;
+	FramebufferColour mFramebuffer;
 };
 
 #endif

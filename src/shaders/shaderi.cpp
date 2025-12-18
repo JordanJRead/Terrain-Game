@@ -7,7 +7,7 @@
 #define STB_INCLUDE_IMPLEMENTATION
 #define STB_INCLUDE_LINE_GLSL
 #include "stb_include.h"
-#include "framebuffer.h"
+#include "framebufferi.h"
 #include "vertexarray.h"
 
 ShaderI::ShaderI(const std::string& vertPath, const std::string& fragPath) {
@@ -73,7 +73,7 @@ ShaderI::ShaderI(const std::string& vertPath, const std::string& fragPath) {
     free(fragSource);
 }
 
-void ShaderI::internalRender(const Framebuffer& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount) const {
+void ShaderI::internalRender(const FramebufferI& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount) const {
     use();
     framebuffer.use();
     vertexArray.use();

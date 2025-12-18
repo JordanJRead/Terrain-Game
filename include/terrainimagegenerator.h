@@ -3,7 +3,7 @@
 
 #include "OpenGLObjects/FBO.h"
 #include "glm/glm.hpp"
-#include "framebuffer.h"
+#include "framebuffercolour.h"
 #include "shaders/shaderterrainimage.h"
 
 class VertexArray;
@@ -24,7 +24,7 @@ public:
 	void updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader); // TODO make shader static?
 
 private:
-	Framebuffer mFramebuffer;
+	FramebufferColour mFramebuffer;
 
 	int mPixelDim;
 	float mWorldSize;
