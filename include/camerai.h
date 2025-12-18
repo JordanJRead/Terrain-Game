@@ -14,6 +14,8 @@ public:
 	virtual float getFOVY() const = 0;
 	virtual float getYaw() const = 0;
 	virtual float getPitch() const = 0;
+	virtual float getNearPlaneDist() const { return 0; }
+	virtual float getFarPlaneDist() const { return 0; }
 };
 
 #endif

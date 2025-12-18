@@ -9,6 +9,7 @@
 #include <iostream>
 #include <array>
 #include "imagecount.h"
+#include "shadowmapper.h"
 
 namespace BufferTypes {
 	
@@ -162,6 +163,8 @@ namespace BufferTypes {
 			, fovY{ camera.getFOVY() }
 			, yaw{ camera.getYaw() }
 			, pitch{ camera.getPitch() }
+			, cameraNear{ camera.getNearPlaneDist() }
+			, cameraFar{ camera.getFarPlaneDist() }
 		{ }
 		bool operator==(const PerFrameInfo&) const = default;
 
@@ -174,6 +177,8 @@ namespace BufferTypes {
 		float fovY;
 		float yaw;
 		float pitch;
+		float cameraNear;
+		float cameraFar;
 	};
 
 	struct TerrainImagesInfo {
@@ -216,6 +221,22 @@ namespace BufferTypes {
 		float mieDensityScale;
 		float rayleighG;
 		float mieG;
+	};
+
+	struct ShadowMatrices {
+		ShadowMatrices() {}
+		ShadowMatrices(const ShadowMapper<CascadeCount>& shadowMapper) {
+			for (int i{ 0 }; i < CascadeCount; ++i) {
+				viewMatrices[i] = shadowMapper.getCamera(i).getViewMatrix();
+				projectionMatrices[i] = shadowMapper.getCamera(i).getProjectionMatrix();
+			}
+			splits = shadowMapper.getSplits();
+		}
+		bool operator==(const ShadowMatrices&) const = default;
+
+		std::array<glm::mat4, CascadeCount> viewMatrices;
+		std::array<glm::mat4, CascadeCount> projectionMatrices;
+		std::array<float, CascadeCount - 1> splits;
 	};
 }
 

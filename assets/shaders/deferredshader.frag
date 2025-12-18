@@ -5,6 +5,7 @@ out vec4 FragColor;
 
 #include "_headeruniformbuffers.glsl"
 #include "_headerterraininfo.glsl"
+#include "_headershadows.glsl"
 
 vec3 getWaterAlbedo(vec3 worldPos) {
 	// Water / terrain info
@@ -126,6 +127,8 @@ float mieDensityAtPoint(vec3 pos) {
 }
 
 vec3 transmittanceFromSunToPoint(vec3 pos) {
+	if (isPointInShadow(pos))
+		return vec3(0);
 	vec2 ts = rayAtmosphereIntersection(pos, perFrameInfo.dirToSun);
 	if (ts.x < 0 && ts.y < 0)
 		return vec3(1, 1 , 1);
@@ -172,7 +175,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	vec3 a = rayPos + rayDir * t0;
 	vec3 b = rayPos + rayDir * t1;
 
-	int stepCount = 10;
+	int stepCount = 100;
 	float totalDistance = t1 - t0;
 	float dx = totalDistance / stepCount;
 
@@ -208,7 +211,8 @@ void main() {
 	bool doesTexelExist = bool(normalDoesTexelExist.w);
 	float mountain = worldPosMountain.w;
 	float shellProgress = groundWorldPosShellProgress.w;
-
+	//FragColor = vec4(vec3(getScale(worldPos)), 1);
+	//return;
 	bool isWater = groundWorldPosShellProgress.w == -2;
 	bool isSky = groundWorldPosShellProgress.w == -3;
 

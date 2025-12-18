@@ -41,8 +41,8 @@ public:
 	void move(GLFWwindow* window, float deltaTime, PlanePhysics& physicsPlane);
 	void toggleFreecam();
 	glm::vec3 getForward() const;
-	float getNearPlaneDist() const { return mNear; }
-	float getFarPlaneDist() const { return mFar; }
+	float getNearPlaneDist() const override { return mNear; }
+	float getFarPlaneDist() const override { return mFar; }
 	float getXNear() const { return mXNear; }
 	float getYNear() const { return mYNear; }
 	float getFOVX() const override { return 2 * atan(tan(mFOVYRad / 2) * mAspectRatio); }

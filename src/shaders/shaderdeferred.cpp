@@ -14,7 +14,7 @@ ShaderDeferred::ShaderDeferred(const std::string& vertPath, const std::string& f
 	setInt("GBuffer_WorldPosMountain", textureUnit++);
 	setInt("GBuffer_NormalDoesTexelExist", textureUnit++);
 	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
-		std::string indexString{ std::to_string(textureUnit) };
+		std::string indexString{ std::to_string(cascadeI) };
 		setInt("shadowMaps[" + indexString + "]", textureUnit++);
 	}
 }

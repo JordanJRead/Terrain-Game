@@ -2,6 +2,7 @@
 #define UNIFORM_BUFFER_H
 
 #define IMAGECOUNT 5
+#define CASCADECOUNT 3
 #extension GL_ARB_bindless_texture : require
 
 layout(std140, binding = 0) uniform TerrainParams {
@@ -76,6 +77,8 @@ layout(std140, binding = 4) uniform PerFrameInfo {
 	float fovY;
 	float yaw;
 	float pitch;
+	float cameraNear;
+	float cameraFar;
 } perFrameInfo;
 
 layout(std430, binding = 5) buffer TerrainImagesInfo {
@@ -96,5 +99,11 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 	float rayleighG;
 	float mieG;
 } atmosphereInfo;
+
+layout(std430, binding = 7) buffer ShadowMatrices {
+	mat4 shadowViewMatrices[CASCADECOUNT];
+	mat4 shadowProjectionMatrices[CASCADECOUNT];
+	float shadowSplits[CASCADECOUNT - 1];
+} shadowMatrices;
 
 #endif
