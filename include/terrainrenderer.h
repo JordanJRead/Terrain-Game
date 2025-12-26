@@ -375,7 +375,7 @@ private:
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
 	DeferredRenderer mDeferredRenderer;
-	ShadowMapper<CascadeCount> mShadowMapper{ {0.1, 0.5} };
+	ShadowMapper<CascadeCount> mShadowMapper{ {0.02, 0.1} };
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;
