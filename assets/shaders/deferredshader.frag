@@ -126,8 +126,9 @@ float mieDensityAtPoint(vec3 pos) {
 	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensityScale;
 }
 
-vec3 transmittanceFromSunToPoint(vec3 pos) {
-	if (isPointInShadow(pos))
+vec3 transmittanceFromSunToPoint(vec3 pos, bool ambient = false) {
+	bool isInShadow = isPointInShadow(pos);
+	if (isInShadow && !ambient)
 		return vec3(0);
 	vec2 ts = rayAtmosphereIntersection(pos, perFrameInfo.dirToSun);
 	if (ts.x < 0 && ts.y < 0)
@@ -153,6 +154,8 @@ vec3 transmittanceFromSunToPoint(vec3 pos) {
 
 		samplePos += perFrameInfo.dirToSun * dx;
 	}
+	if (isInShadow)
+		return transmittance * 0.2;
 	return transmittance;
 }
 
@@ -163,7 +166,7 @@ float phase(float cosTheta, float g) {
 vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldPosOfVisibleObject, vec3 albedo) {
 	vec2 intersectionTs = rayAtmosphereIntersection(rayPos, rayDir);
 	if (intersectionTs.x < 0 && intersectionTs.y < 0)
-		return albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject);
+		return albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, true);
 	float t0;
 	float t1;
 	t0 = min(intersectionTs.x, intersectionTs.y);
@@ -175,7 +178,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	vec3 a = rayPos + rayDir * t0;
 	vec3 b = rayPos + rayDir * t1;
 
-	int stepCount = 100;
+	int stepCount = 50;
 	float totalDistance = t1 - t0;
 	float dx = totalDistance / stepCount;
 
@@ -197,7 +200,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	if (isSky && !isSun) {
 		return inScatteredLight;
 	}
-	return inScatteredLight + albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject) * transmittance;
+	return inScatteredLight + albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, true) * transmittance;
  }
 
 void main() {
@@ -211,8 +214,6 @@ void main() {
 	bool doesTexelExist = bool(normalDoesTexelExist.w);
 	float mountain = worldPosMountain.w;
 	float shellProgress = groundWorldPosShellProgress.w;
-	//FragColor = vec4(vec3(getScale(worldPos)), 1);
-	//return;
 	bool isWater = groundWorldPosShellProgress.w == -2;
 	bool isSky = groundWorldPosShellProgress.w == -3;
 
