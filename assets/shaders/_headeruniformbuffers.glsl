@@ -100,10 +100,11 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 	float mieG;
 } atmosphereInfo;
 
-layout(std430, binding = 7) buffer ShadowMatrices {
+layout(std430, binding = 7) buffer ShadowInfo {
 	mat4 shadowViewMatrices[CASCADECOUNT];
 	mat4 shadowProjectionMatrices[CASCADECOUNT];
 	float shadowSplits[CASCADECOUNT - 1];
-} shadowMatrices;
+	float shadowWidths[CASCADECOUNT];
+} shadowInfo;
 
 #endif

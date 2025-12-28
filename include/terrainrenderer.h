@@ -359,7 +359,7 @@ private:
 	UniformBuffer<BufferTypes::PerFrameInfo> mPerFrameInfo{ 4 };
 	UniformBuffer<BufferTypes::TerrainImagesInfo> mTerrainImagesInfo{ 5, true };
 	UniformBuffer<BufferTypes::AtmosphereInfo> mAtmosphereInfo{ 6 };
-	UniformBuffer<BufferTypes::ShadowMatrices> mShadowMatrices{ 7, true };
+	UniformBuffer<BufferTypes::ShadowInfo> mShadowMatrices{ 7, true };
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;

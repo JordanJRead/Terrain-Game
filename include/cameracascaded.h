@@ -20,11 +20,13 @@ public:
 	float getFOVY() const override { return 0; }
 	float getYaw() const override { return 0; }
 	float getPitch() const override { return 0; }
+	float getWidth() const { return mWidth; }
 
 private:
 	glm::vec3 mPosition;
 	glm::mat4 mViewMatrix;
 	glm::mat4 mProjectionMatrix;
+	float mWidth;
 };
 
 #endif

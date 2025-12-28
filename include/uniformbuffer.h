@@ -223,20 +223,24 @@ namespace BufferTypes {
 		float mieG;
 	};
 
-	struct ShadowMatrices {
-		ShadowMatrices() {}
-		ShadowMatrices(const ShadowMapper<CascadeCount>& shadowMapper) {
+	struct ShadowInfo {
+		ShadowInfo() {}
+		ShadowInfo(const ShadowMapper<CascadeCount>& shadowMapper) {
 			for (int i{ 0 }; i < CascadeCount; ++i) {
 				viewMatrices[i] = shadowMapper.getCamera(i).getViewMatrix();
 				projectionMatrices[i] = shadowMapper.getCamera(i).getProjectionMatrix();
 			}
 			splits = shadowMapper.getSplits();
+			for (int i{ 0 }; i < CascadeCount; ++i) {
+				widths[i] = shadowMapper.getWorldWidth(i);
+			}
 		}
-		bool operator==(const ShadowMatrices&) const = default;
+		bool operator==(const ShadowInfo&) const = default;
 
 		std::array<glm::mat4, CascadeCount> viewMatrices;
 		std::array<glm::mat4, CascadeCount> projectionMatrices;
 		std::array<float, CascadeCount - 1> splits;
+		std::array<float, CascadeCount> widths;
 	};
 }
 

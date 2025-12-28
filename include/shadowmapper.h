@@ -52,8 +52,12 @@ public:
 		return mCameras[i];
 	}
 
-	const std::array<float, CascadeCount - 1> getSplits() const {
+	const std::array<float, CascadeCount - 1>& getSplits() const {
 		return mSplits;
+	}
+
+	float getWorldWidth(int i) const {
+		return mCameras[i].getWidth();
 	}
 
 	const FramebufferDepth& getFramebuffer(int i) const {

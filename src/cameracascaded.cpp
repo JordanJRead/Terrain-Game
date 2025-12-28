@@ -64,5 +64,6 @@ void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<
 		maxT = 0;
 	maxZ += maxT;
 
+	mWidth = (maxX - minX + maxY - minY) / 2;
 	mProjectionMatrix = glm::ortho(minX, maxX, minY, maxY, -maxZ, -minZ);
 }
