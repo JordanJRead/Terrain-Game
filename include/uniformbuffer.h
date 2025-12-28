@@ -10,6 +10,7 @@
 #include <array>
 #include "imagecount.h"
 #include "shadowmapper.h"
+#include "mathhelper.h"
 
 namespace BufferTypes {
 	
@@ -225,7 +226,12 @@ namespace BufferTypes {
 
 	struct ShadowInfo {
 		ShadowInfo() {}
-		ShadowInfo(const ShadowMapper<CascadeCount>& shadowMapper) {
+		ShadowInfo(const ShadowMapper<CascadeCount>& shadowMapper, const UIManager& uiManager)
+			: blurWidth{ uiManager.mShadowBlurWidth.data() }
+			, blurQuality{ uiManager.mShadowBlurQuality.data() }
+		{
+			if (blurQuality % 2 == 0)
+				blurQuality += 1;
 			for (int i{ 0 }; i < CascadeCount; ++i) {
 				viewMatrices[i] = shadowMapper.getCamera(i).getViewMatrix();
 				projectionMatrices[i] = shadowMapper.getCamera(i).getProjectionMatrix();
@@ -234,6 +240,13 @@ namespace BufferTypes {
 			for (int i{ 0 }; i < CascadeCount; ++i) {
 				widths[i] = shadowMapper.getWorldWidth(i);
 			}
+			
+			// Grid sum
+			for (int x{ 0 }; x < blurQuality; ++x) {
+				for (int y{ 0 }; y < blurQuality; ++y) {
+					blurGridSum += blurQuality - MathHelper::taxicabDist(glm::ivec2(x, y), glm::ivec2(blurQuality / 2, blurQuality / 2));
+				}
+			}
 		}
 		bool operator==(const ShadowInfo&) const = default;
 
@@ -241,6 +254,9 @@ namespace BufferTypes {
 		std::array<glm::mat4, CascadeCount> projectionMatrices;
 		std::array<float, CascadeCount - 1> splits;
 		std::array<float, CascadeCount> widths;
+		float blurWidth;
+		int blurQuality; // odd
+		float blurGridSum{ 0 };
 	};
 }
 

@@ -8,6 +8,7 @@
 #include "uimanager.h"
 
 namespace MathHelper {
+	int taxicabDist(glm::ivec2 p1, glm::ivec2 p2);
 	bool floatEqual(float x, float y, float tol = 0.001);
 
 	double signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, const glm::vec3& planePoint);

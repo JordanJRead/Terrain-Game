@@ -202,7 +202,7 @@ public:
 			renderTerrain(mDeferredRenderer.mFramebuffer, camera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, uiManager, dirToSun, time);
 
 			mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			mShadowMatrices.updateGPU({ mShadowMapper });
+			mShadowMatrices.updateGPU({ mShadowMapper, uiManager });
 			for (size_t i{ 0 }; i < CascadeCount; ++i) {
 				const CameraI& depthCamera{ mShadowMapper.getCamera(i) };
 				const FramebufferI& depthFramebuffer{ mShadowMapper.getFramebuffer(i) };

@@ -318,6 +318,17 @@ public:
 				mImagePixelDimensions[i].update();
 			}
 			ImGui::End();
+
+			// Shadow Parameters
+			ImGui::Begin("Shadow Parameters");
+
+			ImGui::DragFloat("Blur width", mShadowBlurWidth.getDataPtr(), 0.01, 0, 10);
+			mShadowBlurWidth.update();
+
+			ImGui::DragInt("Blur quality", mShadowBlurQuality.getDataPtr(), 0.03, 0, 9);
+			mShadowBlurQuality.update();
+
+			ImGui::End();
 		}
 
 		ImGui::Render();
@@ -437,6 +448,10 @@ public:
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957 };
 	UIElement<float> mHDRScale{ 15 };
+
+	// Shadow Parameters
+	UIElement<float> mShadowBlurWidth{ 0.5 };
+	UIElement<int> mShadowBlurQuality{ 7 };
 };
 
 #endif

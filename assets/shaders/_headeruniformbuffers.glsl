@@ -101,10 +101,13 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 } atmosphereInfo;
 
 layout(std430, binding = 7) buffer ShadowInfo {
-	mat4 shadowViewMatrices[CASCADECOUNT];
-	mat4 shadowProjectionMatrices[CASCADECOUNT];
-	float shadowSplits[CASCADECOUNT - 1];
-	float shadowWidths[CASCADECOUNT];
+	mat4 viewMatrices[CASCADECOUNT];
+	mat4 projectionMatrices[CASCADECOUNT];
+	float splits[CASCADECOUNT - 1];
+	float widths[CASCADECOUNT];
+	float blurWidth;
+	int blurQuality; // odd
+	float blurGridSum;
 } shadowInfo;
 
 #endif
