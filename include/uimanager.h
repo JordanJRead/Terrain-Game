@@ -224,6 +224,12 @@ public:
 			ImGui::DragFloat("HDR scale", mHDRScale.getDataPtr(), 0.1);
 			mHDRScale.update();
 
+			ImGui::DragInt("Ray atmosphere steps", mRayAtmosphereStepCount.getDataPtr(), 0.1, 1, 100);
+			mRayAtmosphereStepCount.update();
+
+			ImGui::DragInt("Ray sun steps", mRaySunStepCount.getDataPtr(), 0.1, 1, 100);
+			mRaySunStepCount.update();
+
 			ImGui::End();
 
 
@@ -448,6 +454,8 @@ public:
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957 };
 	UIElement<float> mHDRScale{ 15 };
+	UIElement<int> mRayAtmosphereStepCount{ 10 };
+	UIElement<int> mRaySunStepCount{ 8 };
 
 	// Shadow Parameters
 	UIElement<float> mShadowBlurWidth{ 0.5 };

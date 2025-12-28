@@ -5,6 +5,10 @@
 #include "glm/mat4x4.hpp"
 #include "cameracascaded.h"
 
+bool CameraCascaded::isAABBVisible(const AABB& aabb) const {
+	return true;
+}
+
 void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB) {
 	// frustumPoints defines lower left, lower right, upper left, upper right, then repeat for far plane
 
@@ -42,17 +46,24 @@ void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<
 	}
 
 	// Get ortho positions in light space
-	std::array<glm::vec3, 4> orthoFrontPlaneLightPositions;
-	orthoFrontPlaneLightPositions[0] = glm::vec3{ minX, minY, maxZ };
-	orthoFrontPlaneLightPositions[1] = glm::vec3{ maxX, minY, maxZ };
-	orthoFrontPlaneLightPositions[2] = glm::vec3{ minX, maxY, maxZ };
-	orthoFrontPlaneLightPositions[3] = glm::vec3{ maxX, maxY, maxZ };
+	std::array<glm::vec3, 8> orthoCornersLightPositions;
+	orthoCornersLightPositions[0] = glm::vec3{ minX, minY, maxZ };
+	orthoCornersLightPositions[1] = glm::vec3{ maxX, minY, maxZ };
+	orthoCornersLightPositions[2] = glm::vec3{ minX, maxY, maxZ };
+	orthoCornersLightPositions[3] = glm::vec3{ maxX, maxY, maxZ };
+
+	orthoCornersLightPositions[4] = glm::vec3{ minX, minY, minZ };
+	orthoCornersLightPositions[5] = glm::vec3{ maxX, minY, minZ };
+	orthoCornersLightPositions[6] = glm::vec3{ minX, maxY, minZ };
+	orthoCornersLightPositions[7] = glm::vec3{ maxX, maxY, minZ };
 
 	// Get ortho positions in world space
-	std::array<glm::vec3, 4> orthoFrontPlaneWorldPositions;
-	for (size_t i{ 0 }; i < 4; ++i) {
-		orthoFrontPlaneWorldPositions[i] = inverseViewMatrix * glm::vec4{ orthoFrontPlaneLightPositions[i], 1 };
+	std::array<glm::vec3, 8> orthoFrontPlaneWorldPositions;
+	for (size_t i{ 0 }; i < 8; ++i) {
+		orthoFrontPlaneWorldPositions[i] = inverseViewMatrix * glm::vec4{ orthoCornersLightPositions[i], 1 };
 	}
+	
+	mAABB = AABB{ orthoFrontPlaneWorldPositions };
 
 	float t1{ sceneAABB.rayFarthestIntersect(orthoFrontPlaneWorldPositions[0], dirToLight) };
 	float t2{ sceneAABB.rayFarthestIntersect(orthoFrontPlaneWorldPositions[1], dirToLight) };

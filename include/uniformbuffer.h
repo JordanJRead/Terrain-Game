@@ -207,6 +207,8 @@ namespace BufferTypes {
 			, mieScattering{ uiManager.mAtmosphereMieScattering.data(), 1 }
 			, rayleighG{ uiManager.mAtmosphereRayleighG.data() }
 			, mieG{ uiManager.mAtmosphereMieG.data() }
+			, rayAtmosphereStepCount{ uiManager.mRayAtmosphereStepCount.data() }
+			, raySunStepCount{ uiManager.mRaySunStepCount.data() }
 		{
 		}
 		bool operator==(const AtmosphereInfo&) const = default;
@@ -222,6 +224,8 @@ namespace BufferTypes {
 		float mieDensityScale;
 		float rayleighG;
 		float mieG;
+		int rayAtmosphereStepCount;
+		int raySunStepCount;
 	};
 
 	struct ShadowInfo {

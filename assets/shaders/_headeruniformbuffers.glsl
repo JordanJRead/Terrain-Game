@@ -98,6 +98,8 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 	float mieDensityScale;
 	float rayleighG;
 	float mieG;
+	int rayAtmosphereStepCount;
+	int raySunStepCount;
 } atmosphereInfo;
 
 layout(std430, binding = 7) buffer ShadowInfo {

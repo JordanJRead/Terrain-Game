@@ -141,7 +141,7 @@ vec3 transmittanceFromSunToPoint(vec3 pos, bool ambient = false) {
 		return vec3(1, 1, 1);
 	}
 
-	int stepCount = 10;
+	int stepCount = atmosphereInfo.raySunStepCount;
 	float dx = dist / stepCount;
 	vec3 transmittance = vec3(1, 1, 1);
 	vec3 samplePos = pos + perFrameInfo.dirToSun * dx;
@@ -179,7 +179,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	vec3 a = rayPos + rayDir * t0;
 	vec3 b = rayPos + rayDir * t1;
 
-	int stepCount = 50;
+	int stepCount = atmosphereInfo.rayAtmosphereStepCount;
 	float totalDistance = t1 - t0;
 	float dx = totalDistance / stepCount;
 

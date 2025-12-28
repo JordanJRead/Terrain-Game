@@ -6,13 +6,14 @@
 #include <array>
 #include "glm/glm.hpp"
 #include "uimanager.h"
+#include "aabb.h"
 
 class CameraCascaded : public CameraI {
 public:
 	void updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB);
 
 	glm::vec3 getPosition() const override { return mPosition; }
-	bool isAABBVisible(const AABB& aabb) const override { return true; }
+	bool isAABBVisible(const AABB& aabb) const override;
 	glm::mat4 getViewMatrix() const override { return mViewMatrix; }
 	glm::mat4 getProjectionMatrix() const override { return mProjectionMatrix; }
 
@@ -27,6 +28,7 @@ private:
 	glm::mat4 mViewMatrix;
 	glm::mat4 mProjectionMatrix;
 	float mWidth;
+	AABB mAABB;
 };
 
 #endif
