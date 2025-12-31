@@ -99,28 +99,7 @@
     <ClCompile Include="src\shaders\shaderskybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\shaders\shaderterrainchunki.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shaders\shaderterraindeferred.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shaders\shaderterraindepth.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shaders\shaderterrainforward.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\shaders\shaderterrainimage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shaders\shaderwaterdeferred.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shaders\shaderwaterdepth.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\shaders\shaderwaterforward.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\deferredrenderer.cpp">
@@ -133,6 +112,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\framebufferdepth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shaders\shaderchunk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -245,34 +227,10 @@
     <ClInclude Include="include\shaders\shaderskybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\shaders\shaderterrainforward.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shaders\shaderterrainchunki.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shaders\shaderterraindepth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shaders\shaderterraindeferred.h">
+    <ClInclude Include="include\shaders\shaderchunk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\shaders\shaderterrainimage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shaders\shaderwaterchunki.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shaders\shaderwaterforward.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shaders\shaderwaterdepth.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\shaders\shaderwaterdeferred.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\shaders\shaderwaterchunki.cpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\framebufferi.h">
@@ -281,7 +239,7 @@
     <ClInclude Include="include\framebufferdepth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\terrainchunkbuffer.h">
+    <ClInclude Include="include\chunkbuffers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

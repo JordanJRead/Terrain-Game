@@ -111,8 +111,8 @@ layout(std430, binding = 7) buffer ShadowInfo {
 	float blurGridSum;
 } shadowInfo;
 
-layout(std430, binding = 8) buffer TerrainChunkData {
+layout(std430, binding = 8) buffer ChunkData {
 	float data[];
-} terrainChunkData;
+} chunkData;
 
 #endif
