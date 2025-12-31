@@ -203,10 +203,10 @@ public:
 			ImGui::DragFloat("Mie density falloff", mAtmosphereMieDensityFalloff.getDataPtr(), 0.001);
 			mAtmosphereMieDensityFalloff.update();
 
-			ImGui::DragFloat("Rayleigh density scale", mAtmosphereRayleighDensityScale.getDataPtr(), 0.01);
+			ImGui::DragFloat("Rayleigh density scale", mAtmosphereRayleighDensityScale.getDataPtr(), 0.001);
 			mAtmosphereRayleighDensityScale.update();
 
-			ImGui::DragFloat("Mie density scale", mAtmosphereMieDensityScale.getDataPtr(), 0.01);
+			ImGui::DragFloat("Mie density scale", mAtmosphereMieDensityScale.getDataPtr(), 0.001);
 			mAtmosphereMieDensityScale.update();
 
 			ImGui::DragFloat3("Rayleigh scattering", (float*)mAtmosphereRayleighScattering.getDataPtr(), 1);

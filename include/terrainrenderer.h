@@ -30,6 +30,7 @@
 #include "shaders/shaderwaterchunki.h"
 #include "shaders/shaderwaterforward.h"
 #include "shaders/shaderskybox.h"
+#include "terrainchunkbuffer.h"
 
 class TerrainRenderer {
 public:
@@ -220,7 +221,7 @@ public:
 		}
 	}
 
-	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& chunkCameraCenterPosition, ShaderTerrainChunkI& terrainShader, const ShaderWaterChunkI& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
+	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderTerrainChunkI& terrainShader, const ShaderWaterChunkI& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -228,7 +229,7 @@ public:
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
 				
- 				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(chunkCameraCenterPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
+ 				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(playerCameraPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
@@ -255,20 +256,16 @@ public:
 						float shellLODDistance{ uiManager.mShellLODDistance.data() };
 						if (chunkDist > shellLODDistance * 4) {
 							newShellCount = oldShellCount > 3 ? 3 : oldShellCount;
-							mArtisticParams.updateGPU({ uiManager, newShellCount });
 						}
 						if (chunkDist > shellLODDistance * 2) {
 							newShellCount = oldShellCount > 7 ? 7 : oldShellCount;
-							mArtisticParams.updateGPU({ uiManager, newShellCount });
 						}
 						else if (chunkDist > shellLODDistance) {
 							newShellCount = oldShellCount > 10 ? 10 : oldShellCount;
-							mArtisticParams.updateGPU({ uiManager, newShellCount }); // TODO move maxShellCount into uniform variable?
 						}
 					}
 					else {
 						newShellCount = 0;
-						mArtisticParams.updateGPU({ uiManager, newShellCount });
 					}
 
 					// Draw terrain
@@ -360,6 +357,7 @@ private:
 	UniformBuffer<BufferTypes::TerrainImagesInfo> mTerrainImagesInfo{ 5, true };
 	UniformBuffer<BufferTypes::AtmosphereInfo> mAtmosphereInfo{ 6 };
 	UniformBuffer<BufferTypes::ShadowInfo> mShadowMatrices{ 7, true };
+	TerrainChunkBuffer<3> mTerrainChunkBuffer{ 8 };
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;
@@ -380,7 +378,8 @@ private:
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;
 	PlaneGPU mHighQualityPlane;
-	PlaneGPU mReallyLowQualityPlane;
+
+	PlaneGPU mReallyLowQualityPlane; // For water only
 
 	VertexArray mScreenQuad;
 

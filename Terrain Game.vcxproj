@@ -229,6 +229,7 @@
     <ClInclude Include="include\shaders\shaderwaterforward.h" />
     <ClInclude Include="include\shadowmapper.h" />
     <ClInclude Include="include\stb_include.h" />
+    <ClInclude Include="include\terrainchunkbuffer.h" />
     <ClInclude Include="include\terrainimagegenerator.h" />
     <ClInclude Include="include\terrainrenderer.h" />
     <ClInclude Include="include\texture.h" />
