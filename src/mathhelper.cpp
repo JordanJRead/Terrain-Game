@@ -81,7 +81,7 @@ unsigned int MathHelper::rand(unsigned int n) {
 }
 
 float MathHelper::randToFloat(unsigned int n) {
-	return float(n) / 4294967296.0;
+	return float(n) / 4294967296.0f;
 }
 
 unsigned int MathHelper::labelPoint(int x, int y) {
@@ -108,7 +108,7 @@ unsigned int MathHelper::labelPoint(int x, int y) {
 }
 
 glm::vec2 MathHelper::randUnitVector(float randNum) {
-	float theta = 2 * 3.14159 * randNum;
+	float theta = 2 * 3.14159f * randNum;
 	return glm::normalize(glm::vec2(cos(theta), sin(theta)));
 }
 
@@ -121,7 +121,7 @@ glm::vec2 MathHelper::quinticDerivative(glm::vec2 t) {
 }
 
 float MathHelper::extreme(float x) {
-	return x < 0.5 ? (16 * x * x * x * x * x) : 1 - pow(-2 * x + 2, 5.0) / 2.0;
+	return x < 0.5f ? (16 * x * x * x * x * x) : 1 - static_cast<float>(pow(-2 * x + 2, 5.0)) / 2.0f;
 }
 
 float MathHelper::perlin(const glm::vec2& pos, int reroll) {
@@ -170,7 +170,7 @@ float MathHelper::perlin(const glm::vec2& pos, int reroll) {
 	glm::vec2 u = quinticInterpolation(relPoint);
 	glm::vec2 du = quinticDerivative(relPoint);
 	float noise = d00 + u.x * (d10 - d00) + u.y * (d01 - d00) + u.x * u.y * (d00 - d10 - d01 + d11);
-	noise = noise / 1.414 + 0.5;
+	noise = noise / 1.414f + 0.5f;
 	return noise;
 }
 

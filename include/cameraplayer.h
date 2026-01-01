@@ -61,7 +61,7 @@ private:
 	float mPrevY{ 0 };
 	bool mIsFirstLook{ true };
 
-	float mFOVYRad{ 90 * 3.1415926535897932384626433832795 / 180.0f };
+	float mFOVYRad{ 90 * 3.1415926535897932384626433832795f / 180.0f };
 	float mNear{ 0.1f };
 	float mYNear{ mNear * glm::tan(mFOVYRad / 2.0f) };
 	float mXNear{ mYNear * mAspectRatio };

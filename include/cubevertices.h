@@ -29,9 +29,9 @@ public:
 		std::vector<float> vertexData;
 		vertexData.reserve(8);
 
-		for (float z : {-1, 1}) {
-			for (float y : {-1, 1}) {
-				for (float x : {-1, 1}) {
+		for (float z : {-1.0f, 1.0f}) {
+			for (float y : {-1.0f, 1.0f}) {
+				for (float x : {-1.0f, 1.0f}) {
 					vertexData.push_back(x);
 					vertexData.push_back(y);
 					vertexData.push_back(z);
@@ -72,7 +72,7 @@ public:
 
 	const VertexArray& getVertexArray() { return mVertexArray; }
 
-	unsigned int getIndexCount() {
+	size_t getIndexCount() {
 		return mVertexArray.getIndexCount();
 	}
 

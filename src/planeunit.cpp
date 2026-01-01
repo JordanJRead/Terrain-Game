@@ -8,9 +8,9 @@ PlaneUnit::PlaneUnit(int verticesPerEdge)
 
 	mVertexData.reserve(vertexCount * floatsPerVertex);
 
-	double stepSize{ 1.0 / (mVerticesPerEdge - 1) };
-	double currentXPos{ -0.5 };
-	double currentZPos{ -0.5 };
+	float stepSize{ 1.0f / (mVerticesPerEdge - 1) };
+	float currentXPos{ -0.5f };
+	float currentZPos{ -0.5f };
 	for (int vertexI{ 0 }; vertexI < vertexCount; ++vertexI) {
 		mVertexData.push_back(currentXPos);
 		mVertexData.push_back(currentZPos);

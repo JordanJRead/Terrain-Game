@@ -6,8 +6,8 @@
 #include <numeric>
 
 struct AABB {
-	glm::vec3 mMin;
-	glm::vec3 mMax;
+	glm::vec3 mMin{};
+	glm::vec3 mMax{};
 
 	AABB(const glm::vec3& min, const glm::vec3& max) : mMin{ min }, mMax{ max } {}
 	AABB() {};
@@ -37,11 +37,11 @@ struct AABB {
 	float rayFarthestIntersect(const glm::vec3& rayPos, const glm::vec3& rayDir) const {
 		glm::vec3 fixedRayDir{ rayDir };
 		if (fixedRayDir.x == 0)
-			fixedRayDir.x = 0.0001;
+			fixedRayDir.x = 0.0001f;
 		if (fixedRayDir.y == 0)
-			fixedRayDir.y = 0.0001;
+			fixedRayDir.y = 0.0001f;
 		if (fixedRayDir.z == 0)
-			fixedRayDir.z = 0.0001;
+			fixedRayDir.z = 0.0001f;
 		glm::vec3 tMin = (mMin - rayPos) / rayDir;
 		glm::vec3 tMax = (mMax - rayPos) / rayDir;
 		glm::vec3 t1 = componentMin(tMin, tMax);

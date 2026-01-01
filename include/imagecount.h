@@ -1,7 +1,7 @@
 #ifndef ImageCountH
 #define ImageCountH
 
-constexpr int ImageCount = 5;
-constexpr int CascadeCount = 3;
+inline constexpr int ImageCount = 5;
+inline constexpr int CascadeCount = 3;
 
 #endif

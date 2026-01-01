@@ -25,12 +25,12 @@ public:
 	const std::array<glm::vec3, 8>& getOrthoWorldPositions() const { return mOrthoWorldPositions; }
 
 private:
-	glm::vec3 mPosition;
-	glm::mat4 mViewMatrix;
-	glm::mat4 mProjectionMatrix;
-	float mWidth;
-	AABB mAABB;
-	std::array<glm::vec3, 8> mOrthoWorldPositions;
+	glm::vec3 mPosition{};
+	glm::mat4 mViewMatrix{};
+	glm::mat4 mProjectionMatrix{};
+	float mWidth{};
+	AABB mAABB{};
+	std::array<glm::vec3, 8> mOrthoWorldPositions{};
 };
 
 #endif

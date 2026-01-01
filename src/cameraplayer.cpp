@@ -11,11 +11,11 @@ CameraPlayer::CameraPlayer(int screenWidth, int screenHeight, const glm::vec3& p
 	, mSens{ sens }
 , mAspectRatio{ static_cast<float>(screenWidth) / screenHeight }
 {
-	mYaw = 3.1415926535897932384626433832795 / 2.0f;
+	mYaw = 3.1415926535897932384626433832795f / 2.0f;
 }
 
 void CameraPlayer::mouseCallback(GLFWwindow* window, double xPos, double yPos, bool isCursorHidden) {
-	static float pi{ 3.1415926535897932384626433832795 };
+	static float pi{ 3.1415926535897932384626433832795f };
 
 	if (!isCursorHidden) {
 		mIsFirstLook = true;
@@ -23,12 +23,12 @@ void CameraPlayer::mouseCallback(GLFWwindow* window, double xPos, double yPos, b
 	}
 	if (mIsFirstLook) {
 		mIsFirstLook = false;
-		mPrevX = xPos;
-		mPrevY = yPos;
+		mPrevX = (float)xPos;
+		mPrevY = (float)yPos;
 		return;
 	}
-	float dx = xPos - mPrevX;
-	float dy = yPos - mPrevY;
+	float dx = (float)xPos - mPrevX;
+	float dy = (float)yPos - mPrevY;
 
 	mYaw -= dx * mSens;
 	mPitch -= dy * mSens;
@@ -39,8 +39,8 @@ void CameraPlayer::mouseCallback(GLFWwindow* window, double xPos, double yPos, b
 	if (mPitch < -pi / 2.0f)
 		mPitch = -pi / 2.0f + 0.001f;
 
-	mPrevX = xPos;
-	mPrevY = yPos;
+	mPrevX = (float)xPos;
+	mPrevY = (float)yPos;
 }
 
 glm::mat4 CameraPlayer::getViewMatrix() const {
@@ -134,14 +134,14 @@ bool CameraPlayer::doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec
 	float MoY = fabsf(axis.y);
 	float MoZ = axis.z;
 
-	constexpr float epsilon = 1e-4;
+	constexpr float epsilon = 1e-4f;
 	if (MoX < epsilon && MoY < epsilon && fabsf(MoZ) < epsilon) return true;
 
 	float MoC = glm::dot(axis, obb.mCenter);
 
 	float obb_radius = 0.0f;
 	for (size_t i = 0; i < 3; i++) {
-		obb_radius += fabsf(glm::dot(axis, obb.mAxes[i])) * obb.mExtents[i];
+		obb_radius += fabsf(glm::dot(axis, obb.mAxes[i])) * obb.mExtents[static_cast<glm::length_t>(i)];
 	}
 
 	float obb_min = MoC - obb_radius;
@@ -161,6 +161,7 @@ bool CameraPlayer::doesOBBOverlapFrustumAlongAxis(const OBB& obb, const glm::vec
 	if (obb_min > tau_1 || obb_max < tau_0) {
 		return false;
 	}
+	return true; // TODO true or false?
 }
 
 // https://bruop.github.io/improved_frustum_culling/

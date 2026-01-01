@@ -8,7 +8,7 @@ public:
 
 protected:
 	PlaneI(int verticesPerEdge) : mVerticesPerEdge{ verticesPerEdge } {}
-	int mIndexCount;
+	int mIndexCount{ 0 };
 	int mVerticesPerEdge;
 };
 

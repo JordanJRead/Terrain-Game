@@ -72,8 +72,9 @@ public:
 		mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
 		mMaxTerrainHeight = getHeightWithPerlin(uiManager, mMaxPerlinValues);
 
-		//mMinPerlin = getMinHeightPerlinValues(uiManager);
-		//mMaxPerlin = getMaxHeightPerlinValues(uiManager);
+		// Note: takes a couple minutes to run
+		//mMinPerlinValues = getMinHeightPerlinValues(uiManager);
+		//mMaxPerlinValues = getMaxHeightPerlinValues(uiManager);
 
 		std::vector<float> vertexData{
 		-1, -1,
@@ -229,18 +230,21 @@ public:
 				mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			VertexArray orthoVertexArray;
 
-			const std::array<glm::vec3, 8>& orthoPoints{ mShadowMapper.getOrthoWorldPositions(1) };
-			std::vector<float> vertexData;
-			for (const glm::vec3& orthoPoint : orthoPoints) {
-				vertexData.push_back(orthoPoint.x);
-				vertexData.push_back(orthoPoint.y);
-				vertexData.push_back(orthoPoint.z);
-			}
 			std::vector<unsigned int> indices{ 0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 2, 3, 6, 3, 6, 7, 0, 1, 4, 1, 4, 5, 0, 2, 4, 2, 4, 6, 1, 3, 5, 3, 5, 7 };
 			std::vector<int> layout{ 3 };
-			orthoVertexArray.create(vertexData, indices, layout);
-			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
-			mShaderOrtho.render(targetFramebuffer, orthoVertexArray);
+			for (int i{ 0 }; i < CascadeCount; ++i) {
+				const std::array<glm::vec3, 8>& orthoPoints{ mShadowMapper.getOrthoWorldPositions(i) };
+				std::vector<float> vertexData;
+				for (const glm::vec3& orthoPoint : orthoPoints) {
+					vertexData.push_back(orthoPoint.x);
+					vertexData.push_back(orthoPoint.y);
+					vertexData.push_back(orthoPoint.z);
+				}
+				orthoVertexArray.create(vertexData, indices, layout);
+				mPerFrameInfo.updateGPU({ camera, dirToSun, time });
+				mShaderOrtho.setColour(i == 0 ? glm::vec3{ 1, 0, 0 } : (i == 1 ? glm::vec3{ 0, 1, 0 } : glm::vec3{ 0, 0, 1 }));
+				mShaderOrtho.render(targetFramebuffer, orthoVertexArray);
+			}
 		}
 	}
 
@@ -255,13 +259,13 @@ public:
  				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(playerCameraPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
 				// Frustum culling
-				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
+				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0f, chunkPos.x + chunkWidth / 2.0f };
 				std::array<float, 2> yVals{ mMinTerrainHeight, mMaxTerrainHeight };
-				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0, chunkPos.z + chunkWidth / 2.0 };
+				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0f, chunkPos.z + chunkWidth / 2.0f };
 
 				bool isVisible{ false };
 				if (uiManager.mFrustumCulling.data())
-					isVisible = camera.isAABBVisible({ {chunkPos.x - chunkWidth / 2.0, mMinTerrainHeight, chunkPos.z - chunkWidth / 2.0}, {chunkPos.x + chunkWidth / 2.0, mMaxTerrainHeight, chunkPos.z + chunkWidth / 2.0} });
+					isVisible = camera.isAABBVisible({ {chunkPos.x - chunkWidth / 2.0f, mMinTerrainHeight, chunkPos.z - chunkWidth / 2.0f}, {chunkPos.x + chunkWidth / 2.0f, mMaxTerrainHeight, chunkPos.z + chunkWidth / 2.0f} });
 				else {
 					isVisible = true;
 				}
@@ -404,7 +408,7 @@ private:
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
 	DeferredRenderer mDeferredRenderer;
-	ShadowMapper<CascadeCount> mShadowMapper{ {0.02, 0.1} };
+	ShadowMapper<CascadeCount> mShadowMapper{ {0.02f, 0.1f} };
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;
@@ -421,7 +425,7 @@ private:
 			for (int i2{ 0 }; i2 <= 100; ++i2) {
 				for (int i3{ 0 }; i3 <= 100; ++i3) {
 					for (int i4{ 0 }; i4 <= 100; ++i4) {
-						std::array<float, 4> testPerlinValues{ {i1 / 100, i2 / 100, i3 / 100, i4 / 100} };
+						std::array<float, 4> testPerlinValues{ {i1 / 100.0f, i2 / 100.0f, i3 / 100.0f, i4 / 100.0f} };
 						float height{ getHeightWithPerlin(uiManager, testPerlinValues) };
 						if (height > maxHeight) {
 							maxPerlinValues = testPerlinValues;
@@ -441,7 +445,7 @@ private:
 			for (int i2{ 0 }; i2 <= 100; ++i2) {
 				for (int i3{ 0 }; i3 <= 100; ++i3) {
 					for (int i4{ 0 }; i4 <= 100; ++i4) {
-						std::array<float, 4> testPerlinValues{ {i1 / 100, i2 / 100, i3 / 100, i4 / 100} };
+						std::array<float, 4> testPerlinValues{ {i1 / 100.0f, i2 / 100.0f, i3 / 100.0f, i4 / 100.0f} };
 						float height{ getHeightWithPerlin(uiManager, testPerlinValues) };
 						if (height < minHeight) {
 							minPerlinValues = testPerlinValues;

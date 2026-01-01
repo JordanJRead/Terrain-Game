@@ -47,25 +47,25 @@ public:
 		}
 	}
 
-	const CameraCascaded& getCamera(int i) const {
+	const CameraCascaded& getCamera(size_t i) const {
 		return mCameras[i];
 	}
 
-	const std::array<glm::vec3, 8>& getOrthoWorldPositions(int i) const { return mCameras[i].getOrthoWorldPositions(); }
+	const std::array<glm::vec3, 8>& getOrthoWorldPositions(size_t i) const { return mCameras[i].getOrthoWorldPositions(); }
 
 	const std::array<float, CascadeCount - 1>& getSplits() const {
 		return mSplits;
 	}
 
-	float getWorldWidth(int i) const {
+	float getWorldWidth(size_t i) const {
 		return mCameras[i].getWidth();
 	}
 
-	const FramebufferDepth& getFramebuffer(int i) const {
+	const FramebufferDepth& getFramebuffer(size_t i) const {
 		return mFramebuffers[i];
 	}
 
-	void bindDepthTexture(int i, int unit) {
+	void bindDepthTexture(size_t i, int unit) {
 		mFramebuffers[i].getDepthTexture().use(GL_TEXTURE_2D, unit);
 	}
 

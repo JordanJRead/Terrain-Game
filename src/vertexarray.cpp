@@ -18,7 +18,7 @@ void VertexArray::create(const std::vector<float>& vertexData, const std::vector
 	int currentByteOffset{ 0 };
 	for (int i{ 0 }; i < vertexAttribCounts.size(); ++i) {
 		glEnableVertexAttribArray(i);
-		glVertexAttribPointer(i, vertexAttribCounts[i], GL_FLOAT, GL_FALSE, bytesPerVertex, (void*)currentByteOffset);
+		glVertexAttribPointer(i, vertexAttribCounts[i], GL_FLOAT, GL_FALSE, bytesPerVertex, (void*)((intptr_t)currentByteOffset));
 		currentByteOffset += vertexAttribCounts[i] * sizeof(float);
 	}
 }

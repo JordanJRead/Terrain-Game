@@ -111,14 +111,14 @@ namespace BufferTypes {
 		bool operator==(const WaterParams&) const = default;
 
 		int waveCount;
-		float initialAmplitude;
-		float amplitudeMult;
-		float initialFreq;
-		float freqMult;
-		float initialSpeed;
-		float speedMult;
-		float specExp;
-		float height;
+		float initialAmplitude{};
+		float amplitudeMult{};
+		float initialFreq{};
+		float freqMult{};
+		float initialSpeed{};
+		float speedMult{};
+		float specExp{};
+		float height{};
 	};
 
 	struct ColourParams {
@@ -136,12 +136,12 @@ namespace BufferTypes {
 		bool operator==(const ColourParams&) const = default;
 
 		glm::vec4 dirtColour;
-		glm::vec4 mountainColour;
-		glm::vec4 grassColour1;
-		glm::vec4 grassColour2;
-		glm::vec4 snowColour;
-		glm::vec4 waterColour;
-		glm::vec4 sunColour;
+		glm::vec4 mountainColour{};
+		glm::vec4 grassColour1{};
+		glm::vec4 grassColour2{};
+		glm::vec4 snowColour{};
+		glm::vec4 waterColour{};
+		glm::vec4 sunColour{};
 	};
 
 	struct PerFrameInfo {
@@ -161,28 +161,28 @@ namespace BufferTypes {
 		{ }
 		bool operator==(const PerFrameInfo&) const = default;
 
-		glm::mat4 viewMatrix;
-		glm::mat4 projectionMatrix;
-		glm::vec4 cameraPos;
-		glm::vec4 dirToSun;
+		glm::mat4 viewMatrix{};
+		glm::mat4 projectionMatrix{};
+		glm::vec4 cameraPos{};
+		glm::vec4 dirToSun{};
 		float time;
-		float fovX;
-		float fovY;
-		float yaw;
-		float pitch;
-		float cameraNear;
-		float cameraFar;
+		float fovX{};
+		float fovY{};
+		float yaw{};
+		float pitch{};
+		float cameraNear{};
+		float cameraFar{};
 	};
 
 	struct TerrainImagesInfo {
-		TerrainImagesInfo() : imageScales{ {0} } {}
+		TerrainImagesInfo() {}
 		TerrainImagesInfo(const std::array<float, ImageCount>& _imageScales, const std::array<glm::vec2, ImageCount>& _imagePositions)
 			: imageScales{ _imageScales }
 			, imagePositions{ _imagePositions } { }
 		bool operator==(const TerrainImagesInfo&) const = default;
 
-		std::array<glm::vec2, ImageCount> imagePositions;
-		std::array<float, ImageCount> imageScales;
+		std::array<glm::vec2, ImageCount> imagePositions{};
+		std::array<float, ImageCount> imageScales{};
 	};
 
 	struct AtmosphereInfo {
@@ -206,20 +206,20 @@ namespace BufferTypes {
 		}
 		bool operator==(const AtmosphereInfo&) const = default;
 
-		glm::vec4 rayleighScattering;
-		glm::vec4 mieScattering;
+		glm::vec4 rayleighScattering{};
+		glm::vec4 mieScattering{};
 		float maxRadius;
-		float minRadius;
-		float centerY;
-		float rayleighDensityFalloff;
-		float mieDensityFalloff;
-		float rayleighDensityScale;
-		float mieDensityScale;
-		float rayleighG;
-		float mieG;
-		int rayAtmosphereStepCount;
-		int raySunStepCount;
-		float brightness;
+		float minRadius{};
+		float centerY{};
+		float rayleighDensityFalloff{};
+		float mieDensityFalloff{};
+		float rayleighDensityScale{};
+		float mieDensityScale{};
+		float rayleighG{};
+		float mieG{};
+		int rayAtmosphereStepCount{};
+		int raySunStepCount{};
+		float brightness{};
 	};
 
 	struct ShadowInfo {
@@ -251,16 +251,16 @@ namespace BufferTypes {
 		}
 		bool operator==(const ShadowInfo&) const = default;
 
-		std::array<glm::mat4, CascadeCount> viewMatrices;
-		std::array<glm::mat4, CascadeCount> projectionMatrices;
-		std::array<float, CascadeCount - 1> splits;
-		std::array<float, CascadeCount> widths;
-		float blurWidth;
-		int blurQuality; // odd
-		float blurGridSum{ 0 };
-		float exposure;
-		float minBias;
-		float maxBias;
+		std::array<glm::mat4, CascadeCount> viewMatrices{};
+		std::array<glm::mat4, CascadeCount> projectionMatrices{};
+		std::array<float, CascadeCount - 1> splits{};
+		std::array<float, CascadeCount> widths{};
+		float blurWidth{};
+		int blurQuality{}; // odd
+		float blurGridSum{};
+		float exposure{};
+		float minBias{};
+		float maxBias{};
 	};
 }
 

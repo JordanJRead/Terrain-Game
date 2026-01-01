@@ -17,7 +17,7 @@ private:
 	VAO mVAO;
 	BUF mVBO;
 	BUF mEBO;
-	size_t mIndexCount;
+	size_t mIndexCount{};
 };
 
 #endif
