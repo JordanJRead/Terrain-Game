@@ -99,6 +99,7 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 	float mieG;
 	int rayAtmosphereStepCount;
 	int raySunStepCount;
+	float brightness;
 } atmosphereInfo;
 
 layout(std430, binding = 7) buffer ShadowInfo {
@@ -109,6 +110,7 @@ layout(std430, binding = 7) buffer ShadowInfo {
 	float blurWidth;
 	int blurQuality; // odd
 	float blurGridSum;
+	float exposure;
 } shadowInfo;
 
 layout(std430, binding = 8) buffer ChunkData {

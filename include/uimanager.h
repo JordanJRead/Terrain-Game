@@ -221,7 +221,7 @@ public:
 			ImGui::DragFloat("Mie G", mAtmosphereMieG.getDataPtr(), 0.001);
 			mAtmosphereMieG.update();
 
-			ImGui::DragFloat("HDR scale", mHDRScale.getDataPtr(), 0.1);
+			ImGui::DragFloat("HDR scale", mHDRScale.getDataPtr(), 0.01);
 			mHDRScale.update();
 
 			ImGui::DragInt("Ray atmosphere steps", mRayAtmosphereStepCount.getDataPtr(), 0.1, 1, 100);
@@ -229,6 +229,8 @@ public:
 
 			ImGui::DragInt("Ray sun steps", mRaySunStepCount.getDataPtr(), 0.1, 1, 100);
 			mRaySunStepCount.update();
+
+			ImGui::DragFloat("Atmosphere brightness", mAtmosphereBrightness.getDataPtr(), 0.05);
 
 			ImGui::End();
 
@@ -336,6 +338,9 @@ public:
 
 			ImGui::InputInt("Curr camera", mCurrCamera.getDataPtr(), 1);
 			mCurrCamera.update();
+
+			ImGui::DragFloat("Exposure", mExposure.getDataPtr(), 0.001);
+			mExposure.update();
 
 			ImGui::End();
 		}
@@ -459,11 +464,13 @@ public:
 	UIElement<float> mHDRScale{ 15 };
 	UIElement<int> mRayAtmosphereStepCount{ 10 };
 	UIElement<int> mRaySunStepCount{ 8 };
+	UIElement<float> mAtmosphereBrightness{ 50 };
 
 	// Shadow Parameters
 	UIElement<float> mShadowBlurWidth{ 0.5 };
 	UIElement<int> mShadowBlurQuality{ 7 };
 	UIElement<int> mCurrCamera{ -1 };
+	UIElement<float> mExposure{ 0.1 };
 };
 
 #endif

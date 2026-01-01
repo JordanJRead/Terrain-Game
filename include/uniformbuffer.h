@@ -201,6 +201,7 @@ namespace BufferTypes {
 			, mieG{ uiManager.mAtmosphereMieG.data() }
 			, rayAtmosphereStepCount{ uiManager.mRayAtmosphereStepCount.data() }
 			, raySunStepCount{ uiManager.mRaySunStepCount.data() }
+			, brightness{ uiManager.mAtmosphereBrightness.data() }
 		{
 		}
 		bool operator==(const AtmosphereInfo&) const = default;
@@ -218,6 +219,7 @@ namespace BufferTypes {
 		float mieG;
 		int rayAtmosphereStepCount;
 		int raySunStepCount;
+		float brightness;
 	};
 
 	struct ShadowInfo {
@@ -225,6 +227,7 @@ namespace BufferTypes {
 		ShadowInfo(const ShadowMapper<CascadeCount>& shadowMapper, const UIManager& uiManager)
 			: blurWidth{ uiManager.mShadowBlurWidth.data() }
 			, blurQuality{ uiManager.mShadowBlurQuality.data() }
+			, exposure{ uiManager.mExposure.data() }
 		{
 			if (blurQuality % 2 == 0)
 				blurQuality += 1;
@@ -253,6 +256,7 @@ namespace BufferTypes {
 		float blurWidth;
 		int blurQuality; // odd
 		float blurGridSum{ 0 };
+		float exposure;
 	};
 }
 
