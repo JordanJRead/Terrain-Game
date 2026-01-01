@@ -126,9 +126,9 @@ float mieDensityAtPoint(vec3 pos) {
 	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensityScale;
 }
 
-vec3 transmittanceFromSunToPoint(vec3 pos, bool ambient = false) {
-	float shadowAmount = isPointInShadow(pos);
-	if (shadowAmount > 0.5 && !ambient)
+vec3 transmittanceFromSunToPoint(vec3 pos, bool onGround = false) {
+	float shadowAmount = isPointInShadow(pos, onGround);
+	if (shadowAmount > 0.5 && !onGround)
 		return vec3(0);
 	vec2 ts = rayAtmosphereIntersection(pos, perFrameInfo.dirToSun);
 	if (ts.x < 0 && ts.y < 0)
@@ -154,7 +154,7 @@ vec3 transmittanceFromSunToPoint(vec3 pos, bool ambient = false) {
 
 		samplePos += perFrameInfo.dirToSun * dx;
 	}
-	if (ambient) {
+	if (onGround) {
 		return transmittance * (0.2 + 0.8 * (1 - shadowAmount));
 	}
 	return transmittance;
