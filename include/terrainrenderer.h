@@ -244,7 +244,6 @@ public:
 				if (isVisible) {
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
 					bool isCloseChunk{ x >= -1 && x <= 1 && z >= -1 && z <= 1 };
-					isCloseChunk = false;
 					bool highQuality{ isCloseChunk || chunkDist < uiManager.mVertexLODDistanceNear.data() };
 					bool mediumQuality{ chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
 					int qualityIndex{ highQuality ? 2 : (mediumQuality ? 1 : 0) };
