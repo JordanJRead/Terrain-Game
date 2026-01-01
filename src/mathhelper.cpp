@@ -17,7 +17,7 @@ int MathHelper::taxicabDist(glm::ivec2 p1, glm::ivec2 p2) {
 	return abs(p1.x - p2.x) + abs(p1.y - p2.y);
 }
 
-double MathHelper::signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, const glm::vec3& planePoint) {
+float MathHelper::signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, const glm::vec3& planePoint) {
 	return glm::dot(planeNormal, (pos - planePoint));
 }
 

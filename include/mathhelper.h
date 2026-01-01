@@ -11,7 +11,7 @@ namespace MathHelper {
 	int taxicabDist(glm::ivec2 p1, glm::ivec2 p2);
 	bool floatEqual(float x, float y, float tol = 0.001);
 
-	double signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, const glm::vec3& planePoint);
+	float signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, const glm::vec3& planePoint);
 	double areaOfTriangle(const std::array<glm::vec3, 3>& trianglePoints);
 	bool isPointInTriangle(const glm::vec3& point, const glm::vec3& pa, const glm::vec3& pb, const glm::vec3& pc);
 

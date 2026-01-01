@@ -1,3 +1,4 @@
+#pragma warning(push, 0)
 // stb_include.h - v0.02 - parse and process #include directives - public domain
 //
 // To build this, in one source file that includes this file do
@@ -293,3 +294,4 @@ char *stb_include_preloaded(char *str, char *inject, char *includes[][2], char e
 #endif
 
 #endif // STB_INCLUDE_IMPLEMENTATION
+#pragma warning(pop)

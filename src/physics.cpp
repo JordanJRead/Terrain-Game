@@ -14,8 +14,8 @@
 Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition, const glm::vec3& displacement, const std::array<glm::vec3, 3>& trianglePoints) {
 	glm::vec3 planeNormal{ glm::cross(trianglePoints[1] - trianglePoints[0], trianglePoints[2] - trianglePoints[0]) };
 	planeNormal = glm::normalize(planeNormal);
-	double normalDotDisplacement{ glm::dot(planeNormal, displacement) };
-	double distFromPlane{ MathHelper::signedDistFromPlane(spherePosition, planeNormal, trianglePoints[0])};
+	float normalDotDisplacement{ glm::dot(planeNormal, displacement) };
+	float distFromPlane{ MathHelper::signedDistFromPlane(spherePosition, planeNormal, trianglePoints[0])};
 
 	// Moving in wrong direction
 	if (glm::dot(planeNormal, glm::normalize(displacement)) > 0) {
@@ -47,8 +47,8 @@ Physics::CollisionData Physics::getCollisionData(const glm::vec3& spherePosition
 		return Physics::CollisionData{ 2, glm::vec3 {0, 0, 0} }; // No collision
 	}
 
-	t0 = fmax(t0, 0);
-	t1 = fmin(t0, 1);
+	t0 = (float)fmax(t0, 0);
+	t1 = (float)fmin(t0, 1);
 
 	// Collision happens inside triangle
 	glm::vec3 planeIntersectionPoint{ spherePosition + displacement * t0 - planeNormal };
