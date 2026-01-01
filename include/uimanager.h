@@ -334,6 +334,9 @@ public:
 			ImGui::DragInt("Blur quality", mShadowBlurQuality.getDataPtr(), 0.03, 0, 9);
 			mShadowBlurQuality.update();
 
+			ImGui::InputInt("Curr camera", mCurrCamera.getDataPtr(), 1);
+			mCurrCamera.update();
+
 			ImGui::End();
 		}
 
@@ -460,6 +463,7 @@ public:
 	// Shadow Parameters
 	UIElement<float> mShadowBlurWidth{ 0.5 };
 	UIElement<int> mShadowBlurQuality{ 7 };
+	UIElement<int> mCurrCamera{ -1 };
 };
 
 #endif

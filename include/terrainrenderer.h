@@ -198,7 +198,13 @@ public:
 			mDeferredRenderer.mFramebuffer.use();
 			glClearColor(0, 0, 0, -3);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			renderTerrain(mDeferredRenderer.mFramebuffer, camera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, uiManager, dirToSun, time);
+
+			const CameraI* pCamera{ &camera };
+			const CameraI* pCamera0{ &mShadowMapper.getCamera(0) };
+			const CameraI* pCamera1{ &mShadowMapper.getCamera(1) };
+			const CameraI* pCamera2{ &mShadowMapper.getCamera(2) };
+			const CameraI* currCamera{ uiManager.mCurrCamera.data() == -1 ? pCamera : (uiManager.mCurrCamera.data() == 0 ? pCamera0 : (uiManager.mCurrCamera.data() == 1 ? pCamera1 : (pCamera2))) };
+			renderTerrain(mDeferredRenderer.mFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, uiManager, dirToSun, time);
 
 			mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			mShadowMatrices.updateGPU({ mShadowMapper, uiManager });

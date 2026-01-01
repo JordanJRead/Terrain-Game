@@ -13,28 +13,6 @@ int taxicabDist(ivec2 p1, ivec2 p2) {
 }
 
 float sampleShadowMap(vec2 sampleCoord, int i, float currDepth, bool blur = false) {
-
-/*
-	float weights[7][7] = {
-		float[7](1, 2, 3, 4, 3, 2, 1),
-		float[7](2, 3, 4, 5, 4, 3, 2),
-		float[7](3, 4, 5, 6, 5, 4, 3),
-		float[7](4, 5, 6, 7, 6, 5, 4),
-		float[7](3, 4, 5, 6, 5, 4, 3),
-		float[7](2, 3, 4, 5, 4, 3, 2),
-		float[7](1, 2, 3, 4, 3, 2, 1)
-	};
-
-	float weights[7][7] = {
-		float[7](1.0/188, 2.0/188, 3.0/188, 4.0/188, 3.0/188, 2.0/188, 1.0/188),
-		float[7](2.0/188, 3.0/188, 4.0/188, 5.0/188, 4.0/188, 3.0/188, 2.0/188),
-		float[7](3.0/188, 4.0/188, 5.0/188, 6.0/188, 5.0/188, 4.0/188, 3.0/188),
-		float[7](4.0/188, 5.0/188, 6.0/188, 7.0/188, 6.0/188, 5.0/188, 4.0/188),
-		float[7](3.0/188, 4.0/188, 5.0/188, 6.0/188, 5.0/188, 4.0/188, 3.0/188),
-		float[7](2.0/188, 3.0/188, 4.0/188, 5.0/188, 4.0/188, 3.0/188, 2.0/188),
-		float[7](1.0/188, 2.0/188, 3.0/188, 4.0/188, 3.0/188, 2.0/188, 1.0/188)
-	};
-*/
 	if (!blur) {
 		return (currDepth - 0.005 > texture(shadowMaps[i], sampleCoord).r) ? 1 : 0.0;
 	}
@@ -48,13 +26,13 @@ float sampleShadowMap(vec2 sampleCoord, int i, float currDepth, bool blur = fals
 			float weight = shadowInfo.blurQuality - taxicabDist(ivec2(x, y), ivec2(shadowInfo.blurQuality / 2));
 			weight /= shadowInfo.blurGridSum;
 			float shadowDepth = texture(shadowMaps[i], sampleCoord + vec2(x, y) * gridPixelTexSize).r; 
-			shadow += (currDepth - 0.005 > shadowDepth) ? weight : 0.0;
+			shadow += (currDepth > shadowDepth) ? weight : 0.0;
 		}
 	}
 	return shadow;
 }
 
-float isPointInShadow(vec3 pos, bool blur = false) {
+float isPointInShadow(vec3 pos, vec3 normal, bool blur = false) {
 	vec3 viewSpacePos = (perFrameInfo.viewMatrix * vec4(pos, 1)).xyz;
 	float scale = ((-viewSpacePos.z) - perFrameInfo.cameraNear) / (perFrameInfo.cameraFar - perFrameInfo.cameraNear);
 	if (scale < 0 || scale > 1)
@@ -73,7 +51,10 @@ float isPointInShadow(vec3 pos, bool blur = false) {
 			maxScale = shadowInfo.splits[i];
 
 		if (scale >= minScale && scale <= maxScale) {
-			vec3 orthoPos = (shadowInfo.projectionMatrices[i] * shadowInfo.viewMatrices[i] * vec4(pos, 1)).xyz;
+			float minBias = 0;
+			float maxBias = 0;
+			float bias = minBias + (maxBias - minBias) * (1 - dot(normal, perFrameInfo.dirToSun));
+			vec3 orthoPos = (shadowInfo.projectionMatrices[i] * (shadowInfo.viewMatrices[i] * vec4(pos, 1) + vec4(0, 0, bias, 0))).xyz;
 			float currDepth = (orthoPos.z + 1) / 2;
 			//float shadowDepth = texture(shadowMaps[i], (orthoPos.xy + vec2(1)) / 2).r;
 			return sampleShadowMap((orthoPos.xy + vec2(1)) / 2, i, currDepth, blur);

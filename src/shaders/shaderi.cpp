@@ -80,11 +80,11 @@ void ShaderI::internalRender(const FramebufferI& framebuffer, const VertexArray&
     if (!depth)
         glDisable(GL_DEPTH_TEST);
 
-    if (instanceCount == 0)
+    if (instanceCount == -1)
         glDrawElements(GL_TRIANGLES, vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0);
     else
         glDrawElementsInstanced(GL_TRIANGLES, vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0, instanceCount);
-
+        
     if (!depth)
         glEnable(GL_DEPTH_TEST);
 }
@@ -96,7 +96,7 @@ void ShaderI::internalRenderDefaultFramebuffer(const VertexArray& vertexArray, b
     if (!depth)
         glDisable(GL_DEPTH_TEST);
 
-    if (instanceCount == 0)
+    if (instanceCount == -1)
         glDrawElements(GL_TRIANGLES, vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0);
     else
         glDrawElementsInstanced(GL_TRIANGLES, vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0, instanceCount);

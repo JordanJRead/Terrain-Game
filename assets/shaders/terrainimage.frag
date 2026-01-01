@@ -93,11 +93,7 @@ vec4 createTerrainInfo(vec2 pos) {
 	smoothTerrainInfo.x -= lake.x;
 	smoothTerrainInfo.yz -= lake.yz;
 
-	vec4 combinedTerrainInfo = vec4(terrainInfo.x, 0, 0, mountain);
-	combinedTerrainInfo.y = packFloats(vec2(terrainInfo.y, smoothTerrainInfo.y));
-	combinedTerrainInfo.z = packFloats(vec2(terrainInfo.z, smoothTerrainInfo.z));
-
-	return combinedTerrainInfo;
+	return vec4(terrainInfo, mountain);
 }
 
 void main() {

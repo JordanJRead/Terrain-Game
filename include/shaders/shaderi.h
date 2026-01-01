@@ -24,9 +24,9 @@ public:
 protected:
 	unsigned int mID;
 
-	void internalRender(const FramebufferI& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = 0) const;
+	void internalRender(const FramebufferI& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = -1) const;
 
-	void internalRenderDefaultFramebuffer(const VertexArray& vertexArray, bool depth, int instanceCount = 0) const;
+	void internalRenderDefaultFramebuffer(const VertexArray& vertexArray, bool depth, int instanceCount = -1) const;
 
 	void use() const { glUseProgram(mID); }
 	void setMatrix4(std::string_view name, const glm::mat4& mat4) const {

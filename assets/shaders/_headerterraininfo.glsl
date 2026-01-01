@@ -12,14 +12,6 @@ vec4 getTerrainInfo(vec2 worldPos, bool smoothTerrain) {
 		
 		if (!(sampleCoord.x > 1 || sampleCoord.x < 0 || sampleCoord.y > 1 || sampleCoord.y < 0)) {
 			vec4 terrainInfo = texture(images[i], sampleCoord);
-			if (smoothTerrain) {
-				terrainInfo.y = unpackFloats(terrainInfo.y).y;
-				terrainInfo.z = unpackFloats(terrainInfo.z).y;
-			}
-			else {
-				terrainInfo.y = unpackFloats(terrainInfo.y).x;
-				terrainInfo.z = unpackFloats(terrainInfo.z).x; // ?
-			}
 			terrainInfo.yz /= terrainImagesInfo.imageScales[i] * artisticParams.terrainScale;
 			return terrainInfo;
 		}

@@ -126,8 +126,8 @@ float mieDensityAtPoint(vec3 pos) {
 	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensityScale;
 }
 
-vec3 transmittanceFromSunToPoint(vec3 pos, bool onGround = false) {
-	float shadowAmount = isPointInShadow(pos, onGround);
+vec3 transmittanceFromSunToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false) {
+	float shadowAmount = isPointInShadow(pos, normal, onGround);
 	if (shadowAmount > 0.5 && !onGround)
 		return vec3(0);
 	vec2 ts = rayAtmosphereIntersection(pos, perFrameInfo.dirToSun);
@@ -164,10 +164,10 @@ float phase(float cosTheta, float g) {
 	return 1 / (4 * PI) * (1 - g * g) / pow(1 + g * g - 2 * g * cosTheta, 3/2);
 }
 
-vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldPosOfVisibleObject, vec3 albedo) {
+vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0)) {
 	vec2 intersectionTs = rayAtmosphereIntersection(rayPos, rayDir);
 	if (intersectionTs.x < 0 && intersectionTs.y < 0)
-		return albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, true);
+		return albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true);
 	float t0;
 	float t1;
 	t0 = min(intersectionTs.x, intersectionTs.y);
@@ -201,7 +201,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	if (isSky && !isSun) {
 		return inScatteredLight;
 	}
-	return inScatteredLight + albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, true) * transmittance;
+	return inScatteredLight + albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true) * transmittance;
  }
 
 void main() {
@@ -269,11 +269,11 @@ void main() {
 				fogStrength = (distFromCamera - fogStart) / artisticParams.fogEncroach;
 
 			if (fogStrength == 0)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
 				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)), 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)) * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)) * fogStrength, 1);
 		}
 		else {
 			vec4 terrainAlbedoWet = getTerrainAlbedoWet(groundWorldPosShellProgress.xyz, groundWorldPosShellProgress.w, worldPosMountain.w, bool(normalDoesTexelExist.w));
@@ -304,11 +304,11 @@ void main() {
 				fogStrength = quinticInterpolationF((distFromCamera - fogStart) / artisticParams.fogEncroach);
 
 			if (fogStrength == 0)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
 				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)), 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)) * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)) * fogStrength, 1);
 		}
 	}
 }
