@@ -56,13 +56,13 @@ struct AABB {
 	std::array<glm::vec3, 8> getCorners() const {
 		std::array<glm::vec3, 8> corners;
 		corners[0] = { mMin.x, mMin.y, mMin.z };
-		corners[0] = { mMax.x, mMin.y, mMin.z };
-		corners[0] = { mMin.x, mMax.y, mMin.z };
-		corners[0] = { mMax.x, mMax.y, mMin.z };
-		corners[0] = { mMin.x, mMin.y, mMax.z };
-		corners[0] = { mMax.x, mMin.y, mMax.z };
-		corners[0] = { mMin.x, mMax.y, mMax.z };
-		corners[0] = { mMax.x, mMax.y, mMax.z };
+		corners[1] = { mMax.x, mMin.y, mMin.z };
+		corners[2] = { mMin.x, mMax.y, mMin.z };
+		corners[3] = { mMax.x, mMax.y, mMin.z };
+		corners[4] = { mMin.x, mMin.y, mMax.z };
+		corners[5] = { mMax.x, mMin.y, mMax.z };
+		corners[6] = { mMin.x, mMax.y, mMax.z };
+		corners[7] = { mMax.x, mMax.y, mMax.z };
 		return corners;
 	};
 
