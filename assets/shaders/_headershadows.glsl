@@ -14,7 +14,7 @@ int taxicabDist(ivec2 p1, ivec2 p2) {
 
 float sampleShadowMap(vec2 sampleCoord, int i, float currDepth, bool blur = false) {
 	if (!blur) {
-		return (currDepth - 0.005 > texture(shadowMaps[i], sampleCoord).r) ? 1 : 0.0;
+		return (currDepth > texture(shadowMaps[i], sampleCoord).r) ? 1 : 0.0;
 	}
 
 	float shadow = 0.0;
@@ -51,9 +51,7 @@ float isPointInShadow(vec3 pos, vec3 normal, bool blur = false) {
 			maxScale = shadowInfo.splits[i];
 
 		if (scale >= minScale && scale <= maxScale) {
-			float minBias = 0;
-			float maxBias = 0;
-			float bias = minBias + (maxBias - minBias) * (1 - dot(normal, perFrameInfo.dirToSun));
+			float bias = shadowInfo.minBias + (shadowInfo.maxBias - shadowInfo.minBias) * (1 - dot(normal, perFrameInfo.dirToSun));
 			vec3 orthoPos = (shadowInfo.projectionMatrices[i] * (shadowInfo.viewMatrices[i] * vec4(pos, 1) + vec4(0, 0, bias, 0))).xyz;
 			float currDepth = (orthoPos.z + 1) / 2;
 			//float shadowDepth = texture(shadowMaps[i], (orthoPos.xy + vec2(1)) / 2).r;

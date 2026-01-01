@@ -61,16 +61,16 @@ public:
 			ImGui::DragFloat("Terrain scale", mTerrainScale.getDataPtr());
 			mTerrainScale.update();
 
-			ImGui::DragFloat("Grass dot cutoff", mGrassDotCutoff.getDataPtr(), 0.005, 0, 1);
+			ImGui::DragFloat("Grass dot cutoff", mGrassDotCutoff.getDataPtr(), 0.005f, 0, 1);
 			mGrassDotCutoff.update();
 
-			ImGui::DragFloat("Snow dot cutoff", mSnowDotCutoff.getDataPtr(), 0.005, 0, 1);
+			ImGui::DragFloat("Snow dot cutoff", mSnowDotCutoff.getDataPtr(), 0.005f, 0, 1);
 			mSnowDotCutoff.update();
 
-			ImGui::DragInt("Shell count", mShellCount.getDataPtr(), 0.1, 0, 256);
+			ImGui::DragInt("Shell count", mShellCount.getDataPtr(), 0.1f, 0, 256);
 			mShellCount.update();
 
-			ImGui::DragFloat("Shell max height", mShellMaxHeight.getDataPtr(), 0.001, 0, 10);
+			ImGui::DragFloat("Shell max height", mShellMaxHeight.getDataPtr(), 0.001f, 0, 10);
 			mShellMaxHeight.update();
 
 			ImGui::DragFloat("Grass noise scale", mGrassNoiseScale.getDataPtr(), 1, 1, 1000);
@@ -79,31 +79,31 @@ public:
 			//ImGui::DragFloat("Snow noise scale", mSnowNoiseScale.getDataPtr(), 1, 1, 1000);
 			//mSnowNoiseScale.update();
 
-			ImGui::DragFloat("Shell max cutoff", mShellMaxCutoff.getDataPtr(), 0.01, 0, 1);
+			ImGui::DragFloat("Shell max cutoff", mShellMaxCutoff.getDataPtr(), 0.01f, 0, 1);
 			mShellMaxCutoff.update();
 
-			ImGui::DragFloat("Shell base cutoff", mShellBaseCutoff.getDataPtr(), 0.01, 0, 1);
+			ImGui::DragFloat("Shell base cutoff", mShellBaseCutoff.getDataPtr(), 0.01f, 0, 1);
 			mShellBaseCutoff.update();
 
-			ImGui::DragFloat("Snow height", mSnowHeight.getDataPtr(), 0.05);
+			ImGui::DragFloat("Snow height", mSnowHeight.getDataPtr(), 0.05f);
 			mSnowHeight.update();
 
-			ImGui::DragFloat("Seafoam", mSeaFoam.getDataPtr(), 0.01, 0, 10);
+			ImGui::DragFloat("Seafoam", mSeaFoam.getDataPtr(), 0.01f, 0, 10);
 			mSeaFoam.update();
 
-			ImGui::DragFloat("Snow line noise scale", mSnowLineNoiseScale.getDataPtr(), 0.001, 0, 100);
+			ImGui::DragFloat("Snow line noise scale", mSnowLineNoiseScale.getDataPtr(), 0.001f, 0, 100);
 			mSnowLineNoiseScale.update();
 
-			ImGui::DragFloat("Snow line noise amplitude", mSnowLineNoiseAmplitude.getDataPtr(), 0.01, 0, 10);
+			ImGui::DragFloat("Snow line noise amplitude", mSnowLineNoiseAmplitude.getDataPtr(), 0.01f, 0, 10);
 			mSnowLineNoiseAmplitude.update();
 
-			ImGui::DragFloat("Mountain snow cutoff", mMountainSnowCutoff.getDataPtr(), 0.01, 0, 10);
+			ImGui::DragFloat("Mountain snow cutoff", mMountainSnowCutoff.getDataPtr(), 0.01f, 0, 10);
 			mMountainSnowCutoff.update();
 
-			ImGui::DragFloat("Snow line ease", mSnowLineEase.getDataPtr(), 0.01, 0, 10);
+			ImGui::DragFloat("Snow line ease", mSnowLineEase.getDataPtr(), 0.01f, 0, 10);
 			mSnowLineEase.update();
 
-			ImGui::DragFloat("Shell ambient occlusion", mShellAmbientOcclusion.getDataPtr(), 0.001, 0, 1);
+			ImGui::DragFloat("Shell ambient occlusion", mShellAmbientOcclusion.getDataPtr(), 0.001f, 0, 1);
 			mShellAmbientOcclusion.update();
 
 			ImGui::End();
@@ -111,31 +111,31 @@ public:
 			// Terrain Parameters
 			ImGui::Begin("Terrain Parameters");
 
-			ImGui::DragInt("Octave count", mTerrainOctaveCount.getDataPtr(), 0.1, 1, 30);
+			ImGui::DragInt("Octave count", mTerrainOctaveCount.getDataPtr(), 0.1f, 1, 30);
 			mTerrainOctaveCount.update();
 
-			ImGui::DragInt("Smooth octave count", mTerrainSmoothOctaveCount.getDataPtr(), 0.1, 1, 30);
+			ImGui::DragInt("Smooth octave count", mTerrainSmoothOctaveCount.getDataPtr(), 0.1f, 1, 30);
 			mTerrainSmoothOctaveCount.update();
 
-			ImGui::DragFloat("Amplitude", mTerrainAmplitude.getDataPtr(), 0.7, 0, 500);
+			ImGui::DragFloat("Amplitude", mTerrainAmplitude.getDataPtr(), 0.7f, 0, 500);
 			mTerrainAmplitude.update();
 
-			ImGui::DragFloat("Amplitude decay", mTerrainAmplitudeMultiplier.getDataPtr(), 0.0005, 0, 100);
+			ImGui::DragFloat("Amplitude decay", mTerrainAmplitudeMultiplier.getDataPtr(), 0.0005f, 0, 100);
 			mTerrainAmplitudeMultiplier.update();
 
-			ImGui::DragFloat("Spread factor", mTerrainSpreadFactor.getDataPtr(), 0.001, 0, 100);
+			ImGui::DragFloat("Spread factor", mTerrainSpreadFactor.getDataPtr(), 0.001f, 0, 100);
 			mTerrainSpreadFactor.update();
 
-			ImGui::DragFloat("Mountain frequency", mMountainFrequency.getDataPtr(), 0.003, 0, 2);
+			ImGui::DragFloat("Mountain frequency", mMountainFrequency.getDataPtr(), 0.003f, 0, 2);
 			mMountainFrequency.update();
 
-			ImGui::DragFloat("Mountain exponent", mMountainExponent.getDataPtr(), 0.01, 0.1, 30);
+			ImGui::DragFloat("Mountain exponent", mMountainExponent.getDataPtr(), 0.01f, 0.1f, 30);
 			mMountainExponent.update();
 
-			ImGui::DragFloat("Anti flat factor", mAntiFlatFactor.getDataPtr(), 0.001, 0, 1);
+			ImGui::DragFloat("Anti flat factor", mAntiFlatFactor.getDataPtr(), 0.001f, 0, 1);
 			mAntiFlatFactor.update();
 
-			ImGui::DragFloat("River frequency", mRiverFrequency.getDataPtr(), 0.001, 0, 2);
+			ImGui::DragFloat("River frequency", mRiverFrequency.getDataPtr(), 0.001f, 0, 2);
 			mRiverFrequency.update();
 
 			ImGui::DragFloat("River strength", mRiverStrength.getDataPtr(), 1, 0, 1000);
@@ -144,16 +144,16 @@ public:
 			ImGui::DragFloat("River exponent", mRiverExponent.getDataPtr(), 1, 0, 1000);
 			mRiverExponent.update();
 
-			ImGui::DragFloat("Water eating mountains", mWaterEatingMountain.getDataPtr(), 0.1, 0, 5);
+			ImGui::DragFloat("Water eating mountains", mWaterEatingMountain.getDataPtr(), 0.1f, 0, 5);
 			mWaterEatingMountain.update();
 
-			ImGui::DragFloat("Lake frequency", mLakeFrequency.getDataPtr(), 0.001, 0, 2);
+			ImGui::DragFloat("Lake frequency", mLakeFrequency.getDataPtr(), 0.001f, 0, 2);
 			mLakeFrequency.update();
 
-			ImGui::DragFloat("Lake strength", mLakeStrength.getDataPtr(), 0.5, 0, 1000);
+			ImGui::DragFloat("Lake strength", mLakeStrength.getDataPtr(), 0.5f, 0, 1000);
 			mLakeStrength.update();
 
-			ImGui::DragFloat("Lake exponent", mLakeExponent.getDataPtr(), 0.01, 0, 1000);
+			ImGui::DragFloat("Lake exponent", mLakeExponent.getDataPtr(), 0.01f, 0, 1000);
 			mLakeExponent.update();
 
 			ImGui::End();
@@ -161,25 +161,25 @@ public:
 			// Water Parameters
 			ImGui::Begin("Water Parameters");
 
-			ImGui::DragInt("Wave count", mWaterWaveCount.getDataPtr(), 0.1, 1, 100);
+			ImGui::DragInt("Wave count", mWaterWaveCount.getDataPtr(), 0.1f, 1, 100);
 			mWaterWaveCount.update();
 
-			ImGui::DragFloat("Initial amplitude", mWaterAmplitude.getDataPtr(), 0.005, 0.01, 1);
+			ImGui::DragFloat("Initial amplitude", mWaterAmplitude.getDataPtr(), 0.005f, 0.01f, 1);
 			mWaterAmplitude.update();
 
-			ImGui::DragFloat("Amplitude multiplier", mWaterAmplitudeMultiplier.getDataPtr(), 0.001, 0, 1);
+			ImGui::DragFloat("Amplitude multiplier", mWaterAmplitudeMultiplier.getDataPtr(), 0.001f, 0, 1);
 			mWaterAmplitudeMultiplier.update();
 
-			ImGui::DragFloat("Initial frequency", mWaterFrequency.getDataPtr(), 0.01, 0, 5);
+			ImGui::DragFloat("Initial frequency", mWaterFrequency.getDataPtr(), 0.01f, 0, 5);
 			mWaterFrequency.update();
 
-			ImGui::DragFloat("Frequency multiplier", mWaterFrequencyMultiplier.getDataPtr(), 0.01, 0, 1.5);
+			ImGui::DragFloat("Frequency multiplier", mWaterFrequencyMultiplier.getDataPtr(), 0.01f, 0, 1.5f);
 			mWaterFrequencyMultiplier.update();
 
-			ImGui::DragFloat("Initial speed", mWaterSpeed.getDataPtr(), 0.02, 0, 20);
+			ImGui::DragFloat("Initial speed", mWaterSpeed.getDataPtr(), 0.02f, 0, 20);
 			mWaterSpeed.update();
 
-			ImGui::DragFloat("Speed multiplier", mWaterSpeedMultiplier.getDataPtr(), 0.007, 0, 2);
+			ImGui::DragFloat("Speed multiplier", mWaterSpeedMultiplier.getDataPtr(), 0.007f, 0, 2);
 			mWaterSpeedMultiplier.update();
 
 			ImGui::DragFloat("Shininess", mWaterShininess.getDataPtr());
@@ -197,16 +197,16 @@ public:
 			ImGui::DragFloat("Atmosphere width", mAtmosphereWidth.getDataPtr(), 1000);
 			mAtmosphereWidth.update();
 			
-			ImGui::DragFloat("Rayleigh density falloff", mAtmosphereRayleighDensityFalloff.getDataPtr(), 0.001);
+			ImGui::DragFloat("Rayleigh density falloff", mAtmosphereRayleighDensityFalloff.getDataPtr(), 0.001f);
 			mAtmosphereRayleighDensityFalloff.update();
 
-			ImGui::DragFloat("Mie density falloff", mAtmosphereMieDensityFalloff.getDataPtr(), 0.001);
+			ImGui::DragFloat("Mie density falloff", mAtmosphereMieDensityFalloff.getDataPtr(), 0.001f);
 			mAtmosphereMieDensityFalloff.update();
 
-			ImGui::DragFloat("Rayleigh density scale", mAtmosphereRayleighDensityScale.getDataPtr(), 0.001);
+			ImGui::DragFloat("Rayleigh density scale", mAtmosphereRayleighDensityScale.getDataPtr(), 0.001f);
 			mAtmosphereRayleighDensityScale.update();
 
-			ImGui::DragFloat("Mie density scale", mAtmosphereMieDensityScale.getDataPtr(), 0.001);
+			ImGui::DragFloat("Mie density scale", mAtmosphereMieDensityScale.getDataPtr(), 0.001f);
 			mAtmosphereMieDensityScale.update();
 
 			ImGui::DragFloat3("Rayleigh scattering", (float*)mAtmosphereRayleighScattering.getDataPtr(), 1);
@@ -215,22 +215,22 @@ public:
 			ImGui::DragFloat3("Mie scattering", (float*)mAtmosphereMieScattering.getDataPtr(), 1);
 			mAtmosphereMieScattering.update();
 
-			ImGui::DragFloat("Rayleigh G", mAtmosphereRayleighG.getDataPtr(), 0.001);
+			ImGui::DragFloat("Rayleigh G", mAtmosphereRayleighG.getDataPtr(), 0.001f);
 			mAtmosphereRayleighG.update();
 
-			ImGui::DragFloat("Mie G", mAtmosphereMieG.getDataPtr(), 0.001);
+			ImGui::DragFloat("Mie G", mAtmosphereMieG.getDataPtr(), 0.001f);
 			mAtmosphereMieG.update();
 
-			ImGui::DragFloat("HDR scale", mHDRScale.getDataPtr(), 0.01);
+			ImGui::DragFloat("HDR scale", mHDRScale.getDataPtr(), 0.01f);
 			mHDRScale.update();
 
-			ImGui::DragInt("Ray atmosphere steps", mRayAtmosphereStepCount.getDataPtr(), 0.1, 1, 100);
+			ImGui::DragInt("Ray atmosphere steps", mRayAtmosphereStepCount.getDataPtr(), 0.1f, 1, 100);
 			mRayAtmosphereStepCount.update();
 
-			ImGui::DragInt("Ray sun steps", mRaySunStepCount.getDataPtr(), 0.1, 1, 100);
+			ImGui::DragInt("Ray sun steps", mRaySunStepCount.getDataPtr(), 0.1f, 1, 100);
 			mRaySunStepCount.update();
 
-			ImGui::DragFloat("Atmosphere brightness", mAtmosphereBrightness.getDataPtr(), 0.05);
+			ImGui::DragFloat("Atmosphere brightness", mAtmosphereBrightness.getDataPtr(), 0.05f);
 
 			ImGui::End();
 
@@ -276,7 +276,7 @@ public:
 			ImGui::DragInt("Count", mChunkCount.getDataPtr(), 1, 1, 1000);
 			mChunkCount.update();
 
-			ImGui::DragFloat("Low quality plane vertices", mLowQualityVertexDensity.getDataPtr(), 0.01 , 0, 100);
+			ImGui::DragFloat("Low quality plane vertices", mLowQualityVertexDensity.getDataPtr(), 0.01f , 0, 100);
 			mLowQualityVertexDensity.update();
 
 			ImGui::DragInt("Medium quality plane quality scale", mMediumQualityPlaneQualityScale.getDataPtr(), 1, 1, 100);
@@ -294,7 +294,7 @@ public:
 			ImGui::DragFloat("Shell LOD dist", mShellLODDistance.getDataPtr(), 1, 1, 1000);
 			mShellLODDistance.update();
 
-			ImGui::DragFloat("Water height", mWaterHeight.getDataPtr(), 0.1);
+			ImGui::DragFloat("Water height", mWaterHeight.getDataPtr(), 0.1f);
 			mWaterHeight.update();
 
 			ImGui::Checkbox("Frustum culling", mFrustumCulling.getDataPtr());
@@ -305,7 +305,7 @@ public:
 			// Day
 			ImGui::Begin("Day");
 
-			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001, 0, 2);
+			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001f, 0, 2);
 			mDayTime.update();
 
 			ImGui::End();
@@ -330,17 +330,26 @@ public:
 			// Shadow Parameters
 			ImGui::Begin("Shadow Parameters");
 
-			ImGui::DragFloat("Blur width", mShadowBlurWidth.getDataPtr(), 0.01, 0, 10);
+			ImGui::DragFloat("Blur width", mShadowBlurWidth.getDataPtr(), 0.01f, 0, 10);
 			mShadowBlurWidth.update();
 
-			ImGui::DragInt("Blur quality", mShadowBlurQuality.getDataPtr(), 0.03, 0, 9);
+			ImGui::DragInt("Blur quality", mShadowBlurQuality.getDataPtr(), 0.03f, 0, 9);
 			mShadowBlurQuality.update();
 
 			ImGui::InputInt("Curr camera", mCurrCamera.getDataPtr(), 1);
 			mCurrCamera.update();
 
-			ImGui::DragFloat("Exposure", mExposure.getDataPtr(), 0.001);
+			ImGui::DragFloat("Exposure", mExposure.getDataPtr(), 0.001f);
 			mExposure.update();
+
+			ImGui::DragFloat("Min bias", mMinShadowBias.getDataPtr(), 0.1f);
+
+			ImGui::DragFloat("Max bias", mMaxShadowBias.getDataPtr(), 0.1f);
+
+			if (mMinShadowBias.mData > mMaxShadowBias.mData)
+				mMinShadowBias.mData = mMaxShadowBias.mData;
+			mMinShadowBias.update();
+			mMaxShadowBias.update();
 
 			ImGui::End();
 		}
@@ -385,92 +394,94 @@ public:
 	// Colours
 	UIElement<bool>      mIsDeferredRendering{ true };
 	UIElement<bool>      mShowPhysicsPlane{ false };
-	UIElement<glm::vec3> mDirtColour    { {40 / 255.0, 21 / 255.0, 10  / 255.0} };
-	UIElement<glm::vec3> mMountainColour{ {34 / 255.0, 34 / 255.0, 34 / 255.0} };
-	UIElement<glm::vec3> mGrassColour1  { {0   / 255.0, 56 / 255.0, 0   / 255.0} };
-	UIElement<glm::vec3> mGrassColour2{ {15 / 255.0, 56 / 255.0, 0 / 255.0} };
-	UIElement<glm::vec3> mSnowColour    { {255 / 255.0, 255 / 255.0, 255 / 255.0} };
-	UIElement<glm::vec3> mWaterColour   { {0   / 255.0, 1.7  / 255.0, 56 / 255.0} };
-	UIElement<glm::vec3> mSunColour     { {255 / 255.0, 255 / 255.0, 255 / 255.0} };
+	UIElement<glm::vec3> mDirtColour    { {40 / 255.0f, 21 / 255.0f, 10  / 255.0f} };
+	UIElement<glm::vec3> mMountainColour{ {34 / 255.0f, 34 / 255.0f, 34 / 255.0f} };
+	UIElement<glm::vec3> mGrassColour1  { {0   / 255.0f, 56 / 255.0f, 0   / 255.0f} };
+	UIElement<glm::vec3> mGrassColour2{ {15 / 255.0f, 56 / 255.0f, 0 / 255.0f} };
+	UIElement<glm::vec3> mSnowColour    { {255 / 255.0f, 255 / 255.0f, 255 / 255.0f} };
+	UIElement<glm::vec3> mWaterColour   { {0   / 255.0f, 1.7  / 255.0f, 56 / 255.0f} };
+	UIElement<glm::vec3> mSunColour     { {255 / 255.0f, 255 / 255.0f, 255 / 255.0f} };
 
 	// Terrain Parameters
 	UIElement<int>    mTerrainOctaveCount        { 15 };
 	UIElement<int>    mTerrainSmoothOctaveCount  { 6 };
 	UIElement<float> mTerrainAmplitude	         { 250 };
-	UIElement<float> mTerrainAmplitudeMultiplier{ 0.4 };
+	UIElement<float> mTerrainAmplitudeMultiplier{ 0.4f };
 	UIElement<float> mTerrainSpreadFactor       { 2 };
-	UIElement<float> mMountainFrequency         { 0.2 };
+	UIElement<float> mMountainFrequency         { 0.2f };
 	UIElement<float> mMountainExponent          { 4 };
-	UIElement<float> mAntiFlatFactor            { 0.04 };
-	UIElement<float> mRiverFrequency              { 0.05 };
+	UIElement<float> mAntiFlatFactor            { 0.04f };
+	UIElement<float> mRiverFrequency              { 0.05f };
 	UIElement<float> mRiverStrength               { 20 };
 	UIElement<float> mRiverExponent{ 32 };
 	UIElement<float> mWaterEatingMountain{ 30 };
-	UIElement<float> mLakeFrequency{ 0.06 };
+	UIElement<float> mLakeFrequency{ 0.06f };
 	UIElement<float> mLakeStrength{ 40 };
 	UIElement<float> mLakeExponent{ 100 }; // 100 for quintic, 5 not
 
 	// Plane Chunking
 	UIElement<int>    mChunkCount{ 180 };
 	UIElement<float>  mTerrainSpan{ 5000 };
-	UIElement<float>    mLowQualityVertexDensity{ 0.15 };
+	UIElement<float>    mLowQualityVertexDensity{ 0.15f };
 	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?
 	UIElement<int>    mHighQualityPlaneQualityScale{ 25 };
 	UIElement<float> mVertexLODDistanceNear{ 256 };
 	UIElement<float> mVertexLODDistanceFar{ 1000 };
 	UIElement<float> mShellLODDistance{ 60 };
-	UIElement<float> mWaterHeight{ -1.5 };
+	UIElement<float> mWaterHeight{ -1.5f };
 	UIElement<bool> mFrustumCulling{ true };
 
 	// Water Parameters
 	UIElement<int>   mWaterWaveCount{ 24 };
-	UIElement<float> mWaterAmplitude{ 0.07 };
-	UIElement<float> mWaterAmplitudeMultiplier{ 0.82 };
+	UIElement<float> mWaterAmplitude{ 0.07f };
+	UIElement<float> mWaterAmplitudeMultiplier{ 0.82f };
 	UIElement<float> mWaterFrequency{ 1 };
-	UIElement<float> mWaterFrequencyMultiplier{ 1.13 };
+	UIElement<float> mWaterFrequencyMultiplier{ 1.13f };
 	UIElement<float> mWaterSpeed{ 2 };
-	UIElement<float> mWaterSpeedMultiplier{ 1.07 };
+	UIElement<float> mWaterSpeedMultiplier{ 1.07f };
 	UIElement<float> mWaterShininess{ 200 };
 
 	// Artistic Parameters
 	UIElement<float> mTerrainScale{ 58 };
-	UIElement<float> mGrassDotCutoff{ 0.6 };
-	UIElement<float> mSnowDotCutoff{ 0.3 };
+	UIElement<float> mGrassDotCutoff{ 0.6f };
+	UIElement<float> mSnowDotCutoff{ 0.3f };
 	UIElement<int>   mShellCount{ 30 };
-	UIElement<float> mShellMaxHeight{ 0.117 };
+	UIElement<float> mShellMaxHeight{ 0.117f };
 	UIElement<float> mGrassNoiseScale{ 100 };
 	UIElement<float> mSnowNoiseScale{ 1 };
 	UIElement<float> mShellMaxCutoff{ 1 };
-	UIElement<float> mShellBaseCutoff{ 0.2 };
+	UIElement<float> mShellBaseCutoff{ 0.2f };
 	UIElement<float> mSnowHeight{ 65 };
-	UIElement<float> mSeaFoam{ 0.4 };
-	UIElement<float> mSnowLineNoiseScale{ 0.3 };
-	UIElement<float> mSnowLineNoiseAmplitude{ 2.75 };
-	UIElement<float> mMountainSnowCutoff{ 0.9 };
-	UIElement<float> mSnowLineEase{ 4.5 };
-	UIElement<float> mShellAmbientOcclusion{ 0.2 };
+	UIElement<float> mSeaFoam{ 0.4f };
+	UIElement<float> mSnowLineNoiseScale{ 0.3f };
+	UIElement<float> mSnowLineNoiseAmplitude{ 2.75f };
+	UIElement<float> mMountainSnowCutoff{ 0.9f };
+	UIElement<float> mSnowLineEase{ 4.5f };
+	UIElement<float> mShellAmbientOcclusion{ 0.2f };
 
 	// Atmosphere Parameters
 	UIElement<float> mAtmosphereHeight{ 3498 };
 	UIElement<float> mAtmosphereWidth{ 136100 };
 	UIElement<float> mAtmosphereRayleighDensityFalloff{ 1 };
 	UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
-	UIElement<float> mAtmosphereRayleighDensityScale{ 0.004 };
-	UIElement<float> mAtmosphereMieDensityScale{ 0.06 };
+	UIElement<float> mAtmosphereRayleighDensityScale{ 0.004f };
+	UIElement<float> mAtmosphereMieDensityScale{ 0.06f };
 	UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 106, 594} };
 	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
 	UIElement<float> mAtmosphereRayleighG{ 0 };
-	UIElement<float> mAtmosphereMieG{ 0.957 };
+	UIElement<float> mAtmosphereMieG{ 0.957f };
 	UIElement<float> mHDRScale{ 15 };
 	UIElement<int> mRayAtmosphereStepCount{ 10 };
 	UIElement<int> mRaySunStepCount{ 8 };
 	UIElement<float> mAtmosphereBrightness{ 50 };
 
 	// Shadow Parameters
-	UIElement<float> mShadowBlurWidth{ 0.5 };
+	UIElement<float> mShadowBlurWidth{ 0.5f };
 	UIElement<int> mShadowBlurQuality{ 7 };
 	UIElement<int> mCurrCamera{ -1 };
-	UIElement<float> mExposure{ 0.1 };
+	UIElement<float> mExposure{ 0.1f };
+	UIElement<float> mMinShadowBias{ 2.5f };
+	UIElement<float> mMaxShadowBias{ 3 };
 };
 
 #endif

@@ -111,6 +111,8 @@ layout(std430, binding = 7) buffer ShadowInfo {
 	int blurQuality; // odd
 	float blurGridSum;
 	float exposure;
+	float minBias;
+	float maxBias;
 } shadowInfo;
 
 layout(std430, binding = 8) buffer ChunkData {

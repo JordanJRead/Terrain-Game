@@ -36,20 +36,20 @@ namespace BufferTypes {
 		bool operator==(const TerrainParams&) const = default;
 
 		int   octaveCount;
-		int   smoothOctaveCount;
-		float initialAmplitude;
-		float amplitudeDecay;
-		float spreadFactor;
-		float mountainFrequency;
-		float mountainExponent;
-		float antiFlatFactor;
-		float riverScale;
-		float riverStrength;
-		float riverExponent;
-		float waterEatingMountain;
-		float lakeScale;
-		float lakeStrength;
-		float lakeExponent;
+		int   smoothOctaveCount{};
+		float initialAmplitude{};
+		float amplitudeDecay{};
+		float spreadFactor{};
+		float mountainFrequency{};
+		float mountainExponent{};
+		float antiFlatFactor{};
+		float riverScale{};
+		float riverStrength{};
+		float riverExponent{};
+		float waterEatingMountain{};
+		float lakeScale{};
+		float lakeStrength{};
+		float lakeExponent{};
 	};
 
 	struct ArtisticParams {
@@ -75,23 +75,23 @@ namespace BufferTypes {
 		{}
 		bool operator==(const ArtisticParams&) const = default;
 
-		float terrainScale;
-		float maxViewDistance;
-		float fogEncroach;
-		float grassDotCutoff;
-		float snowDotCutoff;
-		float shellMaxHeight;
-		float grassNoiseScale;
-		float snowNoiseScale;
-		float shellMaxCutoff;
-		float shellBaseCutoff;
-		float snowHeight;
-		float seafoamStrength;
-		float snowLineNoiseScale;
-		float snowLineNoiseAmplitude;
-		float mountainSnowCutoff;
-		float snowLineEase;
-		float shellAmbientOcclusion;
+		float terrainScale{};
+		float maxViewDistance{};
+		float fogEncroach{};
+		float grassDotCutoff{};
+		float snowDotCutoff{};
+		float shellMaxHeight{};
+		float grassNoiseScale{};
+		float snowNoiseScale{};
+		float shellMaxCutoff{};
+		float shellBaseCutoff{};
+		float snowHeight{};
+		float seafoamStrength{};
+		float snowLineNoiseScale{};
+		float snowLineNoiseAmplitude{};
+		float mountainSnowCutoff{};
+		float snowLineEase{};
+		float shellAmbientOcclusion{};
 	};
 
 	struct WaterParams {
@@ -228,6 +228,8 @@ namespace BufferTypes {
 			: blurWidth{ uiManager.mShadowBlurWidth.data() }
 			, blurQuality{ uiManager.mShadowBlurQuality.data() }
 			, exposure{ uiManager.mExposure.data() }
+			, minBias{ uiManager.mMinShadowBias.data() }
+			, maxBias{ uiManager.mMaxShadowBias.data() }
 		{
 			if (blurQuality % 2 == 0)
 				blurQuality += 1;
@@ -257,6 +259,8 @@ namespace BufferTypes {
 		int blurQuality; // odd
 		float blurGridSum{ 0 };
 		float exposure;
+		float minBias;
+		float maxBias;
 	};
 }
 
