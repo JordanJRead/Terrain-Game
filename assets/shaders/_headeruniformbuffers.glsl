@@ -2,7 +2,7 @@
 #define UNIFORM_BUFFER_H
 
 #define IMAGECOUNT 5
-#define CASCADECOUNT 3
+#define CASCADECOUNT 4
 #extension GL_ARB_bindless_texture : require
 
 layout(std140, binding = 0) uniform TerrainParams {

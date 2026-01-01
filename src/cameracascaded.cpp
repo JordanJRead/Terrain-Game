@@ -8,7 +8,7 @@
 
 bool CameraCascaded::isAABBVisible(const AABB& aabb) const {
 	return aabb.intersects(mAABB);
-	return true;
+	//return true;
 }
 
 void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<glm::vec3, 8>& frustumPoints, float min, float max, const AABB& sceneAABB) {

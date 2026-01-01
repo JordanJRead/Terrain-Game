@@ -14,13 +14,20 @@
 template <int CascadeCount>
 class ShadowMapper {
 public:
-	ShadowMapper(const std::array<float, CascadeCount - 1>& splits) : mSplits{ splits }
-	{
+	ShadowMapper(const UIManager& uiManager) {
 		for (size_t i{ 0 }; i < CascadeCount; ++i) {
 			mFramebuffers.emplace_back(2048 * 2, 2048 * 2);
 		}
+
+		for (size_t i{ 0 }; i < CascadeCount - 1; ++i) {
+			mSplits[i] = uiManager.mCascadeSplits[i].data();
+		}
 	}
+
 	void updateCameras(const glm::vec3& dirToLight, const CameraPlayer& playerCamera, const AABB& sceneAABB, const UIManager& uiManager) {
+		for (size_t i{ 0 }; i < CascadeCount - 1; ++i) {
+			mSplits[i] = uiManager.mCascadeSplits[i].data();
+		}
 
 		// Get world space frustum points
 		std::array<glm::vec3, 8> frustumPointsCameraSpace{ playerCamera.getFrustumPointsCameraSpace() };

@@ -351,6 +351,12 @@ public:
 			mMinShadowBias.update();
 			mMaxShadowBias.update();
 
+			for (int i{ 0 }; i < CascadeCount - 1; ++i) {
+				std::string indexString{ std::to_string(i + 1) };
+				ImGui::DragFloat(("Split " + indexString).c_str(), mCascadeSplits[i].getDataPtr(), 0.001f + 0.01f * i * i);
+				mCascadeSplits[i].update();
+			}
+
 			ImGui::End();
 		}
 
@@ -481,7 +487,13 @@ public:
 	UIElement<int> mCurrCamera{ -1 };
 	UIElement<float> mExposure{ 0.1f };
 	UIElement<float> mMinShadowBias{ 2.5f };
-	UIElement<float> mMaxShadowBias{ 3 };
+	UIElement<float> mMaxShadowBias{ 12 };
+	
+	std::array<UIElement<float>, CascadeCount - 1> mCascadeSplits{
+		UIElement<float>{ 0.02f },
+		UIElement<float>{ 0.1f },
+		UIElement<float>{ 0.3f },
+	};
 };
 
 #endif

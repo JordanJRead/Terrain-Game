@@ -68,6 +68,7 @@ public:
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_1_Back-Z.png"
 			} }
 		, mDeferredRenderer{ screenWidth, screenHeight }
+		, mShadowMapper{ uiManager }
 	{
 		mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
 		mMaxTerrainHeight = getHeightWithPerlin(uiManager, mMaxPerlinValues);
@@ -408,7 +409,7 @@ private:
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
 	DeferredRenderer mDeferredRenderer;
-	ShadowMapper<CascadeCount> mShadowMapper{ {0.02f, 0.1f} };
+	ShadowMapper<CascadeCount> mShadowMapper;
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;
