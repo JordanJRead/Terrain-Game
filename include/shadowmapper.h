@@ -51,6 +51,8 @@ public:
 		return mCameras[i];
 	}
 
+	const std::array<glm::vec3, 8>& getOrthoWorldPositions(int i) const { return mCameras[i].getOrthoWorldPositions(); }
+
 	const std::array<float, CascadeCount - 1>& getSplits() const {
 		return mSplits;
 	}

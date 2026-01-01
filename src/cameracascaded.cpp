@@ -7,6 +7,7 @@
 #include <iostream>
 
 bool CameraCascaded::isAABBVisible(const AABB& aabb) const {
+	return aabb.intersects(mAABB);
 	return true;
 }
 
@@ -63,20 +64,32 @@ void CameraCascaded::updateCamera(const glm::vec3& dirToLight, const std::array<
 	for (size_t i{ 0 }; i < 8; ++i) {
 		orthoPointsWorldPositions[i] = inverseViewMatrix * glm::vec4{ orthoCornersLightPositions[i], 1 };
 	}
-	
-	mAABB = AABB{ orthoPointsWorldPositions }; // doesn't have extended front plane values btw
 
-	float t1{ sceneAABB.rayFarthestIntersect(orthoPointsWorldPositions[0], dirToLight) };
-	float t2{ sceneAABB.rayFarthestIntersect(orthoPointsWorldPositions[1], dirToLight) };
-	float t3{ sceneAABB.rayFarthestIntersect(orthoPointsWorldPositions[2], dirToLight) };
-	float t4{ sceneAABB.rayFarthestIntersect(orthoPointsWorldPositions[3], dirToLight) };
-
-	float maxT{ fmax(fmax(t1, t2), fmax(t3, t4)) };
-	if (maxT < 0)
-		maxT = 0;
-	static float offset{ 10.0f };
-	maxZ += offset;
+	std::array<glm::vec3, 8> sceneCorners{ sceneAABB.getCorners() };
+	std::array<float, 8> cornerDistances{ {
+		glm::dot(dirToLight, sceneCorners[0] - orthoPointsWorldPositions[0]),
+		glm::dot(dirToLight, sceneCorners[1] - orthoPointsWorldPositions[0]),
+		glm::dot(dirToLight, sceneCorners[2] - orthoPointsWorldPositions[0]),
+		glm::dot(dirToLight, sceneCorners[3] - orthoPointsWorldPositions[0]),
+		glm::dot(dirToLight, sceneCorners[4] - orthoPointsWorldPositions[0]),
+		glm::dot(dirToLight, sceneCorners[5] - orthoPointsWorldPositions[0]),
+		glm::dot(dirToLight, sceneCorners[6] - orthoPointsWorldPositions[0]),
+		glm::dot(dirToLight, sceneCorners[7] - orthoPointsWorldPositions[0])
+	} };
+	float maxDist{ std::numeric_limits<float>::min() };
+	for (float dist : cornerDistances) {
+		maxDist = fmax(dist, maxDist);
+	}
+	if (maxDist < 0)
+		maxDist = 0;
+	maxZ += maxDist;
+	orthoPointsWorldPositions[0] += dirToLight * maxDist;
+	orthoPointsWorldPositions[1] += dirToLight * maxDist;
+	orthoPointsWorldPositions[2] += dirToLight * maxDist;
+	orthoPointsWorldPositions[3] += dirToLight * maxDist;
+	mAABB = AABB{ orthoPointsWorldPositions };
 
 	mWidth = (maxX - minX + maxY - minY) / 2;
 	mProjectionMatrix = glm::ortho(minX, maxX, minY, maxY, -maxZ, -minZ);
+	mOrthoWorldPositions = orthoPointsWorldPositions;
 }

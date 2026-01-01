@@ -22,6 +22,7 @@ public:
 	float getYaw() const override { return 0; }
 	float getPitch() const override { return 0; }
 	float getWidth() const { return mWidth; }
+	const std::array<glm::vec3, 8>& getOrthoWorldPositions() const { return mOrthoWorldPositions; }
 
 private:
 	glm::vec3 mPosition;
@@ -29,6 +30,7 @@ private:
 	glm::mat4 mProjectionMatrix;
 	float mWidth;
 	AABB mAABB;
+	std::array<glm::vec3, 8> mOrthoWorldPositions;
 };
 
 #endif

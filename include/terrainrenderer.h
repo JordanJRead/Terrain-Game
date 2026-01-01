@@ -28,6 +28,7 @@
 #include "shaders/shaderchunk.h"
 #include "shaders/shaderskybox.h"
 #include "chunkbuffers.h"
+#include "shaders/shaderortho.h"
 
 class TerrainRenderer {
 public:
@@ -222,6 +223,24 @@ public:
 		}
 		else {
 			renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mShaderWaterForward, uiManager, dirToSun, time);
+			
+			// Shadow map ortho volume debugging (messy)
+			if (uiManager.mHDRScale.data() < 10)
+				mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
+			VertexArray orthoVertexArray;
+
+			const std::array<glm::vec3, 8>& orthoPoints{ mShadowMapper.getOrthoWorldPositions(1) };
+			std::vector<float> vertexData;
+			for (const glm::vec3& orthoPoint : orthoPoints) {
+				vertexData.push_back(orthoPoint.x);
+				vertexData.push_back(orthoPoint.y);
+				vertexData.push_back(orthoPoint.z);
+			}
+			std::vector<unsigned int> indices{ 0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 2, 3, 6, 3, 6, 7, 0, 1, 4, 1, 4, 5, 0, 2, 4, 2, 4, 6, 1, 3, 5, 3, 5, 7 };
+			std::vector<int> layout{ 3 };
+			orthoVertexArray.create(vertexData, indices, layout);
+			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
+			mShaderOrtho.render(targetFramebuffer, orthoVertexArray);
 		}
 	}
 
@@ -380,6 +399,7 @@ private:
 	ShaderChunk mShaderTerrainForward;
 	ShaderChunk mShaderWaterForward;
 	ShaderSkybox mSkyboxShader;
+	ShaderOrtho mShaderOrtho{ "assets/shaders/ortho.vert", "assets/shaders/ortho.frag" };
 	Cubemap mDaySkybox;
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;

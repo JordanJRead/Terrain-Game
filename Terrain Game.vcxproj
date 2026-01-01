@@ -185,6 +185,7 @@
     <ClInclude Include="include\framebufferdepth.h" />
     <ClInclude Include="include\framebufferi.h" />
     <ClInclude Include="include\shaders\shaderchunk.h" />
+    <ClInclude Include="include\shaders\shaderortho.h" />
     <ClInclude Include="include\shaders\shaderskybox.h" />
     <ClInclude Include="include\aabb.h" />
     <ClInclude Include="include\app.h" />

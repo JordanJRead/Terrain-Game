@@ -53,6 +53,19 @@ struct AABB {
 		return tFar;
 	}
 
+	std::array<glm::vec3, 8> getCorners() const {
+		std::array<glm::vec3, 8> corners;
+		corners[0] = { mMin.x, mMin.y, mMin.z };
+		corners[0] = { mMax.x, mMin.y, mMin.z };
+		corners[0] = { mMin.x, mMax.y, mMin.z };
+		corners[0] = { mMax.x, mMax.y, mMin.z };
+		corners[0] = { mMin.x, mMin.y, mMax.z };
+		corners[0] = { mMax.x, mMin.y, mMax.z };
+		corners[0] = { mMin.x, mMax.y, mMax.z };
+		corners[0] = { mMax.x, mMax.y, mMax.z };
+		return corners;
+	};
+
 	bool isPointInside(const glm::vec3& point) {
 		return point.x > mMin.x && point.x < mMax.x
 			&& point.y > mMin.y && point.y < mMax.y
