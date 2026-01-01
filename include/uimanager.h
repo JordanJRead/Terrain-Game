@@ -203,10 +203,10 @@ public:
 			ImGui::DragFloat("Mie density falloff", mAtmosphereMieDensityFalloff.getDataPtr(), 0.001);
 			mAtmosphereMieDensityFalloff.update();
 
-			ImGui::DragFloat("Rayleigh density scale", mAtmosphereRayleighDensityScale.getDataPtr(), 0.01);
+			ImGui::DragFloat("Rayleigh density scale", mAtmosphereRayleighDensityScale.getDataPtr(), 0.001);
 			mAtmosphereRayleighDensityScale.update();
 
-			ImGui::DragFloat("Mie density scale", mAtmosphereMieDensityScale.getDataPtr(), 0.01);
+			ImGui::DragFloat("Mie density scale", mAtmosphereMieDensityScale.getDataPtr(), 0.001);
 			mAtmosphereMieDensityScale.update();
 
 			ImGui::DragFloat3("Rayleigh scattering", (float*)mAtmosphereRayleighScattering.getDataPtr(), 1);
@@ -403,7 +403,7 @@ public:
 	UIElement<float> mLakeExponent{ 100 }; // 100 for quintic, 5 not
 
 	// Plane Chunking
-	UIElement<int>    mChunkCount{ 19 };
+	UIElement<int>    mChunkCount{ 180 };
 	UIElement<float>  mTerrainSpan{ 5000 };
 	UIElement<float>    mLowQualityVertexDensity{ 0.15 };
 	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?

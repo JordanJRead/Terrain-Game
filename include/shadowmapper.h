@@ -9,8 +9,7 @@
 #include <vector>
 #include "framebufferdepth.h"
 #include "imagecount.h"
-#include "shaders/shaderterraindepth.h"
-#include "shaders/shaderwaterdepth.h"
+#include "shaders/shaderchunk.h"
 
 template <int CascadeCount>
 class ShadowMapper {
@@ -68,8 +67,8 @@ public:
 		mFramebuffers[i].getDepthTexture().use(GL_TEXTURE_2D, unit);
 	}
 
-	ShaderTerrainDepth mTerrainDepthShader{ "assets/shaders/terraindepth.vert", "assets/shaders/terraindepth.frag" };
-	ShaderWaterDepth mWaterDepthShader{ "assets/shaders/waterdepth.vert", "assets/shaders/waterdepth.frag" };
+	ShaderChunk mTerrainDepthShader{ "assets/shaders/terraindepth.vert", "assets/shaders/terraindepth.frag" };
+	ShaderChunk mWaterDepthShader{ "assets/shaders/waterdepth.vert", "assets/shaders/waterdepth.frag" };
 
 private:
 	std::array<CameraCascaded, CascadeCount> mCameras;

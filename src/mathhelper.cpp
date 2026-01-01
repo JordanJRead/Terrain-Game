@@ -7,6 +7,7 @@
 #include <optional>
 #include "uimanager.h"
 #include "mathhelper.h"
+#include <cmath>
 
 bool MathHelper::floatEqual(float x, float y, float tol) {
 	return x - y < tol;
@@ -54,8 +55,8 @@ std::optional<double> MathHelper::getSmallestQuadratic(double a, double b, doubl
 
 glm::vec3 MathHelper::getClosestWorldStepPosition(const glm::vec3 pos, float stepSize) {
 	glm::vec3 stepSizesAway = pos / stepSize;
-	stepSizesAway = glm::vec3{ (int)stepSizesAway.x, (int)stepSizesAway.y, (int)stepSizesAway.z };
-	return stepSizesAway * stepSize;
+	stepSizesAway = glm::vec3{ floorf(stepSizesAway.x), floorf(stepSizesAway.y), floorf(stepSizesAway.z) };
+	return (stepSizesAway + 0.5f) * stepSize;
 }
 
 

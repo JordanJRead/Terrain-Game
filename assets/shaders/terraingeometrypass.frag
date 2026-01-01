@@ -4,7 +4,7 @@
 in VertOut {
 	vec3 groundWorldPos;
 	vec3 worldPos;
-	flat int shellIndex;
+	float shellProgress;
 } fragIn;
 
 layout(location=0) out vec4 OutGroundWorldPosShellProgress;
@@ -29,7 +29,7 @@ void main() {
 
 	OutWorldPosMountain = vec4(fragIn.worldPos, mountain);
 	
-	bool isShell = fragIn.shellIndex >= 0;
+	bool isShell = fragIn.shellProgress > 0;
 
 	// Terrain
 	float groundHeight = fragIn.groundWorldPos.y;
@@ -43,8 +43,7 @@ void main() {
 	float actualSnowHeight = artisticParams.snowHeight + normToNegPos(perlin(flatWorldPos * artisticParams.snowLineNoiseScale, 0).x) * artisticParams.snowLineNoiseAmplitude;
 	bool isSnow = actualSnowHeight < groundHeight && mountain > artisticParams.mountainSnowCutoff;
 	bool isGrass = !isSnow;
-	float shellProgress = float(fragIn.shellIndex + 1) / artisticParams.shellCount;
-	OutGroundWorldPosShellProgress = vec4(fragIn.groundWorldPos, shellProgress);
+	OutGroundWorldPosShellProgress = vec4(fragIn.groundWorldPos, fragIn.shellProgress);
 
 	// Shell blade height
 	float shellScale = isGrass ? artisticParams.grassNoiseScale : artisticParams.snowNoiseScale;
@@ -90,7 +89,7 @@ void main() {
 	// Get smaller at harder dots
 	randomTexelHeight *= ((currDot - currDotCutoff) / (1 - currDotCutoff));
 
-	float shellCutoff = artisticParams.shellBaseCutoff * int(isGrass) + shellProgress * (artisticParams.shellMaxCutoff - artisticParams.shellBaseCutoff);
+	float shellCutoff = artisticParams.shellBaseCutoff * int(isGrass) + fragIn.shellProgress * (artisticParams.shellMaxCutoff - artisticParams.shellBaseCutoff);
 	if (isGrass)
 		shellCutoff += extreme(mountain); // Grass can't grow on mountains
 

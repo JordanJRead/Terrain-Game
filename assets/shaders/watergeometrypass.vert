@@ -9,7 +9,6 @@ out VertOut {
 
 // Per plane
 uniform float planeWorldWidth;
-uniform vec3 planePos;
 
 #include "_headeruniformbuffers.glsl";
 #include "_headermath.glsl";
@@ -39,7 +38,8 @@ vec3 getWaterHeight(vec2 pos) {
 }
 
 void main() {
-	vec4 worldPos = vec4(vPos.x * planeWorldWidth + planePos.x, planePos.y, vPos.y * planeWorldWidth + planePos.z, 1);
+	vec2 flatPlanePos = vec2(chunkData.data[gl_InstanceID * 2 + 0], chunkData.data[gl_InstanceID * 2 + 1]);
+	vec4 worldPos = vec4(vPos.x * planeWorldWidth + flatPlanePos.x, waterParams.height, vPos.y * planeWorldWidth + flatPlanePos.y, 1);
 	vec2 flatWorldPos = worldPos.xz;
 	vec3 waterInfo = getWaterHeight(flatWorldPos);
 	worldPos.y += waterInfo.x;

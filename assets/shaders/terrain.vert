@@ -8,6 +8,7 @@ out VertOut {
 	vec3 groundWorldPos;
 	vec3 worldPos;
 	flat bool isEdge;
+	float shellProgress;
 } vertOut;
 
 #include "_headeruniformbuffers.glsl"
@@ -15,22 +16,23 @@ out VertOut {
 
 // Per plane
 uniform float planeWorldWidth;
-uniform vec3 planePos;
 out flat int shellIndex;
 
 void main() {
-	vec4 worldPos = vec4(vPos.x * planeWorldWidth + planePos.x, planePos.y, vPos.y * planeWorldWidth + planePos.z, 1);
+	// Sample plane info
+	vec2 flatPlanePos = vec2(chunkData.data[gl_InstanceID * 3 + 0], chunkData.data[gl_InstanceID * 3 + 1]);
+	float shellProgress = chunkData.data[gl_InstanceID * 3 + 2];
+	vertOut.shellProgress = shellProgress;
+
+	// Set position
+	vec4 worldPos = vec4(vPos.x * planeWorldWidth + flatPlanePos.x, 0, vPos.y * planeWorldWidth + flatPlanePos.y, 1);
 	vec2 flatWorldPos = worldPos.xz;
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	vec3 normal = normalize(vec3(-terrainInfo.y, 1, -terrainInfo.z));
 	worldPos.y += terrainInfo.x;
-
 	vertOut.groundWorldPos = worldPos.xyz;
-	shellIndex = artisticParams.shellCount - 1 - gl_InstanceID; // -1 to shellCount - 1, in reverse order to minimize overdraw
-	if (shellIndex >= 0) {
-		float shellProgress = float(shellIndex + 1) / artisticParams.shellCount;
-		worldPos.xyz += normal * shellProgress * artisticParams.shellMaxHeight;
-	}
+
+	worldPos.xyz += normal * shellProgress * artisticParams.shellMaxHeight;
 
 	vertOut.worldPos = worldPos.xyz;
 	vertOut.viewPos = (perFrameInfo.viewMatrix * worldPos).xyz;

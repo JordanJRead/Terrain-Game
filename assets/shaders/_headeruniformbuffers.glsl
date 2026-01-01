@@ -30,7 +30,6 @@ layout(std140, binding = 1) uniform ArtisticParams {
 	uniform float fogEncroach;
 	uniform float grassDotCutoff;
 	uniform float snowDotCutoff;
-	uniform int   shellCount;
 	uniform float shellMaxHeight;
 	uniform float grassNoiseScale;
 	uniform float snowNoiseScale;
@@ -111,5 +110,9 @@ layout(std430, binding = 7) buffer ShadowInfo {
 	int blurQuality; // odd
 	float blurGridSum;
 } shadowInfo;
+
+layout(std430, binding = 8) buffer ChunkData {
+	float data[];
+} chunkData;
 
 #endif

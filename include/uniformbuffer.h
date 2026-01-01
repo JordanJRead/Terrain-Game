@@ -53,14 +53,13 @@ namespace BufferTypes {
 	};
 
 	struct ArtisticParams {
-		ArtisticParams() : shellCount{ -1 } {}
+		ArtisticParams() {}
 		ArtisticParams(const UIManager& uiManager)
 			: terrainScale{ uiManager.mTerrainScale.data() }
 			, maxViewDistance{ uiManager.mTerrainSpan.data() * 0.5f * 0.95f }
 			, fogEncroach{ maxViewDistance * 0.1f }
 			, grassDotCutoff{ uiManager.mGrassDotCutoff.data() }
 			, snowDotCutoff{ uiManager.mSnowDotCutoff.data() }
-			, shellCount{ uiManager.mShellCount.data() }
 			, shellMaxHeight{ uiManager.mShellMaxHeight.data() }
 			, grassNoiseScale{ uiManager.mGrassNoiseScale.data() }
 			, snowNoiseScale{ uiManager.mSnowNoiseScale.data() }
@@ -73,13 +72,7 @@ namespace BufferTypes {
 			, mountainSnowCutoff{ uiManager.mMountainSnowCutoff.data() }
 			, snowLineEase{ uiManager.mSnowLineEase.data() }
 			, shellAmbientOcclusion{ uiManager.mShellAmbientOcclusion.data() }
-		{
-		}
-		ArtisticParams(const UIManager& uiManager, int newShellCount)
-			: ArtisticParams{ uiManager }
-		{
-			shellCount = newShellCount;
-		}
+		{}
 		bool operator==(const ArtisticParams&) const = default;
 
 		float terrainScale;
@@ -87,7 +80,6 @@ namespace BufferTypes {
 		float fogEncroach;
 		float grassDotCutoff;
 		float snowDotCutoff;
-		int   shellCount;
 		float shellMaxHeight;
 		float grassNoiseScale;
 		float snowNoiseScale;

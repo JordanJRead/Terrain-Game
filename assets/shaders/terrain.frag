@@ -6,6 +6,7 @@ in VertOut {
 	vec3 groundWorldPos;
 	vec3 worldPos;
 	flat bool isEdge;
+	float shellProgress;
 } fragIn;
 
 out vec4 FragColor;
@@ -16,9 +17,6 @@ uniform samplerCube skybox;
 #include "_headeruniformbuffers.glsl"
 #include "_headerterraininfo.glsl"
 
-// Per plane
-in flat int shellIndex;
-
 void main() {
 	if (fragIn.isEdge) {
 		FragColor = vec4(1, 1, 1, 1);
@@ -27,7 +25,7 @@ void main() {
 	vec2 flatWorldPos = fragIn.groundWorldPos.xz;
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	
-	bool isShell = shellIndex >= 0;
+	bool isShell = fragIn.shellProgress > 0;
 
 	// Terrain
 	float groundHeight = fragIn.groundWorldPos.y;
@@ -49,8 +47,7 @@ void main() {
 	bool isGrass = !isSnow;
 	float grassperlin = perlin(flatWorldPos * 0.1, 0).x;
 	vec3 shellAlbedo = isSnow ? colours.snowColour : (colours.grassColour1 * grassperlin + colours.grassColour2 * (1 - grassperlin));
-	float shellProgress = float(shellIndex + 1) / artisticParams.shellCount;
-	shellAlbedo = shellAlbedo - shellAlbedo * (1 - shellProgress) * artisticParams.shellAmbientOcclusion;
+	shellAlbedo = shellAlbedo - shellAlbedo * (1 - fragIn.shellProgress) * artisticParams.shellAmbientOcclusion;
 
 	// Shell blade height
 	float shellScale = isGrass ? artisticParams.grassNoiseScale : artisticParams.snowNoiseScale;
@@ -95,7 +92,7 @@ void main() {
 	// Get smaller at harder dots
 	randomTexelHeight *= ((currDot - currDotCutoff) / (1 - currDotCutoff));
 
-	float shellCutoff = artisticParams.shellBaseCutoff * int(isGrass) + shellProgress * (artisticParams.shellMaxCutoff - artisticParams.shellBaseCutoff);
+	float shellCutoff = artisticParams.shellBaseCutoff * int(isGrass) + fragIn.shellProgress * (artisticParams.shellMaxCutoff - artisticParams.shellBaseCutoff);
 	if (isGrass)
 		shellCutoff += extreme(mountain); // Grass can't grow on mountains
 

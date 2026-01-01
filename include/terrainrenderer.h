@@ -25,11 +25,9 @@
 #include "aabb.h"
 #include "shadowmapper.h"
 #include "shaders/shaderterrainimage.h"
-#include "shaders/shaderterrainforward.h"
-#include "shaders/shaderterrainchunki.h"
-#include "shaders/shaderwaterchunki.h"
-#include "shaders/shaderwaterforward.h"
+#include "shaders/shaderchunk.h"
 #include "shaders/shaderskybox.h"
+#include "chunkbuffers.h"
 
 class TerrainRenderer {
 public:
@@ -41,7 +39,7 @@ public:
 
 		, mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
 		, mShaderTerrainForward{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
-		, mWaterShader{ "assets/shaders/water.vert", "assets/shaders/water.frag" }
+		, mShaderWaterForward{ "assets/shaders/water.vert", "assets/shaders/water.frag" }
 		, mSkyboxShader{ "assets/shaders/skybox.vert", "assets/shaders/skybox.frag" }
 
 		, mImages{ {
@@ -187,6 +185,7 @@ public:
 
 		// Render skybox
 		if (!uiManager.mIsDeferredRendering.data()) {
+			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 			mSkyboxShader.setRenderData(mDaySkybox);
 			mSkyboxShader.render(targetFramebuffer, mCubeVertices.getVertexArray());
 		}
@@ -216,11 +215,11 @@ public:
 			mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
 		}
 		else {
-			renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mWaterShader, uiManager, dirToSun, time);
+			renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mShaderWaterForward, uiManager, dirToSun, time);
 		}
 	}
 
-	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& chunkCameraCenterPosition, ShaderTerrainChunkI& terrainShader, const ShaderWaterChunkI& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
+	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderChunk& terrainShader, ShaderChunk& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -228,7 +227,7 @@ public:
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
 				
- 				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(chunkCameraCenterPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
+ 				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(playerCameraPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
 				// Frustum culling
 				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0, chunkPos.x + chunkWidth / 2.0 };
@@ -244,46 +243,49 @@ public:
 
 				if (isVisible) {
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
-					bool highQuality{ chunkDist < uiManager.mVertexLODDistanceNear.data() };
+					bool isCloseChunk{ x >= -1 && x <= 1 && z >= -1 && z <= 1 };
+					bool highQuality{ isCloseChunk || chunkDist < uiManager.mVertexLODDistanceNear.data() };
 					bool mediumQuality{ chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
-					PlaneGPU& currPlane{ highQuality ? mHighQualityPlane : (mediumQuality ? mMediumQualityPlane : mLowQualityPlane) };
+					int qualityIndex{ highQuality ? 2 : (mediumQuality ? 1 : 0) };
 
 					// LOD shell count
-					int newShellCount{ uiManager.mShellCount.data() };
-					if (!depthPass) {
+					int shellCount{ uiManager.mShellCount.data() };
+					if (depthPass)
+						shellCount = 0;
+					else if (!isCloseChunk) {
 						int oldShellCount{ uiManager.mShellCount.data() };
 						float shellLODDistance{ uiManager.mShellLODDistance.data() };
 						if (chunkDist > shellLODDistance * 4) {
-							newShellCount = oldShellCount > 3 ? 3 : oldShellCount;
-							mArtisticParams.updateGPU({ uiManager, newShellCount });
+							shellCount = oldShellCount > 3 ? 3 : oldShellCount;
 						}
 						if (chunkDist > shellLODDistance * 2) {
-							newShellCount = oldShellCount > 7 ? 7 : oldShellCount;
-							mArtisticParams.updateGPU({ uiManager, newShellCount });
+							shellCount = oldShellCount > 7 ? 7 : oldShellCount;
 						}
 						else if (chunkDist > shellLODDistance) {
-							newShellCount = oldShellCount > 10 ? 10 : oldShellCount;
-							mArtisticParams.updateGPU({ uiManager, newShellCount }); // TODO move maxShellCount into uniform variable?
+							shellCount = oldShellCount > 10 ? 10 : oldShellCount;
 						}
 					}
-					else {
-						newShellCount = 0;
-						mArtisticParams.updateGPU({ uiManager, newShellCount });
-					}
 
-					// Draw terrain
-					glDisable(GL_BLEND);
-					terrainShader.setRenderData(*this, { chunkPos.x, 0, chunkPos.z }, chunkWidth, newShellCount, mDaySkybox);
-					terrainShader.render(targetFramebuffer, currPlane.getVertexArray());
-
-					// Draw water
-					waterShader.setRenderData(*this, { chunkPos.x, uiManager.mWaterHeight.data(), chunkPos.z }, chunkWidth, mDaySkybox);
-					waterShader.render(targetFramebuffer, mReallyLowQualityPlane.getVertexArray());
-
-					mArtisticParams.updateGPU({ uiManager });
+					mChunkBuffers.addTerrainChunk(qualityIndex, glm::vec2{ chunkPos.x, chunkPos.z }, shellCount);
+					mChunkBuffers.addWaterChunk(glm::vec2{ chunkPos.x, chunkPos.z });
 				}
 			}
 		}
+
+		// Draw terrain
+		glDisable(GL_BLEND);
+		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(0), mDaySkybox);
+		terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
+
+		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(1), mDaySkybox);
+		terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
+
+		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(2), mDaySkybox);
+		terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
+
+		// Draw water
+		waterShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushWater(), mDaySkybox);
+		waterShader.render(targetFramebuffer, mReallyLowQualityPlane.getVertexArray());
 	}
 
 	AABB getSceneWorldAABB(const glm::vec3& playerCameraPos, const UIManager& uiManager) const {
@@ -360,6 +362,7 @@ private:
 	UniformBuffer<BufferTypes::TerrainImagesInfo> mTerrainImagesInfo{ 5, true };
 	UniformBuffer<BufferTypes::AtmosphereInfo> mAtmosphereInfo{ 6 };
 	UniformBuffer<BufferTypes::ShadowInfo> mShadowMatrices{ 7, true };
+	ChunkBuffers<3> mChunkBuffers{ 8 };
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;
@@ -368,8 +371,8 @@ private:
 	std::array<float, 4> mMaxPerlinValues{ {1, 0, 0, 1} };
 
 	ShaderTerrainImage mShaderTerrainImage;
-	ShaderTerrainForward mShaderTerrainForward;
-	ShaderWaterForward mWaterShader;
+	ShaderChunk mShaderTerrainForward;
+	ShaderChunk mShaderWaterForward;
 	ShaderSkybox mSkyboxShader;
 	Cubemap mDaySkybox;
 	Cubemap mNightSkybox;
@@ -380,7 +383,8 @@ private:
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;
 	PlaneGPU mHighQualityPlane;
-	PlaneGPU mReallyLowQualityPlane;
+
+	PlaneGPU mReallyLowQualityPlane; // For water only
 
 	VertexArray mScreenQuad;
 
