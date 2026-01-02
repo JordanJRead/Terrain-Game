@@ -195,7 +195,8 @@ namespace BufferTypes {
 			, mieDensityFalloff{ uiManager.mAtmosphereMieDensityFalloff.data() }
 			, rayleighDensityScale{ uiManager.mAtmosphereRayleighDensityScale.data() * 0.0001F }
 			, mieDensityScale{ uiManager.mAtmosphereMieDensityScale.data() * 0.0001F }
-			, rayleighScattering{ uiManager.mAtmosphereRayleighScattering.data(), 1}
+			//, rayleighScattering{ uiManager.mAtmosphereRayleighScatteringStrength.data() * glm::vec3{ 4.7, 12.7, 20.5 }, 1 }
+		    , rayleighScattering{ uiManager.mAtmosphereRayleighScatteringStrength.data() * glm::vec3{ 1000000000000 / pow(700, 4), 1000000000000 / pow(530, 4), 1000000000000 / pow(440, 4)}, 1 }
 			, mieScattering{ uiManager.mAtmosphereMieScattering.data(), 1 }
 			, rayleighG{ uiManager.mAtmosphereRayleighG.data() }
 			, mieG{ uiManager.mAtmosphereMieG.data() }

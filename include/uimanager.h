@@ -209,8 +209,8 @@ public:
 			ImGui::DragFloat("Mie density scale", mAtmosphereMieDensityScale.getDataPtr(), 0.001f);
 			mAtmosphereMieDensityScale.update();
 
-			ImGui::DragFloat3("Rayleigh scattering", (float*)mAtmosphereRayleighScattering.getDataPtr(), 1);
-			mAtmosphereRayleighScattering.update();
+			ImGui::DragFloat("Rayleigh scattering strength", mAtmosphereRayleighScatteringStrength.getDataPtr(), 1);
+			mAtmosphereRayleighScatteringStrength.update();
 
 			ImGui::DragFloat3("Mie scattering", (float*)mAtmosphereMieScattering.getDataPtr(), 1);
 			mAtmosphereMieScattering.update();
@@ -472,7 +472,7 @@ public:
 	UIElement<float> mAtmosphereMieDensityFalloff{ 5 };
 	UIElement<float> mAtmosphereRayleighDensityScale{ 0.004f };
 	UIElement<float> mAtmosphereMieDensityScale{ 0.06f };
-	UIElement<glm::vec3> mAtmosphereRayleighScattering{ {5, 106, 594} };
+	UIElement<float> mAtmosphereRayleighScatteringStrength{ 20 };
 	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957f };
