@@ -302,20 +302,20 @@ public:
 			}
 		}
 
+		// Draw water
+		waterShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushWater(), mDaySkybox);
+		waterShader.render(targetFramebuffer, mReallyLowQualityPlane.getVertexArray());
+
 		// Draw terrain
 		glDisable(GL_BLEND);
-		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(0), mDaySkybox);
-		terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
+		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(2), mDaySkybox);
+		terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(1), mDaySkybox);
 		terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
 
-		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(2), mDaySkybox);
-		terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
-
-		// Draw water
-		waterShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushWater(), mDaySkybox);
-		waterShader.render(targetFramebuffer, mReallyLowQualityPlane.getVertexArray());
+		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(0), mDaySkybox);
+		terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
 	}
 
 	AABB getSceneWorldAABB(const glm::vec3& playerCameraPos, const UIManager& uiManager) const {
