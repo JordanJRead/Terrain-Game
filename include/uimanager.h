@@ -480,7 +480,7 @@ public:
 	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957f };
-	UIElement<float> mHDRScale{ 15 };
+	UIElement<float> mHDRScale{ 25 };
 	UIElement<int> mRayAtmosphereStepCount{ 30 };
 	UIElement<int> mRaySunStepCount{ 8 };
 	UIElement<float> mAtmosphereBrightness{ 25 };
