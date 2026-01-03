@@ -483,7 +483,7 @@ public:
 	UIElement<float> mHDRScale{ 15 };
 	UIElement<int> mRayAtmosphereStepCount{ 30 };
 	UIElement<int> mRaySunStepCount{ 8 };
-	UIElement<float> mAtmosphereBrightness{ 50 };
+	UIElement<float> mAtmosphereBrightness{ 25 };
 	UIElement<float> mAtmosphereDitherStrength{ 1.8f };
 
 	// Shadow Parameters
