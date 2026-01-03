@@ -21,7 +21,7 @@ public:
 	void updatePixelDim(int pixelDim);
 	void setWorldSize(float worldSize);
 	void setWorldPos(const glm::vec2& worldPos);
-	void updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader, int i);
+	void updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader);
 
 private:
 	FramebufferColour mFramebuffer;

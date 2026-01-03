@@ -31,8 +31,7 @@ void TerrainImageGenerator::setWorldPos(const glm::vec2& worldPos) {
 	mWorldPos = worldPos;
 }
 
-void TerrainImageGenerator::updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader, int i) { // move shader to be static?
+void TerrainImageGenerator::updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader) {
 	terrainImageShader.setRenderData(mWorldPos, mWorldSize);
 	terrainImageShader.render(mFramebuffer, screenQuad);
-	std::cerr << i << "\n";
 }

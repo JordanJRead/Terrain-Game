@@ -101,7 +101,7 @@ public:
 		mAtmosphereInfo.updateGPU(uiManager);
 
 		for (int i{ 0 }; i < ImageCount; ++i) {
-			mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage, i);
+			mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage);
 		}
 	}
 
@@ -181,7 +181,7 @@ public:
 			}
 
 			if (hasImageChanged || hasTerrainChanged) {
-				mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage, i); // binds another shader
+				mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage); // binds another shader
 			}
 		}
 		mTerrainImagesInfo.updateGPU({ uiManager.getImageSizes(), mImageWorldPositions });
