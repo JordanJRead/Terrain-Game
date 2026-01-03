@@ -17,6 +17,7 @@ ShaderDeferred::ShaderDeferred(const std::string& vertPath, const std::string& f
 		std::string indexString{ std::to_string(cascadeI) };
 		setInt("shadowMaps[" + indexString + "]", textureUnit++);
 	}
+	setInt("blueNoise", textureUnit++);
 }
 
 void ShaderDeferred::setRenderData(const TerrainRenderer& terrainRenderer) {
@@ -34,6 +35,8 @@ void ShaderDeferred::setRenderData(const TerrainRenderer& terrainRenderer) {
 	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
 		shadowMapper.getFramebuffer(cascadeI).getDepthTexture().use(GL_TEXTURE_2D, textureUnit++);
 	}
+
+	deferredRenderer.bindNoiseTexture(textureUnit++);
 }
 
 void ShaderDeferred::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {

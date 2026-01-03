@@ -117,6 +117,9 @@
     <ClCompile Include="src\shaders\shaderchunk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\noise.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="libraries\glfw3dll.lib" />
@@ -240,6 +243,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\chunkbuffers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shaders\shaderortho.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\noise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

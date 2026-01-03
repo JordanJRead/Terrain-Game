@@ -158,6 +158,7 @@
     <ClCompile Include="src\cameraplayer.cpp" />
     <ClCompile Include="src\cubemap.cpp" />
     <ClCompile Include="src\glad.c" />
+    <ClCompile Include="src\noise.cpp" />
     <ClCompile Include="src\physics.cpp" />
     <ClCompile Include="src\physicsobject.cpp" />
     <ClCompile Include="src\planegpu.cpp" />
@@ -186,6 +187,7 @@
   <ItemGroup>
     <ClInclude Include="include\framebufferdepth.h" />
     <ClInclude Include="include\framebufferi.h" />
+    <ClInclude Include="include\noise.h" />
     <ClInclude Include="include\shaders\shaderchunk.h" />
     <ClInclude Include="include\shaders\shaderortho.h" />
     <ClInclude Include="include\shaders\shaderskybox.h" />

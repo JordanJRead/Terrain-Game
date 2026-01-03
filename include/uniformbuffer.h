@@ -202,6 +202,7 @@ namespace BufferTypes {
 			, rayAtmosphereStepCount{ uiManager.mRayAtmosphereStepCount.data() }
 			, raySunStepCount{ uiManager.mRaySunStepCount.data() }
 			, brightness{ uiManager.mAtmosphereBrightness.data() }
+			, ditherStrength{ uiManager.mAtmosphereDitherStrength.data() }
 		{
 		}
 		bool operator==(const AtmosphereInfo&) const = default;
@@ -220,6 +221,7 @@ namespace BufferTypes {
 		int rayAtmosphereStepCount{};
 		int raySunStepCount{};
 		float brightness{};
+		float ditherStrength;
 	};
 
 	struct ShadowInfo {

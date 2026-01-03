@@ -100,6 +100,7 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 	int rayAtmosphereStepCount;
 	int raySunStepCount;
 	float brightness;
+	float ditherStrength;
 } atmosphereInfo;
 
 layout(std430, binding = 7) buffer ShadowInfo {

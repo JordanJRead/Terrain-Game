@@ -231,6 +231,10 @@ public:
 			mRaySunStepCount.update();
 
 			ImGui::DragFloat("Atmosphere brightness", mAtmosphereBrightness.getDataPtr(), 0.05f);
+			mAtmosphereBrightness.update();
+
+			ImGui::DragFloat("Atmopshere dither strength", mAtmosphereDitherStrength.getDataPtr(), 0.1f);
+			mAtmosphereDitherStrength.update();
 
 			ImGui::End();
 
@@ -477,17 +481,18 @@ public:
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957f };
 	UIElement<float> mHDRScale{ 15 };
-	UIElement<int> mRayAtmosphereStepCount{ 10 };
+	UIElement<int> mRayAtmosphereStepCount{ 30 };
 	UIElement<int> mRaySunStepCount{ 8 };
 	UIElement<float> mAtmosphereBrightness{ 50 };
+	UIElement<float> mAtmosphereDitherStrength{ 1.8f };
 
 	// Shadow Parameters
 	UIElement<float> mShadowBlurWidth{ 0.5f };
 	UIElement<int> mShadowBlurQuality{ 7 };
 	UIElement<int> mCurrCamera{ -1 };
 	UIElement<float> mExposure{ 0.1f };
-	UIElement<float> mMinShadowBias{ 2.5f };
-	UIElement<float> mMaxShadowBias{ 12 };
+	UIElement<float> mMinShadowBias{ 2.7f };
+	UIElement<float> mMaxShadowBias{ 3.5f };
 	
 	std::array<UIElement<float>, CascadeCount - 1> mCascadeSplits{
 		UIElement<float>{ 0.02f },

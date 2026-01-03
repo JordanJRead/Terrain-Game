@@ -26,6 +26,7 @@ vec3 getWaterAlbedo(vec3 worldPos) {
 uniform sampler2D GBuffer_GroundWorldPosShellProgress;
 uniform sampler2D GBuffer_WorldPosMountain;
 uniform sampler2D GBuffer_NormalDoesTexelExist;
+uniform sampler2D blueNoise;
 
 vec4 getTerrainAlbedoWet(vec3 groundWorldPos, float shellProgress, float mountain, bool doesShellExist) {
 	vec2 flatWorldPos = groundWorldPos.xz;
@@ -165,6 +166,7 @@ float phase(float cosTheta, float g) {
 }
 
 vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0)) {
+	vec2 noiseSamplePos = gl_FragCoord.xy / textureSize(blueNoise, 0).xy;
 	vec2 intersectionTs = rayAtmosphereIntersection(rayPos, rayDir);
 	if (intersectionTs.x < 0 && intersectionTs.y < 0)
 		return albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true);
@@ -183,7 +185,7 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 	float totalDistance = t1 - t0;
 	float dx = totalDistance / stepCount;
 
-	vec3 samplePos = a + rayDir * dx;
+	vec3 samplePos = a + rayDir * dx - texture(blueNoise, noiseSamplePos).r * atmosphereInfo.ditherStrength;
 	vec3 transmittance = vec3(1, 1, 1);
 	vec3 inScatteredLight = vec3(0, 0, 0);
 	for (int n = 0; n < stepCount; ++n) {
