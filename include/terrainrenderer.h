@@ -190,7 +190,7 @@ public:
 
 		// Render skybox
 		if (!uiManager.mIsDeferredRendering.data()) {
-			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
+			mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
 			mSkyboxShader.setRenderData(mDaySkybox);
 			mSkyboxShader.render(targetFramebuffer, mCubeVertices.getVertexArray());
 		}
@@ -222,7 +222,7 @@ public:
 				renderTerrain(depthFramebuffer, depthCamera, camera.getPosition(), mShadowMapper.mTerrainDepthShader, mShadowMapper.mWaterDepthShader, uiManager, dirToSun, time, true);
 			}
 
-			mPerFrameInfo.updateGPU({ camera, dirToSun, time });
+			mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
 			mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
 		}
 		else {
@@ -244,7 +244,7 @@ public:
 					vertexData.push_back(orthoPoint.z);
 				}
 				orthoVertexArray.create(vertexData, indices, layout);
-				mPerFrameInfo.updateGPU({ camera, dirToSun, time });
+				mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
 				mShaderOrtho.setColour(i == 0 ? glm::vec3{ 1, 0, 0 } : (i == 1 ? glm::vec3{ 0, 1, 0 } : glm::vec3{ 0, 0, 1 }));
 				mShaderOrtho.render(targetFramebuffer, orthoVertexArray);
 			}
@@ -252,7 +252,7 @@ public:
 	}
 
 	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderChunk& terrainShader, ShaderChunk& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
-		mPerFrameInfo.updateGPU({ camera, dirToSun, time });
+		mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
 

@@ -153,7 +153,7 @@ namespace BufferTypes {
 
 	struct PerFrameInfo {
 		PerFrameInfo() : time{ -1 } {}
-		PerFrameInfo(const CameraI& camera, glm::vec3 _dirToSun, float _time)
+		PerFrameInfo(const CameraI& camera, glm::vec3 _dirToSun, float _time, const UIManager& uiManager)
 			: viewMatrix{ camera.getViewMatrix() }
 			, projectionMatrix{ camera.getProjectionMatrix() }
 			, cameraPos{ camera.getPosition(), 1 }
@@ -165,6 +165,7 @@ namespace BufferTypes {
 			, pitch{ camera.getPitch() }
 			, cameraNear{ camera.getNearPlaneDist() }
 			, cameraFar{ camera.getFarPlaneDist() }
+			, dayTime{ uiManager.mDayTime.data() }
 		{ }
 		bool operator==(const PerFrameInfo&) const = default;
 
@@ -179,6 +180,7 @@ namespace BufferTypes {
 		float pitch{};
 		float cameraNear{};
 		float cameraFar{};
+		float dayTime;
 	};
 
 	struct TerrainImagesInfo {

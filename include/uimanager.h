@@ -309,7 +309,7 @@ public:
 			// Day
 			ImGui::Begin("Day");
 
-			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001f, 0, 2);
+			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001f);
 			if (mDayTime.mData > 2)
 				mDayTime.mData -= 2;
 			if (mDayTime.mData < 0)

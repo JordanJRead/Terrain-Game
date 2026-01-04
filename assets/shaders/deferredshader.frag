@@ -224,26 +224,30 @@ bool isStarVisibleInSplit(vec3 dir, int i) {
 }
 
  vec3 getStarColor(vec3 dir) {
+	float theta = -perFrameInfo.dayTime * 2 * PI;
+	mat3 rotation = mat3(cos(theta), sin(theta), 0, -sin(theta), cos(theta), 0, 0, 0, 1);
+	vec3 rotatedDir = rotation * dir;
+
 	if (dot(dir, perFrameInfo.dirToSun) > cos(radians(atmosphereInfo.sunSizeDeg))) {
 		return colours.sunColour * 100;
 	}
 
-	int ySplitIndex = clamp(getSplitIndex(dir), 0, STARYSPLITCOUNT - 1);
+	int ySplitIndex = clamp(getSplitIndex(rotatedDir), 0, STARYSPLITCOUNT - 1);
 
-	if (isStarVisibleInSplit(dir, ySplitIndex))
+	if (isStarVisibleInSplit(rotatedDir, ySplitIndex))
 		return colours.starColour;
 
 	if (ySplitIndex != 0)
 		ySplitIndex -= 1;
 		
-	if (isStarVisibleInSplit(dir, ySplitIndex))
+	if (isStarVisibleInSplit(rotatedDir, ySplitIndex))
 		return colours.starColour;
 
 	ySplitIndex++;
 	if (ySplitIndex != STARYSPLITCOUNT - 1)
 		ySplitIndex += 1;
 		
-	if (isStarVisibleInSplit(dir, ySplitIndex))
+	if (isStarVisibleInSplit(rotatedDir, ySplitIndex))
 		return colours.starColour;
 	
 	return vec3(0);

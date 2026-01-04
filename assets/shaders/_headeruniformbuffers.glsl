@@ -80,6 +80,7 @@ layout(std140, binding = 4) uniform PerFrameInfo {
 	float pitch;
 	float cameraNear;
 	float cameraFar;
+	float dayTime;
 } perFrameInfo;
 
 layout(std430, binding = 5) buffer TerrainImagesInfo {
