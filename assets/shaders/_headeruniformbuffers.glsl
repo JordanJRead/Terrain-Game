@@ -3,6 +3,7 @@
 
 #define IMAGECOUNT 5
 #define CASCADECOUNT 4
+#define STARYSPLITCOUNT 10
 #extension GL_ARB_bindless_texture : require
 
 layout(std140, binding = 0) uniform TerrainParams {
@@ -64,6 +65,7 @@ layout(std140, binding = 3) uniform Colours {
 	uniform vec3 snowColour;
 	uniform vec3 waterColour;
 	uniform vec3 sunColour;
+	uniform vec3 starColour;
 } colours;
 
 layout(std140, binding = 4) uniform PerFrameInfo {
@@ -101,6 +103,7 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 	int raySunStepCount;
 	float brightness;
 	float ditherStrength;
+	float sunSizeDeg;
 } atmosphereInfo;
 
 layout(std430, binding = 7) buffer ShadowInfo {
@@ -119,5 +122,10 @@ layout(std430, binding = 7) buffer ShadowInfo {
 layout(std430, binding = 8) buffer ChunkData {
 	float data[];
 } chunkData;
+
+layout(std430, binding = 9) buffer StarData {
+	ivec2 indexData[STARYSPLITCOUNT]; // (starting index for split i, number of stars in split i)
+	vec4 stars[]; // (x dir, y dir, z dir, size in deg)
+} starData;
 
 #endif

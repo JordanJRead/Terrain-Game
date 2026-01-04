@@ -36,7 +36,7 @@ namespace Random
 		return std::uniform_int_distribution{ min, max }(mt);
 	}
 
-	float getFloat() {
+	inline float getFloat() {
 		return static_cast<float>(std::uniform_real_distribution{ 0.0f, 1.0f }(mt));
 	}
 

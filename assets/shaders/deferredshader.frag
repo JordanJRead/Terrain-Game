@@ -165,7 +165,7 @@ float phase(float cosTheta, float g) {
 	return 1 / (4 * PI) * (1 - g * g) / pow(1 + g * g - 2 * g * cosTheta, 3/2);
 }
 
-vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0)) {
+vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0)) {
 	vec2 noiseSamplePos = gl_FragCoord.xy / textureSize(blueNoise, 0).xy;
 	vec2 intersectionTs = rayAtmosphereIntersection(rayPos, rayDir);
 	if (intersectionTs.x < 0 && intersectionTs.y < 0)
@@ -200,10 +200,53 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, bool isSun, vec3 worldP
 		inScatteredLight += atmosphereInfo.brightness * sunlightHittingHere * (rayleighDensity * atmosphereInfo.rayleighScattering * phase(cosTheta, atmosphereInfo.rayleighG) + mieDensity * atmosphereInfo.mieScattering * phase(cosTheta, atmosphereInfo.mieG)) * transmittance * dx;
 		samplePos += rayDir * dx;
 	}
-	if (isSky && !isSun) {
-		return inScatteredLight;
-	}
+	if (isSky)
+		return inScatteredLight + albedo;
 	return inScatteredLight + albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true) * transmittance;
+ }
+
+ int getSplitIndex(vec3 dir) {
+	return int((dir.y + 1) / 2 / (1.0 / STARYSPLITCOUNT));
+}
+
+bool isStarVisibleInSplit(vec3 dir, int i) {
+	ivec2 indexInfo = starData.indexData[i];
+	for (int starI = indexInfo.x; starI < indexInfo.x + indexInfo.y; ++starI) {
+		vec4 star = starData.stars[starI];
+		vec3 starDir = star.xyz;
+		float starSize = star.w;
+
+		if (dot(dir, starDir) > cos(radians(starSize))) {
+			return true;
+		}
+	}
+	return false;
+}
+
+ vec3 getStarColor(vec3 dir) {
+	if (dot(dir, perFrameInfo.dirToSun) > cos(radians(atmosphereInfo.sunSizeDeg))) {
+		return colours.sunColour * 100;
+	}
+
+	int ySplitIndex = clamp(getSplitIndex(dir), 0, STARYSPLITCOUNT - 1);
+
+	if (isStarVisibleInSplit(dir, ySplitIndex))
+		return colours.starColour;
+
+	if (ySplitIndex != 0)
+		ySplitIndex -= 1;
+		
+	if (isStarVisibleInSplit(dir, ySplitIndex))
+		return colours.starColour;
+
+	ySplitIndex++;
+	if (ySplitIndex != STARYSPLITCOUNT - 1)
+		ySplitIndex += 1;
+		
+	if (isStarVisibleInSplit(dir, ySplitIndex))
+		return colours.starColour;
+	
+	return vec3(0);
  }
 
 void main() {
@@ -228,13 +271,10 @@ void main() {
 	cameraRayDir = normalize(cameraRayDir);
 	cameraRayDir = inverse(mat3(perFrameInfo.viewMatrix)) * cameraRayDir;
 
+	vec3 starColour = getStarColor(cameraRayDir);
+
 	if (isSky) {
-		if (dot(cameraRayDir, perFrameInfo.dirToSun) > 0.999) {
-			FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, true, vec3(0, 0, 0), colours.sunColour * 100), 1);
-		}
-		else {
-			FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0, 0, 0), vec3(0, 0, 0)), 1);
-		}
+		FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0, 0, 0), starColour), 1);
 	}
 	else {
 		if (isWater) {
@@ -254,7 +294,7 @@ void main() {
 			// Reflections
 			float fresnel = pow(1 - dot(viewDir, normal), 3.0);
 			vec3 reflectDir = normalize(reflect(-viewDir, normal));
-			vec3 reflectColour = lightReceived(worldPos, reflectDir, true, false, vec3(0), vec3(0));
+			vec3 reflectColour = lightReceived(worldPos, reflectDir, true, vec3(0), vec3(0));
 			fresnel = clamp(fresnel, 0.0, 1.0);
 			objectColour = fresnel * reflectColour + (1 - fresnel) * objectColour;
 
@@ -271,11 +311,11 @@ void main() {
 				fogStrength = (distFromCamera - fogStart) / artisticParams.fogEncroach;
 
 			if (fogStrength == 0)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour, normal), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), vec3(0)), 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)) * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), vec3(0)) * fogStrength, 1);
 		}
 		else {
 			vec4 terrainAlbedoWet = getTerrainAlbedoWet(groundWorldPosShellProgress.xyz, groundWorldPosShellProgress.w, worldPosMountain.w, bool(normalDoesTexelExist.w));
@@ -306,11 +346,11 @@ void main() {
 				fogStrength = quinticInterpolationF((distFromCamera - fogStart) / artisticParams.fogEncroach);
 
 			if (fogStrength == 0)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour, normal), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), vec3(0)), 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, false, vec3(0), vec3(0)) * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), vec3(0)) * fogStrength, 1);
 		}
 	}
 }

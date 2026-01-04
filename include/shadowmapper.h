@@ -8,7 +8,7 @@
 #include <array>
 #include <vector>
 #include "framebufferdepth.h"
-#include "imagecount.h"
+#include "constants.h"
 #include "shaders/shaderchunk.h"
 
 template <int CascadeCount>

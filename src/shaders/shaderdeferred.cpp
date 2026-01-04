@@ -1,5 +1,5 @@
 #include "shaders/shaderdeferred.h"
-#include "imagecount.h"
+#include "constants.h"
 #include "deferredrenderer.h"
 #include "terrainrenderer.h"
 

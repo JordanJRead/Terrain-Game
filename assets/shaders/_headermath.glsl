@@ -14,16 +14,16 @@ uint rand(uint n) {
 	return word;
 }
 
+float randToFloat(uint n) {
+	return float(n) / 4294967296.0;
+}
+
 float packFloats(vec2 v) {
 	return uintBitsToFloat(packHalf2x16(v));
 }
 
 vec2 unpackFloats(float v) {
 	return unpackHalf2x16(floatBitsToUint(v));
-}
-
-float randToFloat(uint n) {
-	return float(n) / 4294967296.0;
 }
 
 float normToNegPos(float x) {

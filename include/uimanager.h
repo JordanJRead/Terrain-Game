@@ -8,7 +8,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include <string>
 #include <GLFW/glfw3.h>
-#include "imagecount.h"
+#include "constants.h"
 
 class UIManager {
 private:
@@ -310,6 +310,10 @@ public:
 			ImGui::Begin("Day");
 
 			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001f, 0, 2);
+			if (mDayTime.mData > 2)
+				mDayTime.mData -= 2;
+			if (mDayTime.mData < 0)
+				mDayTime.mData += 2;
 			mDayTime.update();
 
 			ImGui::End();
@@ -360,6 +364,25 @@ public:
 				ImGui::DragFloat(("Split " + indexString).c_str(), mCascadeSplits[i].getDataPtr(), 0.001f + 0.01f * i * i);
 				mCascadeSplits[i].update();
 			}
+
+			ImGui::End();
+
+			ImGui::Begin("Star Parameters");
+
+			ImGui::DragFloat("Sun size", mSunSize.getDataPtr(), 0.1f);
+			mSunSize.update();
+
+			ImGui::DragFloat("Star min size", mStarMinSize.getDataPtr(), 0.001f);
+			mStarMinSize.update();
+
+			ImGui::DragFloat("Star max size", mStarMaxSize.getDataPtr(), 0.001f);
+			mStarMaxSize.update();
+
+			ImGui::DragInt("Star count", mStarCount.getDataPtr());
+			mStarCount.update();
+
+			ImGui::DragFloat("Star brightness", mStarBrightness.getDataPtr());
+			mStarBrightness.update();
 
 			ImGui::End();
 		}
@@ -485,6 +508,13 @@ public:
 	UIElement<int> mRaySunStepCount{ 8 };
 	UIElement<float> mAtmosphereBrightness{ 25 };
 	UIElement<float> mAtmosphereDitherStrength{ 1.8f };
+
+	// Star Parameters
+	UIElement<float> mSunSize{ 2.56f }; // degrees
+	UIElement<float> mStarMinSize{ 0.08f };
+	UIElement<float> mStarMaxSize{ 0.08f };
+	UIElement<int> mStarCount{ 500 };
+	UIElement<float> mStarBrightness{ 10 };
 
 	// Shadow Parameters
 	UIElement<float> mShadowBlurWidth{ 0.5f };

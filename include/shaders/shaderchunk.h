@@ -15,7 +15,7 @@ public:
 	int getInstanceCount();
 
 protected:
-	int mInstanceCount;
+	int mInstanceCount{};
 };
 
 #endif

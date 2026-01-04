@@ -116,7 +116,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLFW_INCLUDE_NONE;;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -130,7 +130,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -178,6 +178,7 @@
     <ClCompile Include="src\shaders\shaderphysics.cpp" />
     <ClCompile Include="src\shaders\shaderskybox.cpp" />
     <ClCompile Include="src\shaders\shaderterrainimage.cpp" />
+    <ClCompile Include="src\starmanager.cpp" />
     <ClCompile Include="src\terrainimagegenerator.cpp" />
     <ClCompile Include="src\vertexarray.cpp" />
   </ItemGroup>
@@ -200,7 +201,7 @@
     <ClInclude Include="include\cubevertices.h" />
     <ClInclude Include="include\deferredrenderer.h" />
     <ClInclude Include="include\framebuffercolour.h" />
-    <ClInclude Include="include\imagecount.h" />
+    <ClInclude Include="include\constants.h" />
     <ClInclude Include="include\mathhelper.h" />
     <ClInclude Include="include\OpenGLObjects\BUF.h" />
     <ClInclude Include="include\OpenGLObjects\FBO.h" />
@@ -220,6 +221,7 @@
     <ClInclude Include="include\shaders\shaderphysics.h" />
     <ClInclude Include="include\shaders\shaderterrainimage.h" />
     <ClInclude Include="include\shadowmapper.h" />
+    <ClInclude Include="include\starmanager.h" />
     <ClInclude Include="include\stb_include.h" />
     <ClInclude Include="include\chunkbuffers.h" />
     <ClInclude Include="include\terrainimagegenerator.h" />

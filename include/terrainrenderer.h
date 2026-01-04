@@ -20,7 +20,7 @@
 #include "framebufferi.h"
 #include "uniformbuffer.h"
 #include "deferredrenderer.h"
-#include "imagecount.h"
+#include "constants.h"
 #include "camerai.h"
 #include "aabb.h"
 #include "shadowmapper.h"
@@ -29,6 +29,7 @@
 #include "shaders/shaderskybox.h"
 #include "chunkbuffers.h"
 #include "shaders/shaderortho.h"
+#include "starmanager.h"
 
 class TerrainRenderer {
 public:
@@ -117,6 +118,7 @@ public:
 	}
 
 	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const FramebufferColour& targetFramebuffer) {
+		mStarManager.update({ uiManager.mStarMinSize.data(), uiManager.mStarMaxSize.data(), uiManager.mStarCount.data() });
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
 			mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
@@ -384,6 +386,7 @@ public:
 	}
 
 private:
+	// Buffers
 	UniformBuffer<BufferTypes::TerrainParams> mTerrainParams{ 0 };
 	UniformBuffer<BufferTypes::ArtisticParams> mArtisticParams{ 1 };
 	UniformBuffer<BufferTypes::WaterParams> mWaterParams{ 2 };
@@ -393,6 +396,8 @@ private:
 	UniformBuffer<BufferTypes::AtmosphereInfo> mAtmosphereInfo{ 6 };
 	UniformBuffer<BufferTypes::ShadowInfo> mShadowMatrices{ 7, true };
 	ChunkBuffers<3> mChunkBuffers{ 8 };
+	StarManager mStarManager{ 9 };
+
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;

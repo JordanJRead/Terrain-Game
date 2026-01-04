@@ -46,6 +46,8 @@ namespace MathHelper {
 
 	glm::vec2 randUnitVector(float randNum);
 
+	glm::vec3 randUnitVector3();
+
 	glm::vec2 quinticInterpolation(glm::vec2 t);
 
 	glm::vec2 quinticDerivative(glm::vec2 t);

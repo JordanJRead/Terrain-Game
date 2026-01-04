@@ -1,11 +1,11 @@
 #include "shaders/shaderchunk.h"
 #include "shaders/shaderi.h"
 #include "glm/glm.hpp"
-#include "imagecount.h"
+#include "constants.h"
 #include "terrainrenderer.h"
 #include "cubemap.h"
 
-ShaderChunk::ShaderChunk(const std::string& vertPath, const std::string& fragPath) : ShaderI{ vertPath, fragPath } {
+ShaderChunk::ShaderChunk(const std::string& vertPath, const std::string& fragPath) : ShaderI{ vertPath, fragPath }, mInstanceCount{ 0 } {
 	use();
 	for (int i{ 0 }; i < ImageCount; ++i) {
 		std::string indexString{ std::to_string(i) };

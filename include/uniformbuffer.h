@@ -8,7 +8,7 @@
 #include "cameraplayer.h"
 #include <iostream>
 #include <array>
-#include "imagecount.h"
+#include "constants.h"
 #include "shadowmapper.h"
 #include "mathhelper.h"
 
@@ -121,6 +121,11 @@ namespace BufferTypes {
 		float height{};
 	};
 
+	inline float starBrightnessAtTime(float time) {
+		constexpr int n{ 30 };
+		return (0 <= time && time <= 1) ? (pow(2, n-1) * pow(time - 0.5, n)) : (-pow(2, n-1) * pow(time - 1.5, n)) + 1;
+	}
+
 	struct ColourParams {
 		ColourParams() : dirtColour{ -1, -1, -1, -1 } {}
 		ColourParams(const UIManager& uiManager)
@@ -131,6 +136,7 @@ namespace BufferTypes {
 			, snowColour{ uiManager.mSnowColour.data(), 1 }
 			, waterColour{ uiManager.mWaterColour.data(), 1 }
 			, sunColour{ uiManager.mSunColour.data() * uiManager.mHDRScale.data(), 1}
+			, starColour{ uiManager.mStarBrightness.data() * glm::vec3{1, 1, 1} * starBrightnessAtTime(uiManager.mDayTime.data()), 1}
 		{
 		}
 		bool operator==(const ColourParams&) const = default;
@@ -142,6 +148,7 @@ namespace BufferTypes {
 		glm::vec4 snowColour{};
 		glm::vec4 waterColour{};
 		glm::vec4 sunColour{};
+		glm::vec4 starColour{};
 	};
 
 	struct PerFrameInfo {
@@ -203,6 +210,7 @@ namespace BufferTypes {
 			, raySunStepCount{ uiManager.mRaySunStepCount.data() }
 			, brightness{ uiManager.mAtmosphereBrightness.data() }
 			, ditherStrength{ uiManager.mAtmosphereDitherStrength.data() }
+			, sunSizeDeg{ uiManager.mSunSize.data() }
 		{
 		}
 		bool operator==(const AtmosphereInfo&) const = default;
@@ -221,7 +229,8 @@ namespace BufferTypes {
 		int rayAtmosphereStepCount{};
 		int raySunStepCount{};
 		float brightness{};
-		float ditherStrength;
+		float ditherStrength{};
+		float sunSizeDeg{};
 	};
 
 	struct ShadowInfo {

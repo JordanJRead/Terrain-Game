@@ -3,5 +3,6 @@
 
 inline constexpr int ImageCount = 5;
 inline constexpr int CascadeCount = 4;
+inline constexpr int StarYSplitCount = 10;
 
 #endif

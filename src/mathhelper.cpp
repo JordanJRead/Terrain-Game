@@ -8,6 +8,7 @@
 #include "uimanager.h"
 #include "mathhelper.h"
 #include <cmath>
+#include "random.h"
 
 bool MathHelper::floatEqual(float x, float y, float tol) {
 	return x - y < tol;
@@ -110,6 +111,19 @@ unsigned int MathHelper::labelPoint(int x, int y) {
 glm::vec2 MathHelper::randUnitVector(float randNum) {
 	float theta = 2 * 3.14159f * randNum;
 	return glm::normalize(glm::vec2(cos(theta), sin(theta)));
+}
+
+glm::vec3 MathHelper::randUnitVector3() {
+	float a{ Random::getFloat() * 2 - 1 };
+	float b{ Random::getFloat() * 2 - 1 };
+	float c{ Random::getFloat() * 2 - 1 };
+
+	while (a * a + b * b + c * c > 1 || a == 0 && b == 0 && c == 0) {
+		a = Random::getFloat() * 2 - 1;
+		b = Random::getFloat() * 2 - 1;
+		c = Random::getFloat() * 2 - 1;
+	}
+	return glm::vec3{ a, b, c } / glm::length(glm::vec3{a, b, c});
 }
 
 glm::vec2 MathHelper::quinticInterpolation(glm::vec2 t) {
