@@ -213,9 +213,11 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 	vec3 sunColourHittingHere = colours.sunColour  * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true);
 	vec3 moonColourHittingHere = colours.moonColour * transmittanceFromMoonToPoint(worldPosOfVisibleObject, normal, true);
 
-	float sunDot = max(dot(normal, perFrameInfo.dirToSun), 0);
-	float moonDot = max(dot(normal, -perFrameInfo.dirToSun), 0);
-	float currDot = perFrameInfo.nightStrength * moonDot + (1 - perFrameInfo.nightStrength) * sunDot;
+	float sunDot = dot(normal, perFrameInfo.dirToSun);
+	float moonDot = dot(normal, -perFrameInfo.dirToSun);
+	float currDot = perFrameInfo.nightStrength * ((moonDot + 1) / 2) + (1 - perFrameInfo.nightStrength) * (sunDot + 1) / 2;
+	sunDot = max(sunDot, 0);
+	moonDot = max(moonDot, 0);
 
 	vec3 dayAmbient = vec3(1);
 	vec3 nightAmbient = vec3(0.02);
