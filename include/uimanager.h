@@ -319,10 +319,6 @@ public:
 			ImGui::Begin("Day");
 
 			ImGui::DragFloat("Day time", mDayTime.getDataPtr(), 0.001f);
-			if (mDayTime.mData > 2)
-				mDayTime.mData -= 2;
-			if (mDayTime.mData < 0)
-				mDayTime.mData += 2;
 			mDayTime.update();
 
 			ImGui::End();
@@ -395,6 +391,12 @@ public:
 
 			ImGui::End();
 		}
+
+		mDayTime.mData += 0.005f * deltaTime;
+		if (mDayTime.mData > 2)
+			mDayTime.mData -= 2;
+		if (mDayTime.mData < 0)
+			mDayTime.mData += 2;
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -535,7 +537,7 @@ public:
 	UIElement<int> mCurrCamera{ -1 };
 	UIElement<float> mExposure{ 0.1f };
 	UIElement<float> mMinShadowBias{ 2.7f };
-	UIElement<float> mMaxShadowBias{ 3.5f };
+	UIElement<float> mMaxShadowBias{ 7.5f };
 	
 	std::array<UIElement<float>, CascadeCount - 1> mCascadeSplits{
 		UIElement<float>{ 0.02f },
