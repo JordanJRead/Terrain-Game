@@ -520,7 +520,7 @@ public:
 	UIElement<float> mSunBrightness{ 25 };
 	UIElement<float> mMoonBrightness{ 0.1f };
 	UIElement<int> mRayAtmosphereStepCount{ 30 };
-	UIElement<int> mRaySunStepCount{ 8 };
+	UIElement<int> mRaySunStepCount{ 3 };
 	UIElement<float> mAtmosphereBrightness{ 25 };
 	UIElement<float> mAtmosphereDitherStrength{ 1.8f };
 
