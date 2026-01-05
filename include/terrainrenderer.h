@@ -221,19 +221,21 @@ public:
 			mShadowMapperMoon.updateCameras(-dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
 			for (size_t i{ 0 }; i < CascadeCount; ++i) {
+				bool isDay = uiManager.mDayTime.data() < 1;
+
 				const CameraI& depthCameraSun{ mShadowMapperSun.getCamera(i) };
 				const FramebufferI& depthFramebufferSun{ mShadowMapperSun.getFramebuffer(i) };
 				depthFramebufferSun.use();
 				glClearColor(0, 0, 0, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				renderTerrain(depthFramebufferSun, depthCameraSun, camera.getPosition(), mShadowMapperSun.mTerrainDepthShader, mShadowMapperSun.mWaterDepthShader, uiManager, dirToSun, time, true);
+				renderTerrain(depthFramebufferSun, depthCameraSun, camera.getPosition(), mShadowMapperSun.mTerrainDepthShader, mShadowMapperSun.mWaterDepthShader, uiManager, dirToSun, time, true, !isDay);
 
 				const CameraI& depthCameraMoon{ mShadowMapperMoon.getCamera(i) };
 				const FramebufferI& depthFramebufferMoon{ mShadowMapperMoon.getFramebuffer(i) };
 				depthFramebufferMoon.use();
 				glClearColor(0, 0, 0, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				renderTerrain(depthFramebufferMoon, depthCameraMoon, camera.getPosition(), mShadowMapperMoon.mTerrainDepthShader, mShadowMapperMoon.mWaterDepthShader, uiManager, dirToSun, time, true);
+				renderTerrain(depthFramebufferMoon, depthCameraMoon, camera.getPosition(), mShadowMapperMoon.mTerrainDepthShader, mShadowMapperMoon.mWaterDepthShader, uiManager, dirToSun, time, true, isDay);
 			}
 
 			mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
@@ -265,7 +267,7 @@ public:
 		}
 	}
 
-	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderChunk& terrainShader, ShaderChunk& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false) {
+	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderChunk& terrainShader, ShaderChunk& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false, bool forceLowQuality = false) {
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -290,8 +292,8 @@ public:
 				if (isVisible) {
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
 					bool isCloseChunk{ x >= -1 && x <= 1 && z >= -1 && z <= 1 };
-					bool highQuality{ isCloseChunk || chunkDist < uiManager.mVertexLODDistanceNear.data() };
-					bool mediumQuality{ chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
+					bool highQuality{ !forceLowQuality && isCloseChunk || chunkDist < uiManager.mVertexLODDistanceNear.data() };
+					bool mediumQuality{ !forceLowQuality && chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
 					int qualityIndex{ highQuality ? 2 : (mediumQuality ? 1 : 0) };
 
 					// LOD shell count
