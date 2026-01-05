@@ -478,7 +478,7 @@ public:
 
 	// Water Parameters
 	UIElement<int>   mWaterWaveCount{ 24 };
-	UIElement<float> mWaterAmplitude{ 0.07f };
+	UIElement<float> mWaterAmplitude{ 0.01f };
 	UIElement<float> mWaterAmplitudeMultiplier{ 0.82f };
 	UIElement<float> mWaterFrequency{ 1 };
 	UIElement<float> mWaterFrequencyMultiplier{ 1.13f };
