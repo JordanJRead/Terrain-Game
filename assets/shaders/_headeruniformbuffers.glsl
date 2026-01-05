@@ -65,12 +65,14 @@ layout(std140, binding = 3) uniform Colours {
 	uniform vec3 snowColour;
 	uniform vec3 waterColour;
 	uniform vec3 sunColour;
+	uniform vec3 moonColour;
 	uniform vec3 starColour;
 } colours;
 
 layout(std140, binding = 4) uniform PerFrameInfo {
 	mat4 viewMatrix;
 	mat4 projectionMatrix;
+	mat4 starRotationMatrix;
 	vec3 cameraPos; float g;
 	vec3 dirToSun; float gg;
 	float time;
@@ -81,6 +83,7 @@ layout(std140, binding = 4) uniform PerFrameInfo {
 	float cameraNear;
 	float cameraFar;
 	float dayTime;
+	float nightStrength;
 } perFrameInfo;
 
 layout(std430, binding = 5) buffer TerrainImagesInfo {
@@ -108,10 +111,13 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 } atmosphereInfo;
 
 layout(std430, binding = 7) buffer ShadowInfo {
-	mat4 viewMatrices[CASCADECOUNT];
-	mat4 projectionMatrices[CASCADECOUNT];
+	mat4 viewMatricesSun[CASCADECOUNT];
+	mat4 projectionMatricesSun[CASCADECOUNT];
+	mat4 viewMatricesMoon[CASCADECOUNT];
+	mat4 projectionMatricesMoon[CASCADECOUNT];
 	float splits[CASCADECOUNT - 1];
-	float widths[CASCADECOUNT];
+	float widthsSun[CASCADECOUNT];
+	float widthsMoon[CASCADECOUNT];
 	float blurWidth;
 	int blurQuality; // odd
 	float blurGridSum;

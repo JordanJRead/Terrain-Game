@@ -15,6 +15,7 @@ public:
 	void bindGBufferTexture(int i, int unit) const;
 	void bindNoiseTexture(int unit) const { mBlueNoise.use(unit); }
 	void doDeferredShading(const FramebufferColour& targetFramebuffer, const TerrainRenderer& terrainRenderer, const VertexArray& screenQuad);
+	const Noise& getNoise() const { return mBlueNoise; }
 
 	ShaderChunk mShaderTerrainDeferred;
 	ShaderChunk mShaderWaterDeferred;

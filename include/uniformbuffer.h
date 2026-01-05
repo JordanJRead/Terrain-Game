@@ -135,7 +135,8 @@ namespace BufferTypes {
 			, grassColour2{ uiManager.mGrassColour2.data(), 1 }
 			, snowColour{ uiManager.mSnowColour.data(), 1 }
 			, waterColour{ uiManager.mWaterColour.data(), 1 }
-			, sunColour{ uiManager.mSunColour.data() * uiManager.mHDRScale.data(), 1}
+			, sunColour{ uiManager.mSunColour.data() * uiManager.mSunBrightness.data(), 1}
+			, moonColour{ uiManager.mMoonColour.data() * uiManager.mMoonBrightness.data(), 1}
 			, starColour{ uiManager.mStarBrightness.data() * glm::vec3{1, 1, 1} * starBrightnessAtTime(uiManager.mDayTime.data()), 1}
 		{
 		}
@@ -148,14 +149,16 @@ namespace BufferTypes {
 		glm::vec4 snowColour{};
 		glm::vec4 waterColour{};
 		glm::vec4 sunColour{};
+		glm::vec4 moonColour{};
 		glm::vec4 starColour{};
 	};
-
+#define PI 3.14159f
 	struct PerFrameInfo {
 		PerFrameInfo() : time{ -1 } {}
 		PerFrameInfo(const CameraI& camera, glm::vec3 _dirToSun, float _time, const UIManager& uiManager)
 			: viewMatrix{ camera.getViewMatrix() }
 			, projectionMatrix{ camera.getProjectionMatrix() }
+			, starRotationMatrix{ glm::rotate(glm::mat4(1.0f), -PI * uiManager.mDayTime.data(), {0, 0, 1})}
 			, cameraPos{ camera.getPosition(), 1 }
 			, dirToSun{ _dirToSun, 0 }
 			, time{ _time }
@@ -166,11 +169,13 @@ namespace BufferTypes {
 			, cameraNear{ camera.getNearPlaneDist() }
 			, cameraFar{ camera.getFarPlaneDist() }
 			, dayTime{ uiManager.mDayTime.data() }
+			, nightStrength{ starBrightnessAtTime(uiManager.mDayTime.data()) }
 		{ }
 		bool operator==(const PerFrameInfo&) const = default;
 
 		glm::mat4 viewMatrix{};
 		glm::mat4 projectionMatrix{};
+		glm::mat4 starRotationMatrix{};
 		glm::vec4 cameraPos{};
 		glm::vec4 dirToSun{};
 		float time;
@@ -180,7 +185,8 @@ namespace BufferTypes {
 		float pitch{};
 		float cameraNear{};
 		float cameraFar{};
-		float dayTime;
+		float dayTime{};
+		float nightStrength{};
 	};
 
 	struct TerrainImagesInfo {
@@ -237,7 +243,7 @@ namespace BufferTypes {
 
 	struct ShadowInfo {
 		ShadowInfo() {}
-		ShadowInfo(const ShadowMapper<CascadeCount>& shadowMapper, const UIManager& uiManager)
+		ShadowInfo(const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon, const UIManager& uiManager)
 			: blurWidth{ uiManager.mShadowBlurWidth.data() }
 			, blurQuality{ uiManager.mShadowBlurQuality.data() }
 			, exposure{ uiManager.mExposure.data() }
@@ -246,13 +252,25 @@ namespace BufferTypes {
 		{
 			if (blurQuality % 2 == 0)
 				blurQuality += 1;
+
 			for (int i{ 0 }; i < CascadeCount; ++i) {
-				viewMatrices[i] = shadowMapper.getCamera(i).getViewMatrix();
-				projectionMatrices[i] = shadowMapper.getCamera(i).getProjectionMatrix();
+				viewMatricesSun[i] = shadowMapperSun.getCamera(i).getViewMatrix();
+				projectionMatricesSun[i] = shadowMapperSun.getCamera(i).getProjectionMatrix();
 			}
-			splits = shadowMapper.getSplits();
+
 			for (int i{ 0 }; i < CascadeCount; ++i) {
-				widths[i] = shadowMapper.getWorldWidth(i);
+				viewMatricesMoon[i] = shadowMapperMoon.getCamera(i).getViewMatrix();
+				projectionMatricesMoon[i] = shadowMapperMoon.getCamera(i).getProjectionMatrix();
+			}
+
+			splits = shadowMapperSun.getSplits();
+
+			for (int i{ 0 }; i < CascadeCount; ++i) {
+				widthsSun[i] = shadowMapperSun.getWorldWidth(i);
+			}
+
+			for (int i{ 0 }; i < CascadeCount; ++i) {
+				widthsMoon[i] = shadowMapperMoon.getWorldWidth(i);
 			}
 			
 			// Grid sum
@@ -264,10 +282,13 @@ namespace BufferTypes {
 		}
 		bool operator==(const ShadowInfo&) const = default;
 
-		std::array<glm::mat4, CascadeCount> viewMatrices{};
-		std::array<glm::mat4, CascadeCount> projectionMatrices{};
+		std::array<glm::mat4, CascadeCount> viewMatricesSun{};
+		std::array<glm::mat4, CascadeCount> projectionMatricesSun{};
+		std::array<glm::mat4, CascadeCount> viewMatricesMoon{};
+		std::array<glm::mat4, CascadeCount> projectionMatricesMoon{};
 		std::array<float, CascadeCount - 1> splits{};
-		std::array<float, CascadeCount> widths{};
+		std::array<float, CascadeCount> widthsSun{};
+		std::array<float, CascadeCount> widthsMoon{};
 		float blurWidth{};
 		int blurQuality{}; // odd
 		float blurGridSum{};

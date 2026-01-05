@@ -92,7 +92,7 @@ void App::loop() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, mScreenWidth, mScreenHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		mGammaShader.setRenderData(mFramebuffer.getColourTex(0));
+		mGammaShader.setRenderData(mFramebuffer.getColourTex(0), mTerrainRenderer.getDeferredRenderer().getNoise());
 		mGammaShader.render(mScreenQuad);
 
 		mUIManager.render(deltaTime, mIsUIVisible);

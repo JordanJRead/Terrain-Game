@@ -13,10 +13,17 @@ ShaderDeferred::ShaderDeferred(const std::string& vertPath, const std::string& f
 	setInt("GBuffer_GroundWorldPosShellProgress", textureUnit++);
 	setInt("GBuffer_WorldPosMountain", textureUnit++);
 	setInt("GBuffer_NormalDoesTexelExist", textureUnit++);
+
 	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
 		std::string indexString{ std::to_string(cascadeI) };
-		setInt("shadowMaps[" + indexString + "]", textureUnit++);
+		setInt("shadowMapsSun[" + indexString + "]", textureUnit++);
 	}
+
+	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
+		std::string indexString{ std::to_string(cascadeI) };
+		setInt("shadowMapsMoon[" + indexString + "]", textureUnit++);
+	}
+
 	setInt("blueNoise", textureUnit++);
 }
 
@@ -31,9 +38,14 @@ void ShaderDeferred::setRenderData(const TerrainRenderer& terrainRenderer) {
 	deferredRenderer.bindGBufferTexture(1, textureUnit++);
 	deferredRenderer.bindGBufferTexture(2, textureUnit++);
 
-	const ShadowMapper<CascadeCount>& shadowMapper{ terrainRenderer.getShadowMapper() };
+	const ShadowMapper<CascadeCount>& shadowMapperSun{ terrainRenderer.getShadowMapperSun() };
 	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
-		shadowMapper.getFramebuffer(cascadeI).getDepthTexture().use(GL_TEXTURE_2D, textureUnit++);
+		shadowMapperSun.getFramebuffer(cascadeI).getDepthTexture().use(GL_TEXTURE_2D, textureUnit++);
+	}
+
+	const ShadowMapper<CascadeCount>& shadowMapperMoon{ terrainRenderer.getShadowMapperMoon() };
+	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
+		shadowMapperMoon.getFramebuffer(cascadeI).getDepthTexture().use(GL_TEXTURE_2D, textureUnit++);
 	}
 
 	deferredRenderer.bindNoiseTexture(textureUnit++);

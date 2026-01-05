@@ -221,8 +221,11 @@ public:
 			ImGui::DragFloat("Mie G", mAtmosphereMieG.getDataPtr(), 0.001f);
 			mAtmosphereMieG.update();
 
-			ImGui::DragFloat("HDR scale", mHDRScale.getDataPtr(), 0.01f);
-			mHDRScale.update();
+			ImGui::DragFloat("Sun brightness", mSunBrightness.getDataPtr(), 0.01f);
+			mSunBrightness.update();
+
+			ImGui::DragFloat("Moon brightness", mMoonBrightness.getDataPtr(), 0.01f);
+			mMoonBrightness.update();
 
 			ImGui::DragInt("Ray atmosphere steps", mRayAtmosphereStepCount.getDataPtr(), 0.1f, 1, 100);
 			mRayAtmosphereStepCount.update();
@@ -268,6 +271,12 @@ public:
 
 			ImGui::ColorPicker3("Sun", (float*)mSunColour.getDataPtr());
 			mSunColour.update();
+
+			ImGui::ColorPicker3("Moon", (float*)mMoonColour.getDataPtr());
+			mMoonColour.update();
+
+			ImGui::ColorPicker3("Star", (float*)mStarColour.getDataPtr());
+			mStarBrightness.update();
 
 			ImGui::End();
 
@@ -434,6 +443,9 @@ public:
 	UIElement<glm::vec3> mSnowColour    { {255 / 255.0f, 255 / 255.0f, 255 / 255.0f} };
 	UIElement<glm::vec3> mWaterColour   { {0   / 255.0f, 1.7  / 255.0f, 56 / 255.0f} };
 	UIElement<glm::vec3> mSunColour     { {255 / 255.0f, 255 / 255.0f, 255 / 255.0f} };
+	UIElement<glm::vec3> mMoonColour{ {255 / 255.0f, 255 / 255.0f, 255 / 255.0f} };
+	UIElement<glm::vec3> mStarColour{ {255 / 255.0f, 255 / 255.0f, 255 / 255.0f} };
+
 
 	// Terrain Parameters
 	UIElement<int>    mTerrainOctaveCount        { 15 };
@@ -503,7 +515,8 @@ public:
 	UIElement<glm::vec3> mAtmosphereMieScattering{ {2, 2, 2 } };
 	UIElement<float> mAtmosphereRayleighG{ 0 };
 	UIElement<float> mAtmosphereMieG{ 0.957f };
-	UIElement<float> mHDRScale{ 25 };
+	UIElement<float> mSunBrightness{ 25 };
+	UIElement<float> mMoonBrightness{ 0.1f };
 	UIElement<int> mRayAtmosphereStepCount{ 30 };
 	UIElement<int> mRaySunStepCount{ 8 };
 	UIElement<float> mAtmosphereBrightness{ 25 };

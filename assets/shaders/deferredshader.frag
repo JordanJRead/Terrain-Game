@@ -128,7 +128,7 @@ float mieDensityAtPoint(vec3 pos) {
 }
 
 vec3 transmittanceFromSunToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false) {
-	float shadowAmount = isPointInShadow(pos, normal, onGround);
+	float shadowAmount = isPointInSunShadow(pos, normal, onGround);
 	if (shadowAmount > 0.5 && !onGround)
 		return vec3(0);
 	vec2 ts = rayAtmosphereIntersection(pos, perFrameInfo.dirToSun);
@@ -156,9 +156,14 @@ vec3 transmittanceFromSunToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround 
 		samplePos += perFrameInfo.dirToSun * dx;
 	}
 	if (onGround) {
-		return transmittance * (0.2 + 0.8 * (1 - shadowAmount));
+		return transmittance * (1 - shadowAmount);
 	}
 	return transmittance;
+}
+
+vec3 transmittanceFromMoonToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false) {
+	float shadowAmount = isPointInMoonShadow(pos, normal, onGround);
+	return vec3(1 - shadowAmount);
 }
 
 float phase(float cosTheta, float g) {
@@ -166,7 +171,6 @@ float phase(float cosTheta, float g) {
 }
 
 vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0)) {
-	vec2 noiseSamplePos = gl_FragCoord.xy / textureSize(blueNoise, 0).xy;
 	vec2 intersectionTs = rayAtmosphereIntersection(rayPos, rayDir);
 	if (intersectionTs.x < 0 && intersectionTs.y < 0)
 		return albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true);
@@ -184,7 +188,8 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 	int stepCount = atmosphereInfo.rayAtmosphereStepCount;
 	float totalDistance = t1 - t0;
 	float dx = totalDistance / stepCount;
-
+	
+	vec2 noiseSamplePos = gl_FragCoord.xy / textureSize(blueNoise, 0).xy;
 	vec3 samplePos = a + rayDir * dx - texture(blueNoise, noiseSamplePos).r * atmosphereInfo.ditherStrength;
 	vec3 transmittance = vec3(1, 1, 1);
 	vec3 inScatteredLight = vec3(0, 0, 0);
@@ -195,14 +200,29 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 		transmittance *= exp(-dx * (rayleighDensity * atmosphereInfo.rayleighScattering + mieDensity * atmosphereInfo.mieScattering));
 
 		// In-scattering
-		vec3 sunlightHittingHere = transmittanceFromSunToPoint(samplePos) * colours.sunColour;
-		float cosTheta = dot(rayDir, perFrameInfo.dirToSun);
-		inScatteredLight += atmosphereInfo.brightness * sunlightHittingHere * (rayleighDensity * atmosphereInfo.rayleighScattering * phase(cosTheta, atmosphereInfo.rayleighG) + mieDensity * atmosphereInfo.mieScattering * phase(cosTheta, atmosphereInfo.mieG)) * transmittance * dx;
+		float cosThetaSun = dot(rayDir, perFrameInfo.dirToSun);
+		float cosThetaMoon = dot(rayDir, -perFrameInfo.dirToSun);
+		vec3 sunlightHittingHere = transmittanceFromSunToPoint(samplePos)   * colours.sunColour  * (phase(cosThetaSun,  atmosphereInfo.rayleighG) * rayleighDensity * atmosphereInfo.rayleighScattering + phase(cosThetaSun,  atmosphereInfo.mieG) * mieDensity * atmosphereInfo.mieScattering);
+		vec3 moonlightHittingHere = transmittanceFromMoonToPoint(samplePos) * colours.moonColour * (phase(cosThetaMoon, atmosphereInfo.rayleighG) * rayleighDensity * atmosphereInfo.rayleighScattering + phase(cosThetaMoon, atmosphereInfo.mieG) * mieDensity * atmosphereInfo.mieScattering);
+		inScatteredLight += atmosphereInfo.brightness * (sunlightHittingHere + moonlightHittingHere) * transmittance * dx;
 		samplePos += rayDir * dx;
 	}
 	if (isSky)
 		return inScatteredLight + albedo;
-	return inScatteredLight + albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true) * transmittance;
+
+	vec3 sunColourHittingHere = colours.sunColour  * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true);
+	vec3 moonColourHittingHere = colours.moonColour * transmittanceFromMoonToPoint(worldPosOfVisibleObject, normal, true);
+
+	float sunDot = max(dot(normal, perFrameInfo.dirToSun), 0);
+	float moonDot = max(dot(normal, -perFrameInfo.dirToSun), 0);
+	float currDot = perFrameInfo.nightStrength * moonDot + (1 - perFrameInfo.nightStrength) * sunDot;
+
+	vec3 dayAmbient = vec3(1);
+	vec3 nightAmbient = vec3(0.02);
+	vec3 currAmbient = perFrameInfo.nightStrength * nightAmbient + (1 - perFrameInfo.nightStrength) * dayAmbient;
+
+	vec3 diffuse = albedo * (sunDot * sunColourHittingHere + moonDot * moonColourHittingHere + currDot * currAmbient);
+	return inScatteredLight + diffuse * transmittance;
  }
 
  int getSplitIndex(vec3 dir) {
@@ -224,12 +244,15 @@ bool isStarVisibleInSplit(vec3 dir, int i) {
 }
 
  vec3 getStarColor(vec3 dir) {
-	float theta = -perFrameInfo.dayTime * 2 * PI;
-	mat3 rotation = mat3(cos(theta), sin(theta), 0, -sin(theta), cos(theta), 0, 0, 0, 1);
-	vec3 rotatedDir = rotation * dir;
+	float theta = -perFrameInfo.dayTime * PI;
+	vec3 rotatedDir = mat3(perFrameInfo.starRotationMatrix) * dir;
 
 	if (dot(dir, perFrameInfo.dirToSun) > cos(radians(atmosphereInfo.sunSizeDeg))) {
-		return colours.sunColour * 100;
+		return colours.sunColour;
+	}
+
+	if (dot(dir, -perFrameInfo.dirToSun) > cos(radians(atmosphereInfo.sunSizeDeg))) {
+		return colours.moonColour;
 	}
 
 	int ySplitIndex = clamp(getSplitIndex(rotatedDir), 0, STARYSPLITCOUNT - 1);
@@ -274,7 +297,7 @@ void main() {
 	);
 	cameraRayDir = normalize(cameraRayDir);
 	cameraRayDir = inverse(mat3(perFrameInfo.viewMatrix)) * cameraRayDir;
-
+	
 	vec3 starColour = getStarColor(cameraRayDir);
 
 	if (isSky) {
@@ -289,16 +312,14 @@ void main() {
 			vec3 halfWay = normalize(viewDir + perFrameInfo.dirToSun);
 			float spec = pow(max(dot(normal, halfWay), 0), waterParams.specExp);
 			
-			vec3 diffuseColour = max(dot(normal, perFrameInfo.dirToSun), 0) * colours.sunColour * waterAlbedo;
-			vec3 specularColour = spec * colours.sunColour;
-			vec3 ambientColour = 0.03 * colours.sunColour * waterAlbedo;
-			vec3 objectColour = diffuseColour + specularColour + ambientColour;
+			vec3 objectColour = waterAlbedo;
 
 			
 			// Reflections
 			float fresnel = pow(1 - dot(viewDir, normal), 3.0);
 			vec3 reflectDir = normalize(reflect(-viewDir, normal));
-			vec3 reflectColour = lightReceived(worldPos, reflectDir, true, vec3(0), vec3(0));
+			vec3 reflectStarColor = getStarColor(reflectDir);
+			vec3 reflectColour = lightReceived(worldPos, reflectDir, true, vec3(0), reflectStarColor);
 			fresnel = clamp(fresnel, 0.0, 1.0);
 			objectColour = fresnel * reflectColour + (1 - fresnel) * objectColour;
 
@@ -317,9 +338,9 @@ void main() {
 			if (fogStrength == 0)
 				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), vec3(0)), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour), 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), vec3(0)) * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour) * fogStrength, 1);
 		}
 		else {
 			vec4 terrainAlbedoWet = getTerrainAlbedoWet(groundWorldPosShellProgress.xyz, groundWorldPosShellProgress.w, worldPosMountain.w, bool(normalDoesTexelExist.w));
@@ -332,10 +353,7 @@ void main() {
 			float spec = isShell ? 0 : pow(max(dot(normal, halfWay), 0), waterParams.specExp);
 			spec *= wet * wet;
 			
-			vec3 diffuseColour = max(dot(normal, perFrameInfo.dirToSun), 0) * colours.sunColour * terrainAlbedo;
-			vec3 specularColour = spec * colours.sunColour;
-			vec3 ambientColour = 0.03 * colours.sunColour * terrainAlbedo;
-			vec3 objectColour = diffuseColour + specularColour + ambientColour;
+			vec3 objectColour = terrainAlbedo;
 
 			// Fog
 			float distFromCamera = length(worldPos - perFrameInfo.cameraPos);
@@ -352,9 +370,9 @@ void main() {
 			if (fogStrength == 0)
 				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), vec3(0)), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour), 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), vec3(0)) * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour) * fogStrength, 1);
 		}
 	}
 }

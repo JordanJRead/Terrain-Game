@@ -34,6 +34,8 @@ vec3 getWaterHeight(vec2 pos) {
 		freq *= waterParams.freqMult;
 		speed *= waterParams.speedMult;
 	}
+	if (amplitudeSum == 0)
+		return vec3(0, 0, 0);
 	return waterInfo / amplitudeSum * waterParams.initialAmplitude;
 }
 

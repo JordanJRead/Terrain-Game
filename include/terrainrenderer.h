@@ -69,7 +69,8 @@ public:
 				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_1_Back-Z.png"
 			} }
 		, mDeferredRenderer{ screenWidth, screenHeight }
-		, mShadowMapper{ uiManager }
+		, mShadowMapperSun{ uiManager }
+		, mShadowMapperMoon{ uiManager }
 	{
 		mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
 		mMaxTerrainHeight = getHeightWithPerlin(uiManager, mMaxPerlinValues);
@@ -113,8 +114,13 @@ public:
 	const DeferredRenderer& getDeferredRenderer() const {
 		return mDeferredRenderer;
 	}
-	const ShadowMapper<CascadeCount>& getShadowMapper() const {
-		return mShadowMapper;
+
+	const ShadowMapper<CascadeCount>& getShadowMapperSun() const {
+		return mShadowMapperSun;
+	}
+
+	const ShadowMapper<CascadeCount>& getShadowMapperMoon() const {
+		return mShadowMapperMoon;
 	}
 
 	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const FramebufferColour& targetFramebuffer) {
@@ -205,21 +211,29 @@ public:
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			const CameraI* pCamera{ &camera };
-			const CameraI* pCamera0{ &mShadowMapper.getCamera(0) };
-			const CameraI* pCamera1{ &mShadowMapper.getCamera(1) };
-			const CameraI* pCamera2{ &mShadowMapper.getCamera(2) };
+			const CameraI* pCamera0{ &mShadowMapperSun.getCamera(0) };
+			const CameraI* pCamera1{ &mShadowMapperSun.getCamera(1) };
+			const CameraI* pCamera2{ &mShadowMapperSun.getCamera(2) };
 			const CameraI* currCamera{ uiManager.mCurrCamera.data() == -1 ? pCamera : (uiManager.mCurrCamera.data() == 0 ? pCamera0 : (uiManager.mCurrCamera.data() == 1 ? pCamera1 : (pCamera2))) };
 			renderTerrain(mDeferredRenderer.mFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, uiManager, dirToSun, time);
 
-			mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			mShadowMatrices.updateGPU({ mShadowMapper, uiManager });
+			mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
+			mShadowMapperMoon.updateCameras(-dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
+			mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
 			for (size_t i{ 0 }; i < CascadeCount; ++i) {
-				const CameraI& depthCamera{ mShadowMapper.getCamera(i) };
-				const FramebufferI& depthFramebuffer{ mShadowMapper.getFramebuffer(i) };
-				depthFramebuffer.use();
+				const CameraI& depthCameraSun{ mShadowMapperSun.getCamera(i) };
+				const FramebufferI& depthFramebufferSun{ mShadowMapperSun.getFramebuffer(i) };
+				depthFramebufferSun.use();
 				glClearColor(0, 0, 0, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				renderTerrain(depthFramebuffer, depthCamera, camera.getPosition(), mShadowMapper.mTerrainDepthShader, mShadowMapper.mWaterDepthShader, uiManager, dirToSun, time, true);
+				renderTerrain(depthFramebufferSun, depthCameraSun, camera.getPosition(), mShadowMapperSun.mTerrainDepthShader, mShadowMapperSun.mWaterDepthShader, uiManager, dirToSun, time, true);
+
+				const CameraI& depthCameraMoon{ mShadowMapperMoon.getCamera(i) };
+				const FramebufferI& depthFramebufferMoon{ mShadowMapperMoon.getFramebuffer(i) };
+				depthFramebufferMoon.use();
+				glClearColor(0, 0, 0, 0);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				renderTerrain(depthFramebufferMoon, depthCameraMoon, camera.getPosition(), mShadowMapperMoon.mTerrainDepthShader, mShadowMapperMoon.mWaterDepthShader, uiManager, dirToSun, time, true);
 			}
 
 			mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
@@ -229,14 +243,14 @@ public:
 			renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mShaderWaterForward, uiManager, dirToSun, time);
 			
 			// Shadow map ortho volume debugging (messy)
-			if (uiManager.mHDRScale.data() < 10)
-				mShadowMapper.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
+			if (uiManager.mSunBrightness.data() < 10)
+				mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			VertexArray orthoVertexArray;
 
 			std::vector<unsigned int> indices{ 0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 2, 3, 6, 3, 6, 7, 0, 1, 4, 1, 4, 5, 0, 2, 4, 2, 4, 6, 1, 3, 5, 3, 5, 7 };
 			std::vector<int> layout{ 3 };
 			for (int i{ 0 }; i < CascadeCount; ++i) {
-				const std::array<glm::vec3, 8>& orthoPoints{ mShadowMapper.getOrthoWorldPositions(i) };
+				const std::array<glm::vec3, 8>& orthoPoints{ mShadowMapperSun.getOrthoWorldPositions(i) };
 				std::vector<float> vertexData;
 				for (const glm::vec3& orthoPoint : orthoPoints) {
 					vertexData.push_back(orthoPoint.x);
@@ -414,7 +428,8 @@ private:
 	Cubemap mNightSkybox;
 	CubeVertices mCubeVertices;
 	DeferredRenderer mDeferredRenderer;
-	ShadowMapper<CascadeCount> mShadowMapper;
+	ShadowMapper<CascadeCount> mShadowMapperSun;
+	ShadowMapper<CascadeCount> mShadowMapperMoon;
 
 	PlaneGPU mLowQualityPlane;
 	PlaneGPU mMediumQualityPlane;
