@@ -467,7 +467,7 @@ public:
 	UIElement<float> mLakeExponent{ 100 }; // 100 for quintic, 5 not
 
 	// Plane Chunking
-	UIElement<int>    mChunkCount{ 180 };
+	UIElement<int>    mChunkCount{ 205 };
 	UIElement<float>  mTerrainSpan{ 5000 };
 	UIElement<float>    mLowQualityVertexDensity{ 0.15f };
 	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?
