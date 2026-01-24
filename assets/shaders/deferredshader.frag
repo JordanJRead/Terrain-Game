@@ -127,8 +127,8 @@ float mieDensityAtPoint(vec3 pos) {
 	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensityScale;
 }
 
-vec3 transmittanceFromSunToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false) {
-	float shadowAmount = isPointInSunShadow(pos, normal, onGround);
+vec3 transmittanceFromSunToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false, bool doShadows = true) {
+	float shadowAmount = doShadows ? isPointInSunShadow(pos, normal, onGround) : 0;
 	if (shadowAmount > 0.5 && !onGround)
 		return vec3(0);
 	vec2 ts = rayAtmosphereIntersection(pos, perFrameInfo.dirToSun);
@@ -161,8 +161,8 @@ vec3 transmittanceFromSunToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround 
 	return transmittance;
 }
 
-vec3 transmittanceFromMoonToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false) {
-	float shadowAmount = isPointInMoonShadow(pos, normal, onGround);
+vec3 transmittanceFromMoonToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false, bool doShadows = true) {
+	float shadowAmount = doShadows ? isPointInMoonShadow(pos, normal, onGround) : 0;
 	return vec3(1 - shadowAmount);
 }
 
@@ -170,7 +170,7 @@ float phase(float cosTheta, float g) {
 	return 1 / (4 * PI) * (1 - g * g) / pow(1 + g * g - 2 * g * cosTheta, 3/2);
 }
 
-vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0)) {
+vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0), bool doShadows = true) {
 	vec2 intersectionTs = rayAtmosphereIntersection(rayPos, rayDir);
 	if (intersectionTs.x < 0 && intersectionTs.y < 0)
 		return albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true);
@@ -202,8 +202,8 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 		// In-scattering
 		float cosThetaSun = dot(rayDir, perFrameInfo.dirToSun);
 		float cosThetaMoon = dot(rayDir, -perFrameInfo.dirToSun);
-		vec3 sunlightHittingHere = transmittanceFromSunToPoint(samplePos)   * colours.sunColour  * (phase(cosThetaSun,  atmosphereInfo.rayleighG) * rayleighDensity * atmosphereInfo.rayleighScattering + phase(cosThetaSun,  atmosphereInfo.mieG) * mieDensity * atmosphereInfo.mieScattering);
-		vec3 moonlightHittingHere = transmittanceFromMoonToPoint(samplePos) * colours.moonColour * (phase(cosThetaMoon, atmosphereInfo.rayleighG) * rayleighDensity * atmosphereInfo.rayleighScattering + phase(cosThetaMoon, atmosphereInfo.mieG) * mieDensity * atmosphereInfo.mieScattering);
+		vec3 sunlightHittingHere = transmittanceFromSunToPoint(samplePos, vec3(0), false, doShadows)   * colours.sunColour  * (phase(cosThetaSun,  atmosphereInfo.rayleighG) * rayleighDensity * atmosphereInfo.rayleighScattering + phase(cosThetaSun,  atmosphereInfo.mieG) * mieDensity * atmosphereInfo.mieScattering);
+		vec3 moonlightHittingHere = transmittanceFromMoonToPoint(samplePos, vec3(0), false, doShadows) * colours.moonColour * (phase(cosThetaMoon, atmosphereInfo.rayleighG) * rayleighDensity * atmosphereInfo.rayleighScattering + phase(cosThetaMoon, atmosphereInfo.mieG) * mieDensity * atmosphereInfo.mieScattering);
 		inScatteredLight += atmosphereInfo.brightness * (sunlightHittingHere + moonlightHittingHere) * transmittance * dx;
 		samplePos += rayDir * dx;
 	}
@@ -321,7 +321,7 @@ void main() {
 			float fresnel = pow(1 - dot(viewDir, normal), 3.0);
 			vec3 reflectDir = normalize(reflect(-viewDir, normal));
 			vec3 reflectStarColor = getStarColor(reflectDir);
-			vec3 reflectColour = lightReceived(worldPos, reflectDir, true, vec3(0), reflectStarColor);
+			vec3 reflectColour = lightReceived(worldPos, reflectDir, true, vec3(0), reflectStarColor, vec3(0), false);
 			fresnel = clamp(fresnel, 0.0, 1.0);
 			objectColour = fresnel * reflectColour + (1 - fresnel) * objectColour;
 
