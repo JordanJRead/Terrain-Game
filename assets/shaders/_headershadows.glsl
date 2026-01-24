@@ -35,8 +35,10 @@ float sampleShadowMapSun(vec2 sampleCoord, int i, float currDepth, bool blur = f
 
 float isPointInSunShadow(vec3 pos, vec3 normal, bool blur = false) {
 	vec3 viewSpacePos = (perFrameInfo.viewMatrix * vec4(pos, 1)).xyz;
+	vec4 clipSpace = perFrameInfo.projectionMatrix * vec4(viewSpacePos, 1);
+	vec3 ndc = clipSpace.xyz / clipSpace.z;
 	float scale = ((-viewSpacePos.z) - perFrameInfo.cameraNear) / (perFrameInfo.cameraFar - perFrameInfo.cameraNear);
-	if (scale < 0 || scale > 1)
+	if (scale < 0 || scale > 1 || ndc.x < -1 || ndc.x > 1 || ndc.y < -1 || ndc.y > 1)
 		return 0;
 	for (int i = 0; i < CASCADECOUNT; ++i) {
 		float minScale;
