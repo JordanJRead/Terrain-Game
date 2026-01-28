@@ -6,7 +6,7 @@ ShaderTerrainImage::ShaderTerrainImage(const std::string& vertPath, const std::s
 void ShaderTerrainImage::setRenderData(const glm::vec2& worldPos, float worldSize) const {
 	use();
 	setVector2("worldPos", worldPos);
-	setFloat("scale", worldSize);
+	setFloat("imageScale", worldSize);
 }
 
 void ShaderTerrainImage::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
