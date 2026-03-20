@@ -28,9 +28,7 @@ FramebufferColour::FramebufferColour(int colourTextureCount, int width, int heig
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, mColourTextures[i], 0);
 			attachments.push_back(GL_COLOR_ATTACHMENT0 + i);
 		}
-		if (mColourTextureCount == 1)
-			glDrawBuffer(GL_FRAMEBUFFER);
-		else
+		if (mColourTextureCount != 1)
 			glDrawBuffers(mColourTextureCount, attachments.data());
 	}
 	else {
