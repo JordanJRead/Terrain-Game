@@ -124,6 +124,7 @@ public:
 	}
 
 	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const FramebufferColour& targetFramebuffer) {
+		glEnable(GL_CULL_FACE);
 		mStarManager.update({ uiManager.mStarMinSize.data(), uiManager.mStarMaxSize.data(), uiManager.mStarCount.data() });
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
