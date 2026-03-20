@@ -13,6 +13,9 @@ public:
 	void setRenderData(const TerrainRenderer& terrainRenderer, float planeWidth, int instanceCount, const Cubemap& skybox);
 	virtual void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const;
 	int getInstanceCount();
+	void setShellProgress(float shellProgress) {
+		setFloat("shellProgress", shellProgress);
+	}
 
 protected:
 	int mInstanceCount{};
