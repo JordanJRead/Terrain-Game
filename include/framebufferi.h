@@ -2,6 +2,7 @@
 #define FRAMEBUFFER_I
 
 #include "OpenGLObjects/FBO.h"
+#include <iostream>
 
 class FramebufferI {
 public:

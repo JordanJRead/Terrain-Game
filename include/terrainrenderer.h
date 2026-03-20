@@ -36,7 +36,7 @@ public:
 	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos, const UIManager& uiManager)
 		: mLowQualityPlane{ 2 }
 		, mMediumQualityPlane{ 2 }
-		, mHighQualityPlane{ 2 } // ? temporary i think?
+		, mHighQualityPlane{ 2 }
 		, mReallyLowQualityPlane{ 2 }
 
 		, mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
