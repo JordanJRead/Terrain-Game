@@ -93,6 +93,11 @@ vec4 createTerrainInfo(vec2 pos) {
 	smoothTerrainInfo.x -= lake.x;
 	smoothTerrainInfo.yz -= lake.yz;
 
+	mountain.x = extreme(mountain.x);
+	mountain.x = pullup(mountain.x);
+	mountain.x = pullup(mountain.x);
+	mountain.x = extreme(mountain.x);
+
 	return vec4(terrainInfo, mountain);
 }
 

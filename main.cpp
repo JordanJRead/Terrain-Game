@@ -64,20 +64,21 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
-#endif
+//#endif
 
 	int screenWidth{ 1920 };
 	int screenHeight{ 1080 };
 
-	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "TerrainGame", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "TerrainGame", /*glfwGetPrimaryMonitor()*/NULL, NULL);
 	if (window == NULL)
 	{
 		std::cerr << "Failed to create GLFW window" << "\n";
 		glfwTerminate();
 	}
 	glfwMakeContextCurrent(window);
+    //glfwGetWindowSize(window, &screenWidth, &screenHeight);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -92,12 +93,12 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 430");
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(glDebugOutput, nullptr);
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-#endif
+//#endif
 
 	App app{ screenWidth, screenHeight, window };
 	app.loop();

@@ -124,7 +124,6 @@ public:
 	}
 
 	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const FramebufferColour& targetFramebuffer) {
-		glEnable(GL_CULL_FACE);
 		mStarManager.update({ uiManager.mStarMinSize.data(), uiManager.mStarMaxSize.data(), uiManager.mStarCount.data() });
 		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
 		if (hasTerrainChanged) {
@@ -216,7 +215,10 @@ public:
 			const CameraI* pCamera1{ &mShadowMapperSun.getCamera(1) };
 			const CameraI* pCamera2{ &mShadowMapperSun.getCamera(2) };
 			const CameraI* currCamera{ uiManager.mCurrCamera.data() == -1 ? pCamera : (uiManager.mCurrCamera.data() == 0 ? pCamera0 : (uiManager.mCurrCamera.data() == 1 ? pCamera1 : (pCamera2))) };
+
+			glEnable(GL_CULL_FACE);
 			renderTerrain(mDeferredRenderer.mFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, uiManager, dirToSun, time);
+			glDisable(GL_CULL_FACE);
 
 			mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			mShadowMapperMoon.updateCameras(-dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
