@@ -32,7 +32,7 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	std::vector<int> attribs{
 		2
 	};
-
+	
 	mScreenQuad.create(vertexData, indices, attribs);
 
 	glfwSetWindowUserPointer(mWindow, this);
