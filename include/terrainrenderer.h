@@ -274,6 +274,7 @@ public:
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
+		int shellCount{ uiManager.mShellCount.data() };
 
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
@@ -300,7 +301,6 @@ public:
 					int qualityIndex{ highQuality ? 2 : (mediumQuality ? 1 : 0) };
 
 					// LOD shell count
-					int shellCount{ uiManager.mShellCount.data() };
 					if (depthPass)
 						shellCount = 0;
 					else if (!isCloseChunk) {
@@ -330,13 +330,22 @@ public:
 		// Draw terrain
 		glDisable(GL_BLEND);
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(2), mDaySkybox);
-		terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
+		for (int i = shellCount; i >= 0; --i) {
+			terrainShader.setShellProgress((float)i / shellCount);
+			terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
+		}
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(1), mDaySkybox);
-		terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
+		for (int i = shellCount; i >= 0; --i) {
+			terrainShader.setShellProgress((float)i / shellCount);
+			terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
+		}
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(0), mDaySkybox);
-		terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
+		for (int i = shellCount; i >= 0; --i) {
+			terrainShader.setShellProgress((float)i / shellCount);
+			terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
+		}
 	}
 
 	AABB getSceneWorldAABB(const glm::vec3& playerCameraPos, const UIManager& uiManager) const {
