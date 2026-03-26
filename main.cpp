@@ -71,7 +71,7 @@ int main() {
 	int screenWidth{ 1920 };
 	int screenHeight{ 1080 };
 
-	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "TerrainGame", /*glfwGetPrimaryMonitor()*/NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(screenWidth, screenHeight, "TerrainGame", NULL/*glfwGetPrimaryMonitor()*/, NULL);
 	if (window == NULL)
 	{
 		std::cerr << "Failed to create GLFW window" << "\n";

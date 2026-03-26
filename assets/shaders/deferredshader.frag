@@ -293,8 +293,10 @@ void main() {
 	bool isSky = groundWorldPosShellProgress.w == -3;
 
 	vec3 cameraRayDir = vec3(
-		tan(perFrameInfo.fovX / 2) * (2 * texCoord.x - 1),
-		tan(perFrameInfo.fovY / 2) * (2 * texCoord.y - 1),
+		//tan(perFrameInfo.fovX / 2) * (2 * texCoord.x - 1),
+		//tan(perFrameInfo.fovY / 2) * (2 * texCoord.y - 1),
+		perFrameInfo.tanHalfFOVX * (2 * texCoord.x - 1),
+		perFrameInfo.tanHalfFOVY * (2 * texCoord.y - 1),
 		-1
 	);
 	cameraRayDir = normalize(cameraRayDir);
@@ -302,8 +304,10 @@ void main() {
 	
 	vec3 starColour = getStarColor(cameraRayDir);
 
+	vec3 skyColour = lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour);
+
 	if (isSky) {
-		FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0, 0, 0), starColour), 1);
+		FragColor = vec4(skyColour, 1);
 	}
 	else {
 		if (isWater) {
@@ -340,9 +344,9 @@ void main() {
 			if (fogStrength == 0)
 				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour), 1);
+				FragColor = vec4(skyColour, 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour) * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + skyColour * fogStrength, 1);
 		}
 		else {
 			vec4 terrainAlbedoWet = getTerrainAlbedoWet(groundWorldPosShellProgress.xyz, groundWorldPosShellProgress.w, worldPosMountain.w, bool(normalDoesTexelExist.w));
@@ -372,9 +376,9 @@ void main() {
 			if (fogStrength == 0)
 				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour), 1);
+				FragColor = vec4(skyColour, 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour) * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + skyColour * fogStrength, 1);
 		}
 	}
 }

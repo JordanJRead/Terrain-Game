@@ -168,6 +168,8 @@ namespace BufferTypes {
 			, pitch{ camera.getPitch() }
 			, cameraNear{ camera.getNearPlaneDist() }
 			, cameraFar{ camera.getFarPlaneDist() }
+			, tanHalfFOVX{ glm::tan(camera.getFOVX() / 2) }
+			, tanHalfFOVY{ glm::tan(camera.getFOVY() / 2) }
 			, dayTime{ uiManager.mDayTime.data() }
 			, nightStrength{ starBrightnessAtTime(uiManager.mDayTime.data()) }
 		{ }
@@ -185,6 +187,8 @@ namespace BufferTypes {
 		float pitch{};
 		float cameraNear{};
 		float cameraFar{};
+		float tanHalfFOVX{};
+		float tanHalfFOVY{};
 		float dayTime{};
 		float nightStrength{};
 	};

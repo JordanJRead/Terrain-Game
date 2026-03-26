@@ -82,6 +82,8 @@ layout(std140, binding = 4) uniform PerFrameInfo {
 	float pitch;
 	float cameraNear;
 	float cameraFar;
+	float tanHalfFOVX;
+	float tanHalfFOVY;
 	float dayTime;
 	float nightStrength;
 } perFrameInfo;
