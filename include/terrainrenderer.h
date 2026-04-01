@@ -205,6 +205,7 @@ public:
 			mImages[i].bindImage(i);
 		}
 
+		mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
 		if (uiManager.mIsDeferredRendering.data()) {
 			mDeferredRenderer.mFramebuffer.use();
 			glClearColor(0, 0, 0, -3);
@@ -222,7 +223,6 @@ public:
 
 			mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			mShadowMapperMoon.updateCameras(-dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
 			for (size_t i{ 0 }; i < CascadeCount; ++i) {
 				bool isDay = uiManager.mDayTime.data() < 1;
 
@@ -286,24 +286,21 @@ public:
 				std::array<float, 2> yVals{ mMinTerrainHeight, mMaxTerrainHeight };
 				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0f, chunkPos.z + chunkWidth / 2.0f };
 
-				bool isVisible{ false };
+				bool isVisible{ true };
 				if (uiManager.mFrustumCulling.data())
 					isVisible = camera.isAABBVisible({ {chunkPos.x - chunkWidth / 2.0f, mMinTerrainHeight, chunkPos.z - chunkWidth / 2.0f}, {chunkPos.x + chunkWidth / 2.0f, mMaxTerrainHeight, chunkPos.z + chunkWidth / 2.0f} });
-				else {
-					isVisible = true;
-				}
 
 				if (isVisible) {
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
-					bool isCloseChunk{ x >= -1 && x <= 1 && z >= -1 && z <= 1 };
-					bool highQuality{ !forceLowQuality && isCloseChunk || chunkDist < uiManager.mVertexLODDistanceNear.data() };
+					bool isNeighbourChunck{ x >= -1 && x <= 1 && z >= -1 && z <= 1 };
+					bool highQuality{ !forceLowQuality && isNeighbourChunck || chunkDist < uiManager.mVertexLODDistanceNear.data() };
 					bool mediumQuality{ !forceLowQuality && chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
 					int qualityIndex{ highQuality ? 2 : (mediumQuality ? 1 : 0) };
 
 					// LOD shell count
 					if (depthPass)
 						shellCount = 0;
-					else if (!isCloseChunk) {
+					else if (!isNeighbourChunck) {
 						int oldShellCount{ uiManager.mShellCount.data() };
 						float shellLODDistance{ uiManager.mShellLODDistance.data() };
 						if (chunkDist > shellLODDistance * 4) {

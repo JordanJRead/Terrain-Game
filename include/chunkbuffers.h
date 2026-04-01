@@ -5,19 +5,28 @@
 #include <vector>
 #include <array>
 #include "OpenGLObjects/BUF.h"
+#include <iostream>
 
 template <int ChunkQualityCount>
 class ChunkBuffers {
 public:
 	ChunkBuffers(int bindingIndex) {
 		mBuffer.use(GL_SHADER_STORAGE_BUFFER);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, 0, 0, GL_STATIC_DRAW);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, 0, 0, GL_DYNAMIC_DRAW);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, mBuffer);
 	}
 
 	int flushTerrain(int qualityIndex) {
 		mBuffer.use(GL_SHADER_STORAGE_BUFFER);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, mTerrainVectors[qualityIndex].size() * sizeof(float), mTerrainVectors[qualityIndex].data(), GL_DYNAMIC_DRAW);
+
+		size_t byteCount{ mTerrainVectors[qualityIndex].size() * sizeof(float) };
+		if (byteCount > mMaxBytes) {
+			glBufferData(GL_SHADER_STORAGE_BUFFER, byteCount, mTerrainVectors[qualityIndex].data(), GL_DYNAMIC_DRAW);
+			mMaxBytes = byteCount;
+		}
+		else {
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, byteCount, mTerrainVectors[qualityIndex].data());
+		}
 
 		int layerCount{ (int)mTerrainVectors[qualityIndex].size() / 2 };
 		mTerrainVectors[qualityIndex].clear();
@@ -26,7 +35,15 @@ public:
 
 	int flushWater() {
 		mBuffer.use(GL_SHADER_STORAGE_BUFFER);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, mWaterData.size() * sizeof(float), mWaterData.data(), GL_DYNAMIC_DRAW);
+
+		size_t byteCount{ mWaterData.size() * sizeof(float) };
+		if (byteCount > mMaxBytes) {
+			glBufferData(GL_SHADER_STORAGE_BUFFER, byteCount, mWaterData.data(), GL_DYNAMIC_DRAW);
+			mMaxBytes = byteCount;
+		}
+		else {
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, byteCount, mWaterData.data());
+		}
 
 		int chunkCount{ (int)mWaterData.size() / 2 };
 		mWaterData.clear();
@@ -47,6 +64,7 @@ private:
 	BUF mBuffer;
 	std::array<std::vector<float>, ChunkQualityCount> mTerrainVectors; // each vector is: x, y, x, y, ...
 	std::vector<float> mWaterData; // x, y, x, y, ...
+	int mMaxBytes{ 0 };
 };
 
 #endif
