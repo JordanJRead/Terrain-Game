@@ -82,6 +82,7 @@ vec4 getTerrainAlbedoWet(vec3 groundWorldPos, float shellProgress, float mountai
 
 vec3 getAtmosphereCenter() {
 	return vec3(perFrameInfo.cameraPos.x, atmosphereInfo.centerY, perFrameInfo.cameraPos.z);
+	//return vec3(0, 50, 0);
 }
 
 vec2 rayAtmosphereIntersection(vec3 pos, vec3 dir) {
@@ -91,7 +92,11 @@ vec2 rayAtmosphereIntersection(vec3 pos, vec3 dir) {
 	float c = dot((pos - atmosphereCenter), (pos - atmosphereCenter)) - pow(atmosphereInfo.maxRadius, 2);
 	float disc = b * b - 4 * a * c;
 	if (disc > 0) {
-		return vec2((-b + sqrt(disc)) / (2 * a), (-b - sqrt(disc)) / (2 * a));
+		vec2 ts = vec2((-b + sqrt(disc)) / (2 * a), (-b - sqrt(disc)) / (2 * a));
+		ts = vec2(min(ts.x, ts.y), max(ts.x, ts.y));
+		if (ts.x < 0)
+			ts.x = 0;
+		return ts;
 	}
 	return vec2(-1, -1);
 }
@@ -127,43 +132,24 @@ float mieDensityAtPoint(vec3 pos) {
 	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensityScale;
 }
 
-vec3 transmittanceFromSunToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false, bool doShadows = true) {
-	float shadowAmount = doShadows ? isPointInSunShadow(pos, normal, onGround) : 0;
-	if (shadowAmount > 0.5 && !onGround)
-		return vec3(0);
-	vec2 ts = rayAtmosphereIntersection(pos, perFrameInfo.dirToSun);
-	if (ts.x < 0 && ts.y < 0)
-		return vec3(1, 1 , 1);
-	float t0 = min(ts.x, ts.y);
-	float t1 = max(ts.x, ts.y);
-	t0 = max(t0, 0);
-	float dist = max(ts.x, ts.y);
-	if (dist < 0) {
-		return vec3(1, 1, 1);
+float opticalDepth(vec3 pos, vec3 dir, bool isRayleigh) {
+	vec2 ts = rayAtmosphereIntersection(pos, dir);
+	if (ts.x == -1) {
+		return 0;
 	}
-
+	
 	int stepCount = atmosphereInfo.raySunStepCount;
-	float dx = dist / stepCount;
-	vec3 transmittance = vec3(1, 1, 1);
-	vec3 samplePos = pos + perFrameInfo.dirToSun * dx;
-	for (int n = 0; n < stepCount; ++n) {
-		
-		float rayleighDensity = rayleighDensityAtPoint(samplePos);
-		float mieDensity = mieDensityAtPoint(samplePos);
+	float totalDistance = ts.y - ts.x;
+	float dx = totalDistance / stepCount;
+	vec3 samplePos = pos;
 
-		transmittance *= exp(-dx * (rayleighDensity * atmosphereInfo.rayleighScattering + mieDensity * atmosphereInfo.mieScattering));
-
-		samplePos += perFrameInfo.dirToSun * dx;
+	float depth = 0;
+	for (int i = 0; i < stepCount; ++i) {
+		float density = isRayleigh ? rayleighDensityAtPoint(samplePos) : mieDensityAtPoint(samplePos);
+		depth += density * dx;
+		samplePos += dir * dx;
 	}
-	if (onGround) {
-		return transmittance * (1 - shadowAmount);
-	}
-	return transmittance;
-}
-
-vec3 transmittanceFromMoonToPoint(vec3 pos, vec3 normal = vec3(0), bool onGround = false, bool doShadows = true) {
-	float shadowAmount = doShadows ? isPointInMoonShadow(pos, normal, onGround) : 0;
-	return vec3(1 - shadowAmount);
+	return depth;
 }
 
 float phase(float cosTheta, float g) {
@@ -171,60 +157,83 @@ float phase(float cosTheta, float g) {
 }
 
 vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0), bool doShadows = true) {
-	vec2 intersectionTs = rayAtmosphereIntersection(rayPos, rayDir);
-	if (intersectionTs.x < 0 && intersectionTs.y < 0)
-		return albedo * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true);
-	float t0;
-	float t1;
-	t0 = min(intersectionTs.x, intersectionTs.y);
-	t0 = max(t0, 0);
-	t1 = max(intersectionTs.x, intersectionTs.y);
-	if (!isSky)
-		t1 = min(t1, length(rayPos - worldPosOfVisibleObject));
+	vec3 colourOfObject = albedo;
+	if (!isSky) {
+		float sunShadow  = isPointInSunShadow(worldPosOfVisibleObject, normal, true);
+		float moonShadow  = isPointInMoonShadow(worldPosOfVisibleObject, normal, true);
+		
+		vec3 sunColourHittingHere  = (1 - sunShadow)  * colours.sunColour  * exp(-(opticalDepth(worldPosOfVisibleObject,  perFrameInfo.dirToSun, true) * atmosphereInfo.rayleighScattering + opticalDepth(worldPosOfVisibleObject,  perFrameInfo.dirToSun, false) * atmosphereInfo.mieScattering));
+		vec3 moonColourHittingHere = (1 - moonShadow) * colours.moonColour * exp(-(opticalDepth(worldPosOfVisibleObject, -perFrameInfo.dirToSun, true) * atmosphereInfo.rayleighScattering + opticalDepth(worldPosOfVisibleObject, -perFrameInfo.dirToSun, false) * atmosphereInfo.mieScattering));
 
-	vec3 a = rayPos + rayDir * t0;
-	vec3 b = rayPos + rayDir * t1;
+		float sunDot = dot(normal, perFrameInfo.dirToSun);
+		float moonDot = dot(normal, -perFrameInfo.dirToSun);
+		sunDot = max(sunDot, 0);
+		moonDot = max(moonDot, 0);
+
+		float ambientDot = mix((moonDot + 1) / 2, (sunDot + 1) / 2, perFrameInfo.nightStrength);
+
+		vec3 dayAmbient = vec3(1);
+		vec3 nightAmbient = vec3(0.02);
+		vec3 ambient = perFrameInfo.nightStrength * nightAmbient + (1 - perFrameInfo.nightStrength) * dayAmbient;
+
+		colourOfObject = albedo * (sunDot * sunColourHittingHere + moonDot * moonColourHittingHere + ambientDot * ambient);
+	}
+
+	vec2 ts = rayAtmosphereIntersection(rayPos, rayDir);
+	if (ts.x < 0 && ts.y < 0)
+		return colourOfObject;
+	if (!isSky)
+		ts.y = min(ts.y, length(rayPos - worldPosOfVisibleObject));
+	if (ts.x > ts.y)
+		return colourOfObject;
+
+	vec3 a = rayPos + rayDir * ts.x;
+	vec3 b = rayPos + rayDir * ts.y;
 
 	int stepCount = atmosphereInfo.rayAtmosphereStepCount;
-	float totalDistance = t1 - t0;
+	float totalDistance = ts.y - ts.x;
 	float dx = totalDistance / stepCount;
 	
 	vec2 noiseSamplePos = gl_FragCoord.xy / textureSize(blueNoise, 0).xy;
 	vec3 samplePos = a + rayDir * dx - texture(blueNoise, noiseSamplePos).r * atmosphereInfo.ditherStrength;
-	vec3 transmittance = vec3(1, 1, 1);
+
+	float currentOpticalDepthRayleigh = 0;
+	float currentOpticalDepthMie = 0;
 	vec3 inScatteredLight = vec3(0, 0, 0);
+
 	for (int n = 0; n < stepCount; ++n) {
-		
+		bool inSunShadow  = isPointInSunShadow(samplePos, normal) > 0.5;
+		bool inMoonShadow  = isPointInMoonShadow(samplePos, normal) > 0.5;
+
 		float rayleighDensity = rayleighDensityAtPoint(samplePos);
 		float mieDensity = mieDensityAtPoint(samplePos);
-		transmittance *= exp(-dx * (rayleighDensity * atmosphereInfo.rayleighScattering + mieDensity * atmosphereInfo.mieScattering));
 
-		// In-scattering
-		float cosThetaSun = dot(rayDir, perFrameInfo.dirToSun);
+		currentOpticalDepthRayleigh += rayleighDensity * dx;
+		currentOpticalDepthMie += mieDensity * dx;
+
+		// todo dont calculate if in shadow
+		float toSunRayleighOpticalDepth  = opticalDepth(samplePos,  perFrameInfo.dirToSun, true);
+		float toMoonRayleighOpticalDepth = opticalDepth(samplePos, -perFrameInfo.dirToSun, true);
+		float toSunMieOpticalDepth        = opticalDepth(samplePos,  perFrameInfo.dirToSun, false);
+		float toMoonMieOpticalDepth       = opticalDepth(samplePos, -perFrameInfo.dirToSun, false);
+		
+		float cosThetaSun  = dot(rayDir,  perFrameInfo.dirToSun);
 		float cosThetaMoon = dot(rayDir, -perFrameInfo.dirToSun);
-		vec3 sunlightHittingHere = transmittanceFromSunToPoint(samplePos, vec3(0), false, doShadows)   * colours.sunColour  * (phase(cosThetaSun,  atmosphereInfo.rayleighG) * rayleighDensity * atmosphereInfo.rayleighScattering + phase(cosThetaSun,  atmosphereInfo.mieG) * mieDensity * atmosphereInfo.mieScattering);
-		vec3 moonlightHittingHere = transmittanceFromMoonToPoint(samplePos, vec3(0), false, doShadows) * colours.moonColour * (phase(cosThetaMoon, atmosphereInfo.rayleighG) * rayleighDensity * atmosphereInfo.rayleighScattering + phase(cosThetaMoon, atmosphereInfo.mieG) * mieDensity * atmosphereInfo.mieScattering);
-		inScatteredLight += atmosphereInfo.brightness * (sunlightHittingHere + moonlightHittingHere) * transmittance * dx;
+
+		// In-scattering from sun
+		vec3 inScatteredFromSunRayleigh  = (inSunShadow ? 0 : 1)  * colours.sunColour  * rayleighDensity * phase(cosThetaSun,  atmosphereInfo.rayleighG) * atmosphereInfo.rayleighScattering * exp(-(currentOpticalDepthRayleigh + toSunRayleighOpticalDepth)  * atmosphereInfo.rayleighScattering);
+		vec3 inScatteredFromMoonRayleigh = (inMoonShadow ? 0 : 1) * colours.moonColour  * rayleighDensity * phase(cosThetaMoon, atmosphereInfo.rayleighG) * atmosphereInfo.rayleighScattering * exp(-(currentOpticalDepthRayleigh + toMoonRayleighOpticalDepth) * atmosphereInfo.rayleighScattering);
+		vec3 inScatteredFromSunMie       = (inSunShadow ? 0 : 1)  * colours.sunColour  * mieDensity * phase(cosThetaSun,  atmosphereInfo.mieG)      * atmosphereInfo.mieScattering      * exp(-(currentOpticalDepthMie      + toSunMieOpticalDepth)       * atmosphereInfo.mieScattering);
+		vec3 inScatteredFromMoonMie      = (inMoonShadow ? 0 : 1) * colours.moonColour  * mieDensity  * phase(cosThetaMoon, atmosphereInfo.mieG)      * atmosphereInfo.mieScattering      * exp(-(currentOpticalDepthMie      + toMoonMieOpticalDepth)      * atmosphereInfo.mieScattering);
+
+		inScatteredLight += (inScatteredFromSunRayleigh + inScatteredFromMoonRayleigh + inScatteredFromSunMie + inScatteredFromMoonMie) * atmosphereInfo.brightness * dx;
+
 		samplePos += rayDir * dx;
 	}
 	if (isSky)
-		return inScatteredLight + albedo;
+		return inScatteredLight + colourOfObject;
 
-	vec3 sunColourHittingHere = colours.sunColour  * transmittanceFromSunToPoint(worldPosOfVisibleObject, normal, true);
-	vec3 moonColourHittingHere = colours.moonColour * transmittanceFromMoonToPoint(worldPosOfVisibleObject, normal, true);
-
-	float sunDot = dot(normal, perFrameInfo.dirToSun);
-	float moonDot = dot(normal, -perFrameInfo.dirToSun);
-	float currDot = perFrameInfo.nightStrength * ((moonDot + 1) / 2) + (1 - perFrameInfo.nightStrength) * (sunDot + 1) / 2;
-	sunDot = max(sunDot, 0);
-	moonDot = max(moonDot, 0);
-
-	vec3 dayAmbient = vec3(1);
-	vec3 nightAmbient = vec3(0.02);
-	vec3 currAmbient = perFrameInfo.nightStrength * nightAmbient + (1 - perFrameInfo.nightStrength) * dayAmbient;
-
-	vec3 diffuse = albedo * (sunDot * sunColourHittingHere + moonDot * moonColourHittingHere + currDot * currAmbient);
-	return inScatteredLight + diffuse * transmittance;
+	return inScatteredLight + colourOfObject * exp(-(currentOpticalDepthRayleigh * atmosphereInfo.rayleighScattering + currentOpticalDepthMie * atmosphereInfo.mieScattering));
  }
 
  int getSplitIndex(vec3 dir) {
