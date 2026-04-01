@@ -205,6 +205,7 @@ public:
 			mImages[i].bindImage(i);
 		}
 
+		mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
 		if (uiManager.mIsDeferredRendering.data()) {
 			mDeferredRenderer.mFramebuffer.use();
 			glClearColor(0, 0, 0, -3);
@@ -222,7 +223,6 @@ public:
 
 			mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			mShadowMapperMoon.updateCameras(-dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
 			for (size_t i{ 0 }; i < CascadeCount; ++i) {
 				bool isDay = uiManager.mDayTime.data() < 1;
 
