@@ -25,6 +25,7 @@ public:
 			mMaxBytes = byteCount;
 		}
 		else {
+			glBufferData(GL_SHADER_STORAGE_BUFFER, mMaxBytes, nullptr, GL_DYNAMIC_DRAW);
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, byteCount, mTerrainVectors[qualityIndex].data());
 		}
 
@@ -42,6 +43,7 @@ public:
 			mMaxBytes = byteCount;
 		}
 		else {
+			glBufferData(GL_SHADER_STORAGE_BUFFER, mMaxBytes, nullptr, GL_DYNAMIC_DRAW);
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, byteCount, mWaterData.data());
 		}
 
