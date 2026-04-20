@@ -128,13 +128,19 @@ layout(std430, binding = 7) buffer ShadowInfo {
 	float maxBias;
 } shadowInfo;
 
-layout(std430, binding = 8) buffer ChunkData {
-	float data[];
-} chunkData;
-
-layout(std430, binding = 9) buffer StarData {
+layout(std430, binding = 8) buffer StarData {
 	ivec2 indexData[STARYSPLITCOUNT]; // (starting index for split i, number of stars in split i)
 	vec4 stars[]; // (x dir, y dir, z dir, size in deg)
 } starData;
+
+layout(std430, binding = 9) buffer ChunkData {
+	float data[];
+} chunkDataQuality[3];
+
+layout(std430, binding = 12) buffer WaterChunkData {
+	float data[];
+} waterChunkData;
+
+
 
 #endif

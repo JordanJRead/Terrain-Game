@@ -41,7 +41,7 @@ vec3 getWaterHeight(vec2 pos) {
 }
 
 void main() {
-	vec2 flatPlanePos = vec2(chunkData.data[gl_InstanceID * 2 + 0], chunkData.data[gl_InstanceID * 2 + 1]);
+	vec2 flatPlanePos = vec2(waterChunkData.data[gl_InstanceID * 2 + 0], waterChunkData.data[gl_InstanceID * 2 + 1]);
 	vec4 worldPos = vec4(vPos.x * planeWorldWidth + flatPlanePos.x, waterParams.height, vPos.y * planeWorldWidth + flatPlanePos.y, 1);
 	vec2 flatWorldPos = worldPos.xz;
 	vec3 waterInfo = getWaterHeight(flatWorldPos);

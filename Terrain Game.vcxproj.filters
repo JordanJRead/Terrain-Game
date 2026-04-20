@@ -257,5 +257,8 @@
     <ClInclude Include="include\starmanager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\gpubuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

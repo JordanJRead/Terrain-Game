@@ -17,11 +17,12 @@ out VertOut {
 // Per plane
 uniform float planeWorldWidth;
 out flat int shellIndex;
+uniform int qualityIndex;
 
 void main() {
 	// Sample plane info
-	vec2 flatPlanePos = vec2(chunkData.data[gl_InstanceID * 3 + 0], chunkData.data[gl_InstanceID * 3 + 1]);
-	float shellProgress = chunkData.data[gl_InstanceID * 3 + 2];
+	vec2 flatPlanePos = vec2(chunkDataQuality[qualityIndex].data[gl_InstanceID * 3 + 0], chunkDataQuality[qualityIndex].data[gl_InstanceID * 3 + 1]);
+	float shellProgress = chunkDataQuality[qualityIndex].data[gl_InstanceID * 3 + 2];
 	vertOut.shellProgress = shellProgress;
 
 	// Set position

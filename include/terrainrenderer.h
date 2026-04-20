@@ -315,12 +315,15 @@ public:
 		// Draw terrain
 		glDisable(GL_BLEND);
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(2), mDaySkybox);
+		terrainShader.setQualityIndex(2);
 		terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(1), mDaySkybox);
+		terrainShader.setQualityIndex(1);
 		terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(0), mDaySkybox);
+		terrainShader.setQualityIndex(0);
 		terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
 	}
 
@@ -399,8 +402,8 @@ private:
 	UniformBuffer<BufferTypes::TerrainImagesInfo> mTerrainImagesInfo{ 5, true };
 	UniformBuffer<BufferTypes::AtmosphereInfo> mAtmosphereInfo{ 6 };
 	UniformBuffer<BufferTypes::ShadowInfo> mShadowMatrices{ 7, true };
-	ChunkBuffers<3> mChunkBuffers{ 8 };
-	StarManager mStarManager{ 9 };
+	StarManager mStarManager{ 8 };
+	ChunkBuffers<3> mChunkBuffers{ 9 };
 
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	std::array<TerrainImageGenerator, ImageCount> mImages;

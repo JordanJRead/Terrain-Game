@@ -188,6 +188,7 @@
   <ItemGroup>
     <ClInclude Include="include\framebufferdepth.h" />
     <ClInclude Include="include\framebufferi.h" />
+    <ClInclude Include="include\gpubuffer.h" />
     <ClInclude Include="include\noise.h" />
     <ClInclude Include="include\shaders\shaderchunk.h" />
     <ClInclude Include="include\shaders\shaderortho.h" />

@@ -6,47 +6,27 @@
 #include <array>
 #include "OpenGLObjects/BUF.h"
 #include <iostream>
+#include "gpubuffer.h"
 
 template <int ChunkQualityCount>
 class ChunkBuffers {
 public:
-	ChunkBuffers(int bindingIndex) {
-		mBuffer.bind(GL_SHADER_STORAGE_BUFFER);
-		glBufferData(GL_SHADER_STORAGE_BUFFER, 0, 0, GL_DYNAMIC_DRAW);
-		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, mBuffer);
+	ChunkBuffers(int startBindingIndex) {
+		for (int i{ 0 }; i < ChunkQualityCount; ++i) {
+			mTerrainBuffers[i].initialize(startBindingIndex + i);
+		}
+		mWaterBuffer.initialize(startBindingIndex + ChunkQualityCount);
 	}
 
 	int flushTerrain(int qualityIndex) {
-		mBuffer.bind(GL_SHADER_STORAGE_BUFFER);
-
-		size_t byteCount{ mTerrainVectors[qualityIndex].size() * sizeof(float) };
-		if (byteCount > mMaxBytes) {
-			glBufferData(GL_SHADER_STORAGE_BUFFER, byteCount, mTerrainVectors[qualityIndex].data(), GL_DYNAMIC_DRAW);
-			mMaxBytes = byteCount;
-		}
-		else {
-			glBufferData(GL_SHADER_STORAGE_BUFFER, mMaxBytes, nullptr, GL_DYNAMIC_DRAW);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, byteCount, mTerrainVectors[qualityIndex].data());
-		}
-
+		mTerrainBuffers[qualityIndex].setData(mTerrainVectors[qualityIndex]);
 		int layerCount{ (int)mTerrainVectors[qualityIndex].size() / 3 };
 		mTerrainVectors[qualityIndex].clear();
 		return layerCount;
 	}
 
 	int flushWater() {
-		mBuffer.bind(GL_SHADER_STORAGE_BUFFER);
-
-		size_t byteCount{ mWaterData.size() * sizeof(float) };
-		if (byteCount > mMaxBytes) {
-			glBufferData(GL_SHADER_STORAGE_BUFFER, byteCount, mWaterData.data(), GL_DYNAMIC_DRAW);
-			mMaxBytes = byteCount;
-		}
-		else {
-			glBufferData(GL_SHADER_STORAGE_BUFFER, mMaxBytes, nullptr, GL_DYNAMIC_DRAW);
-			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, byteCount, mWaterData.data());
-		}
-
+		mWaterBuffer.setData(mWaterData);
 		int chunkCount{ (int)mWaterData.size() / 2 };
 		mWaterData.clear();
 		return chunkCount;
@@ -66,10 +46,10 @@ public:
 	}
 
 private:
-	BUF mBuffer;
+	std::array<GPUBuffer, ChunkQualityCount> mTerrainBuffers;
+	GPUBuffer mWaterBuffer;
 	std::array<std::vector<float>, ChunkQualityCount> mTerrainVectors; // each vector is: x, y, shell, x, y, shell, ...
 	std::vector<float> mWaterData; // x, y, x, y, ...
-	int mMaxBytes{ 0 };
 };
 
 #endif

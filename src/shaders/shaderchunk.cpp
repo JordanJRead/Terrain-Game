@@ -25,6 +25,13 @@ void ShaderChunk::setRenderData(const TerrainRenderer& terrainRenderer, float pl
 	skybox.bindTexture(ImageCount);
 }
 
+void ShaderChunk::setQualityIndex(int qualityIndex) const {
+	use();
+	if (qualityIndex >= 0) {
+		setInt("qualityIndex", qualityIndex);
+	}
+}
+
 void ShaderChunk::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
 	internalRender(framebuffer, vertexArray, true, mInstanceCount);
 }
