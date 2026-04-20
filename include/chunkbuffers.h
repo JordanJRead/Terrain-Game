@@ -29,7 +29,7 @@ public:
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, byteCount, mTerrainVectors[qualityIndex].data());
 		}
 
-		int layerCount{ (int)mTerrainVectors[qualityIndex].size() / 2 };
+		int layerCount{ (int)mTerrainVectors[qualityIndex].size() / 3 };
 		mTerrainVectors[qualityIndex].clear();
 		return layerCount;
 	}
@@ -53,8 +53,11 @@ public:
 	}
 
 	void addTerrainChunk(int qualityIndex, const glm::vec2& worldPos, int shellCount) {
-		mTerrainVectors[qualityIndex].push_back(worldPos.x);
-		mTerrainVectors[qualityIndex].push_back(worldPos.y);
+		for (int layerIndex{ shellCount }; layerIndex >= 0; --layerIndex) {
+			mTerrainVectors[qualityIndex].push_back(worldPos.x);
+			mTerrainVectors[qualityIndex].push_back(worldPos.y);
+			mTerrainVectors[qualityIndex].push_back((float)layerIndex / shellCount);
+		}
 	}
 
 	void addWaterChunk(const glm::vec2& worldPos) {
@@ -64,7 +67,7 @@ public:
 
 private:
 	BUF mBuffer;
-	std::array<std::vector<float>, ChunkQualityCount> mTerrainVectors; // each vector is: x, y, x, y, ...
+	std::array<std::vector<float>, ChunkQualityCount> mTerrainVectors; // each vector is: x, y, shell, x, y, shell, ...
 	std::vector<float> mWaterData; // x, y, x, y, ...
 	int mMaxBytes{ 0 };
 };

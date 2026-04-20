@@ -29,4 +29,4 @@ void ShaderChunk::render(const FramebufferI& framebuffer, const VertexArray& ver
 	internalRender(framebuffer, vertexArray, true, mInstanceCount);
 }
 
-int ShaderChunk::getInstanceCount() { return mInstanceCount; }
+int ShaderChunk::getInstanceCount() const { return mInstanceCount; }

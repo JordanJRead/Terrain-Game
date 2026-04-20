@@ -260,10 +260,10 @@ public:
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
-		int shellCount{ uiManager.mShellCount.data() };
 
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
+				int shellCount{ uiManager.mShellCount.data() };
 				
  				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(playerCameraPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
@@ -313,22 +313,13 @@ public:
 		// Draw terrain
 		glDisable(GL_BLEND);
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(2), mDaySkybox);
-		for (int i = shellCount; i >= 0; --i) {
-			terrainShader.setShellProgress((float)i / shellCount);
-			terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
-		}
+		terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(1), mDaySkybox);
-		for (int i = shellCount; i >= 0; --i) {
-			terrainShader.setShellProgress((float)i / shellCount);
-			terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
-		}
+		terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(0), mDaySkybox);
-		for (int i = shellCount; i >= 0; --i) {
-			terrainShader.setShellProgress((float)i / shellCount);
-			terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
-		}
+		terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
 	}
 
 	AABB getSceneWorldAABB(const glm::vec3& playerCameraPos, const UIManager& uiManager) const {

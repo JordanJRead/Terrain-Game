@@ -12,10 +12,7 @@ public:
 	ShaderChunk(const std::string& vertPath, const std::string& fragPath);
 	void setRenderData(const TerrainRenderer& terrainRenderer, float planeWidth, int instanceCount, const Cubemap& skybox);
 	virtual void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const;
-	int getInstanceCount();
-	void setShellProgress(float shellProgress) {
-		setFloat("shellProgress", shellProgress);
-	}
+	int getInstanceCount() const;
 
 protected:
 	int mInstanceCount{};
