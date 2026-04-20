@@ -39,6 +39,8 @@ public:
 		, mHighQualityPlane{ 2 }
 		, mReallyLowQualityPlane{ 2 }
 
+		,mScreenQuad{ VertexArray::createScreenVertexArray() }
+
 		, mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
 		, mShaderTerrainForward{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
 		, mShaderWaterForward{ "assets/shaders/water.vert", "assets/shaders/water.frag" }
@@ -78,23 +80,6 @@ public:
 		// Note: takes a couple minutes to run
 		//mMinPerlinValues = getMinHeightPerlinValues(uiManager);
 		//mMaxPerlinValues = getMaxHeightPerlinValues(uiManager);
-
-		std::vector<float> vertexData{
-		-1, -1,
-		 1, -1,
-		-1,  1,
-		 1,  1
-		};
-
-		std::vector<unsigned int> indices{
-			0, 1, 2, 2, 1, 3
-		};
-
-		std::vector<int> attribs{
-			2
-		};
-
-		mScreenQuad.create(vertexData, indices, attribs);
 
 		mTerrainParams.updateGPU({ uiManager });
 		mArtisticParams.updateGPU(uiManager);

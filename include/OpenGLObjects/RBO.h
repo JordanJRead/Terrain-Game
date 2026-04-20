@@ -11,20 +11,14 @@ public:
 	RBO() { glGenRenderbuffers(1, &mID); }
 	~RBO() { if (mIsOwner) glDeleteRenderbuffers(1, &mID); }
 	operator unsigned int() const { return mID; }
-	void use() const { glBindRenderbuffer(GL_RENDERBUFFER, mID); }
 
 	RBO(const RBO&) = delete;
-	RBO& operator=(const RBO&) = delete;
-
 	RBO(RBO&& other) noexcept {
+		mID = other.mID;
 		other.mIsOwner = false;
-		this->mID = other.mID;
 	}
-	RBO& operator=(RBO&& other) noexcept {
-		other.mIsOwner = false;
-		if (mIsOwner) glDeleteRenderbuffers(1, &mID);
-		this->mID = other.mID;
-	}
+	RBO& operator=(const RBO&) = delete;
+	RBO& operator=(RBO&&) = delete;
 
 private:
 	unsigned int mID;

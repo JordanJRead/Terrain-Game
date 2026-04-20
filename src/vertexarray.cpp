@@ -2,12 +2,12 @@
 
 void VertexArray::create(const std::vector<float>& vertexData, const std::vector<unsigned int>& vertexIndices, const std::vector<int>& vertexAttribCounts) {
 	mIndexCount = vertexIndices.size();
-	mVAO.use();
+	mVAO.bind();
 
-	mVBO.use(GL_ARRAY_BUFFER);
+	mVBO.bind(GL_ARRAY_BUFFER);
 	glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), &(vertexData[0]), GL_STATIC_DRAW);
 
-	mEBO.use(GL_ELEMENT_ARRAY_BUFFER);
+	mEBO.bind(GL_ELEMENT_ARRAY_BUFFER);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexIndices.size() * sizeof(unsigned int), &(vertexIndices[0]), GL_STATIC_DRAW);
 
 	int floatsPerVertex{ 0 };
@@ -25,11 +25,32 @@ void VertexArray::create(const std::vector<float>& vertexData, const std::vector
 
 void VertexArray::updateVertices(const std::vector<float>& vertexData, const std::vector<unsigned int>& vertexIndices) {
 	mIndexCount = vertexIndices.size();
-	mVAO.use();
+	mVAO.bind();
 
-	mVBO.use(GL_ARRAY_BUFFER);
+	mVBO.bind(GL_ARRAY_BUFFER);
 	glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), &(vertexData[0]), GL_STATIC_DRAW);
 
-	mEBO.use(GL_ELEMENT_ARRAY_BUFFER);
+	mEBO.bind(GL_ELEMENT_ARRAY_BUFFER);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, vertexIndices.size() * sizeof(unsigned int), &(vertexIndices[0]), GL_STATIC_DRAW);
+}
+
+VertexArray VertexArray::createScreenVertexArray() {
+	std::vector<float> vertexData{
+	-1, -1,
+	 1, -1,
+	-1,  1,
+	 1,  1
+	};
+
+	std::vector<unsigned int> indices{
+		0, 1, 2, 2, 1, 3
+	};
+
+	std::vector<int> attribs{
+		2
+	};
+
+	VertexArray screen;
+	screen.create(vertexData, indices, attribs);
+	return screen;
 }

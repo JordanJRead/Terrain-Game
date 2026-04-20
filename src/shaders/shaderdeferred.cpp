@@ -40,12 +40,12 @@ void ShaderDeferred::setRenderData(const TerrainRenderer& terrainRenderer) {
 
 	const ShadowMapper<CascadeCount>& shadowMapperSun{ terrainRenderer.getShadowMapperSun() };
 	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
-		shadowMapperSun.getFramebuffer(cascadeI).getDepthTexture().use(GL_TEXTURE_2D, textureUnit++);
+		shadowMapperSun.getFramebuffer(cascadeI).getDepthTexture().bind(GL_TEXTURE_2D, textureUnit++);
 	}
 
 	const ShadowMapper<CascadeCount>& shadowMapperMoon{ terrainRenderer.getShadowMapperMoon() };
 	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
-		shadowMapperMoon.getFramebuffer(cascadeI).getDepthTexture().use(GL_TEXTURE_2D, textureUnit++);
+		shadowMapperMoon.getFramebuffer(cascadeI).getDepthTexture().bind(GL_TEXTURE_2D, textureUnit++);
 	}
 
 	deferredRenderer.bindNoiseTexture(textureUnit++);

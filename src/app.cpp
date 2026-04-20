@@ -17,24 +17,8 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	, mScreenHeight{ screenHeight }
 	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition(), mUIManager }
 	, mFramebuffer{ 1, screenWidth, screenHeight, GL_RGBA32F }
+	, mScreenQuad{ VertexArray::createScreenVertexArray() }
 {
-	std::vector<float> vertexData{
-	-1, -1,
-	 1, -1,
-	-1,  1,
-	 1,  1
-	};
-
-	std::vector<unsigned int> indices{
-		0, 1, 2, 2, 1, 3
-	};
-
-	std::vector<int> attribs{
-		2
-	};
-	
-	mScreenQuad.create(vertexData, indices, attribs);
-
 	glfwSetWindowUserPointer(mWindow, this);
 	glfwSetCursorPosCallback(mWindow, mouseCallback);
 	glfwSetKeyCallback(mWindow, keyCallback);

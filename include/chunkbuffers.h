@@ -11,13 +11,13 @@ template <int ChunkQualityCount>
 class ChunkBuffers {
 public:
 	ChunkBuffers(int bindingIndex) {
-		mBuffer.use(GL_SHADER_STORAGE_BUFFER);
+		mBuffer.bind(GL_SHADER_STORAGE_BUFFER);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, 0, 0, GL_DYNAMIC_DRAW);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingIndex, mBuffer);
 	}
 
 	int flushTerrain(int qualityIndex) {
-		mBuffer.use(GL_SHADER_STORAGE_BUFFER);
+		mBuffer.bind(GL_SHADER_STORAGE_BUFFER);
 
 		size_t byteCount{ mTerrainVectors[qualityIndex].size() * sizeof(float) };
 		if (byteCount > mMaxBytes) {
@@ -35,7 +35,7 @@ public:
 	}
 
 	int flushWater() {
-		mBuffer.use(GL_SHADER_STORAGE_BUFFER);
+		mBuffer.bind(GL_SHADER_STORAGE_BUFFER);
 
 		size_t byteCount{ mWaterData.size() * sizeof(float) };
 		if (byteCount > mMaxBytes) {
