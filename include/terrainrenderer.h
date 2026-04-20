@@ -250,7 +250,9 @@ public:
 				}
 				orthoVertexArray.create(vertexData, indices, layout);
 				mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
-				mShaderOrtho.setColour(i == 0 ? glm::vec3{ 1, 0, 0 } : (i == 1 ? glm::vec3{ 0, 1, 0 } : glm::vec3{ 0, 0, 1 }));
+				glm::vec3 colour = { 0, 0, 0 };
+				colour[i] = 1;
+				mShaderOrtho.setColour(colour);
 				mShaderOrtho.render(targetFramebuffer, orthoVertexArray);
 			}
 		}
