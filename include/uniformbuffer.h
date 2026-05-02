@@ -316,7 +316,7 @@ public:
 		if (data != mPrevData) {
 			auto x{ sizeof(T) };
 			glBindBuffer(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, mBUF);
-			glBufferData(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, sizeof(T), &data, GL_STATIC_DRAW);
+			glBufferSubData(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, 0, sizeof(T), &data);
 			mPrevData = data;
 			return true;
 		}

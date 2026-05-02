@@ -9,7 +9,7 @@ ShaderGamma::ShaderGamma(const std::string& vertPath, const std::string& fragPat
 }
 
 void ShaderGamma::setRenderData(const TEX& sourceTexture, const Noise& noise) {
-	sourceTexture.use(GL_TEXTURE_2D, 0);
+	sourceTexture.bind(GL_TEXTURE_2D, 0);
 	noise.use(1);
 }
 

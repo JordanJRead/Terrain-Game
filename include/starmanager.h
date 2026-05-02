@@ -27,6 +27,7 @@ private:
 	static int getSplitIndex(const glm::vec3& dir);
 	StarParameters mPrevParameters;
 	BUF mBuffer;
+	int mMaxBytes{ 0 };
 };
 
 #endif

@@ -11,24 +11,18 @@ public:
 	TEX() { glGenTextures(1, &mID); }
 	~TEX() { if (mIsOwner) glDeleteTextures(1, &mID); }
 	operator unsigned int() const { return mID; }
-	void use(int target, int unit) const { 
+	void bind(int target, int unit) const {
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(target, mID);
 	}
 
 	TEX(const TEX&) = delete;
-	TEX& operator=(const TEX&) = delete;
-
 	TEX(TEX&& other) noexcept {
-		other.mIsOwner = false;
-		this->mID = other.mID;
-	}
-	TEX& operator=(TEX&& other) noexcept {
-		other.mIsOwner = false;
-		if (mIsOwner)
-			glDeleteTextures(1, &mID);
 		mID = other.mID;
+		other.mIsOwner = false;
 	}
+	TEX& operator=(const TEX&) = delete;
+	TEX& operator=(TEX&&) = delete;
 
 private:
 	unsigned int mID;

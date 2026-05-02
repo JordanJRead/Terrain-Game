@@ -50,7 +50,12 @@ void StarManager::update(const StarParameters& starParamters) {
 
 	int indexDataByteSize{ static_cast<int>(indexData.size() * sizeof(glm::ivec2)) };
 	int concatStarsByteSize{ static_cast<int>(concatStars.size() * sizeof(glm::vec4)) };
-	glBufferData(GL_SHADER_STORAGE_BUFFER, indexDataByteSize + concatStarsByteSize, nullptr, GL_STATIC_DRAW);
+	
+	int totalBytes = indexDataByteSize + concatStarsByteSize;
+	if (totalBytes > mMaxBytes) {
+		glBufferData(GL_SHADER_STORAGE_BUFFER, totalBytes, nullptr, GL_STATIC_DRAW);
+		mMaxBytes = totalBytes;
+	}
 
 	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, indexDataByteSize, indexData.data());
 	glBufferSubData(GL_SHADER_STORAGE_BUFFER, indexDataByteSize, concatStarsByteSize, concatStars.data());

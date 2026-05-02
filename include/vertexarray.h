@@ -10,8 +10,9 @@ class VertexArray {
 public:
 	void create(const std::vector<float>& vertexData, const std::vector<unsigned int>& vertexIndices, const std::vector<int>& vertexLayout);
 	void updateVertices(const std::vector<float>& vertexData, const std::vector<unsigned int>& vertexIndices);
-	void use() const { mVAO.use(); }
+	void use() const { mVAO.bind(); }
 	size_t getIndexCount() const { return mIndexCount; }
+	static VertexArray createScreenVertexArray();
 
 private:
 	VAO mVAO;

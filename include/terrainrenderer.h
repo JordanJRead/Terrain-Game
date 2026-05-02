@@ -39,6 +39,8 @@ public:
 		, mHighQualityPlane{ 2 }
 		, mReallyLowQualityPlane{ 2 }
 
+		,mScreenQuad{ VertexArray::createScreenVertexArray() }
+
 		, mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
 		, mShaderTerrainForward{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
 		, mShaderWaterForward{ "assets/shaders/water.vert", "assets/shaders/water.frag" }
@@ -78,23 +80,6 @@ public:
 		// Note: takes a couple minutes to run
 		//mMinPerlinValues = getMinHeightPerlinValues(uiManager);
 		//mMaxPerlinValues = getMaxHeightPerlinValues(uiManager);
-
-		std::vector<float> vertexData{
-		-1, -1,
-		 1, -1,
-		-1,  1,
-		 1,  1
-		};
-
-		std::vector<unsigned int> indices{
-			0, 1, 2, 2, 1, 3
-		};
-
-		std::vector<int> attribs{
-			2
-		};
-
-		mScreenQuad.create(vertexData, indices, attribs);
 
 		mTerrainParams.updateGPU({ uiManager });
 		mArtisticParams.updateGPU(uiManager);
@@ -245,6 +230,7 @@ public:
 			mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
 		}
 		else {
+			mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
 			renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mShaderWaterForward, uiManager, dirToSun, time);
 			
 			// Shadow map ortho volume debugging (messy)
@@ -264,7 +250,9 @@ public:
 				}
 				orthoVertexArray.create(vertexData, indices, layout);
 				mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
-				mShaderOrtho.setColour(i == 0 ? glm::vec3{ 1, 0, 0 } : (i == 1 ? glm::vec3{ 0, 1, 0 } : glm::vec3{ 0, 0, 1 }));
+				glm::vec3 colour = { 0, 0, 0 };
+				colour[i] = 1;
+				mShaderOrtho.setColour(colour);
 				mShaderOrtho.render(targetFramebuffer, orthoVertexArray);
 			}
 		}
@@ -274,10 +262,10 @@ public:
 		mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
-		int shellCount{ uiManager.mShellCount.data() };
 
 		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
 			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
+				int shellCount{ uiManager.mShellCount.data() };
 				
  				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(playerCameraPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
 
@@ -286,24 +274,21 @@ public:
 				std::array<float, 2> yVals{ mMinTerrainHeight, mMaxTerrainHeight };
 				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0f, chunkPos.z + chunkWidth / 2.0f };
 
-				bool isVisible{ false };
+				bool isVisible{ true };
 				if (uiManager.mFrustumCulling.data())
 					isVisible = camera.isAABBVisible({ {chunkPos.x - chunkWidth / 2.0f, mMinTerrainHeight, chunkPos.z - chunkWidth / 2.0f}, {chunkPos.x + chunkWidth / 2.0f, mMaxTerrainHeight, chunkPos.z + chunkWidth / 2.0f} });
-				else {
-					isVisible = true;
-				}
 
 				if (isVisible) {
 					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
-					bool isCloseChunk{ x >= -1 && x <= 1 && z >= -1 && z <= 1 };
-					bool highQuality{ !forceLowQuality && isCloseChunk || chunkDist < uiManager.mVertexLODDistanceNear.data() };
+					bool isNeighbourChunck{ x >= -1 && x <= 1 && z >= -1 && z <= 1 };
+					bool highQuality{ !forceLowQuality && isNeighbourChunck || chunkDist < uiManager.mVertexLODDistanceNear.data() };
 					bool mediumQuality{ !forceLowQuality && chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
 					int qualityIndex{ highQuality ? 2 : (mediumQuality ? 1 : 0) };
 
 					// LOD shell count
 					if (depthPass)
 						shellCount = 0;
-					else if (!isCloseChunk) {
+					else if (!isNeighbourChunck) {
 						int oldShellCount{ uiManager.mShellCount.data() };
 						float shellLODDistance{ uiManager.mShellLODDistance.data() };
 						if (chunkDist > shellLODDistance * 4) {
@@ -330,22 +315,13 @@ public:
 		// Draw terrain
 		glDisable(GL_BLEND);
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(2), mDaySkybox);
-		for (int i = shellCount; i >= 0; --i) {
-			terrainShader.setShellProgress((float)i / shellCount);
-			terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
-		}
+		terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(1), mDaySkybox);
-		for (int i = shellCount; i >= 0; --i) {
-			terrainShader.setShellProgress((float)i / shellCount);
-			terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
-		}
+		terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
 
 		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(0), mDaySkybox);
-		for (int i = shellCount; i >= 0; --i) {
-			terrainShader.setShellProgress((float)i / shellCount);
-			terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
-		}
+		terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
 	}
 
 	AABB getSceneWorldAABB(const glm::vec3& playerCameraPos, const UIManager& uiManager) const {
