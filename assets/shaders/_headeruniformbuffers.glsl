@@ -73,8 +73,8 @@ layout(std140, binding = 4) uniform PerFrameInfo {
 	mat4 viewMatrix;
 	mat4 projectionMatrix;
 	mat4 starRotationMatrix;
-	vec3 cameraPos; float g;
-	vec3 dirToSun; float gg;
+	vec3 cameraPos;
+	vec3 dirToSun;
 	float time;
 	float fovX;
 	float fovY;
@@ -94,8 +94,8 @@ layout(std430, binding = 5) buffer TerrainImagesInfo {
 } terrainImagesInfo;
 
 layout(std140, binding = 6) uniform AtmosphereInfo {
-	vec3 rayleighScattering; float fregerfg;
-	vec3 mieScattering; float gwrefwe;
+	vec3 rayleighScattering;
+	vec3 mieScattering;
 	float maxRadius;
 	float minRadius;
 	float centerY;

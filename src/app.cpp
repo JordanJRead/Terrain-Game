@@ -9,6 +9,7 @@
 #include "glm/glm.hpp"
 #include "planephysics.h"
 #include "planegpu.h"
+#include "openglbuffer.h"
 
 App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	: mCamera{ screenWidth, screenHeight, {0, 20, 0} } // x = 2883548 for farlands
@@ -52,6 +53,7 @@ void App::loop() {
 	glfwSwapInterval(0);
 
 	double startTime{ glfwGetTime() };
+
 	while (!glfwWindowShouldClose(mWindow)) {
 
 		deltaTime = glfwGetTime() - prevFrame;

@@ -120,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GLFW_INCLUDE_NONE;;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);GLFW_INCLUDE_NONE;;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp23</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -189,6 +189,7 @@
     <ClInclude Include="include\framebufferdepth.h" />
     <ClInclude Include="include\framebufferi.h" />
     <ClInclude Include="include\noise.h" />
+    <ClInclude Include="include\openglbuffer.h" />
     <ClInclude Include="include\shaders\shaderchunk.h" />
     <ClInclude Include="include\shaders\shaderortho.h" />
     <ClInclude Include="include\shaders\shaderskybox.h" />

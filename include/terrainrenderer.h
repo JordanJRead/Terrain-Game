@@ -30,6 +30,7 @@
 #include "chunkbuffers.h"
 #include "shaders/shaderortho.h"
 #include "starmanager.h"
+#include "openglbuffer.h"
 
 class TerrainRenderer {
 public:
@@ -81,11 +82,16 @@ public:
 		//mMinPerlinValues = getMinHeightPerlinValues(uiManager);
 		//mMaxPerlinValues = getMaxHeightPerlinValues(uiManager);
 
-		mTerrainParams.updateGPU({ uiManager });
-		mArtisticParams.updateGPU(uiManager);
-		mWaterParams.updateGPU(uiManager);
-		mColourParams.updateGPU(uiManager);
-		mAtmosphereInfo.updateGPU(uiManager);
+		mTerrainParams.mValue.fromUI(uiManager);
+		mTerrainParams.updateGPU();
+		mArtisticParams.mValue.fromUI(uiManager);
+		mArtisticParams.updateGPU();
+		mWaterParams.mValue.fromUI(uiManager);
+		mWaterParams.updateGPU();
+		mColourParams.mValue.fromUI(uiManager);
+		mColourParams.updateGPU();
+		mAtmosphereInfo.mValue.fromUI(uiManager);
+		mAtmosphereInfo.updateGPU();
 
 		for (int i{ 0 }; i < ImageCount; ++i) {
 			mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage);
@@ -110,16 +116,21 @@ public:
 
 	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const FramebufferColour& targetFramebuffer) {
 		mStarManager.update({ uiManager.mStarMinSize.data(), uiManager.mStarMaxSize.data(), uiManager.mStarCount.data() });
-		bool hasTerrainChanged{ mTerrainParams.updateGPU({uiManager}) };
+		mTerrainParams.mValue.fromUI(uiManager);
+		bool hasTerrainChanged{ mTerrainParams.updateGPU() };
 		if (hasTerrainChanged) {
 			mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
 			mMaxTerrainHeight = getHeightWithPerlin(uiManager, mMaxPerlinValues);
 		}
 		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
-		mArtisticParams.updateGPU(uiManager);
-		mWaterParams.updateGPU(uiManager);
-		mColourParams.updateGPU(uiManager);
-		mAtmosphereInfo.updateGPU(uiManager);
+		mArtisticParams.mValue.fromUI(uiManager);
+		mArtisticParams.updateGPU();
+		mWaterParams.mValue.fromUI(uiManager);
+		mWaterParams.updateGPU();
+		mColourParams.mValue.fromUI(uiManager);
+		mColourParams.updateGPU();
+		mAtmosphereInfo.mValue.fromUI(uiManager);
+		mAtmosphereInfo.updateGPU();
 
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
@@ -177,11 +188,13 @@ public:
 				mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage); // binds another shader
 			}
 		}
-		mTerrainImagesInfo.updateGPU({ uiManager.getImageSizes(), mImageWorldPositions });
+		mTerrainImagesInfo.mValue.fromData(uiManager.getImageSizes(), mImageWorldPositions);
+		mTerrainImagesInfo.updateGPU();
 
 		// Render skybox
 		if (!uiManager.mIsDeferredRendering.data()) {
-			mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
+			mPerFrameInfo.mValue.fromData(camera, dirToSun, time, uiManager);
+			mPerFrameInfo.updateGPU();
 			mSkyboxShader.setRenderData(mDaySkybox);
 			mSkyboxShader.render(targetFramebuffer, mCubeVertices.getVertexArray());
 		}
@@ -207,7 +220,8 @@ public:
 
 			mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
 			mShadowMapperMoon.updateCameras(-dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
+			mShadowInfo.mValue.fromData(mShadowMapperSun, mShadowMapperMoon, uiManager);
+			mShadowInfo.updateGPU();
 			for (size_t i{ 0 }; i < CascadeCount; ++i) {
 				bool isDay = uiManager.mDayTime.data() < 1;
 
@@ -226,11 +240,13 @@ public:
 				renderTerrain(depthFramebufferMoon, depthCameraMoon, camera.getPosition(), mShadowMapperMoon.mTerrainDepthShader, mShadowMapperMoon.mWaterDepthShader, uiManager, dirToSun, time, true, isDay);
 			}
 
-			mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
+			mPerFrameInfo.mValue.fromData(camera, dirToSun, time, uiManager);
+			mPerFrameInfo.updateGPU();
 			mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
 		}
 		else {
-			mShadowMatrices.updateGPU({ mShadowMapperSun, mShadowMapperMoon, uiManager });
+			mShadowInfo.mValue.fromData(mShadowMapperSun, mShadowMapperMoon, uiManager);
+			mShadowInfo.updateGPU();
 			renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mShaderWaterForward, uiManager, dirToSun, time);
 			
 			// Shadow map ortho volume debugging (messy)
@@ -249,7 +265,8 @@ public:
 					vertexData.push_back(orthoPoint.z);
 				}
 				orthoVertexArray.create(vertexData, indices, layout);
-				mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
+				mPerFrameInfo.mValue.fromData(camera, dirToSun, time, uiManager);
+				mPerFrameInfo.updateGPU();
 				glm::vec3 colour = { 0, 0, 0 };
 				colour[i] = 1;
 				mShaderOrtho.setColour(colour);
@@ -259,7 +276,8 @@ public:
 	}
 
 	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderChunk& terrainShader, ShaderChunk& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false, bool forceLowQuality = false) {
-		mPerFrameInfo.updateGPU({ camera, dirToSun, time, uiManager });
+		mPerFrameInfo.mValue.fromData(camera, dirToSun, time, uiManager);
+		mPerFrameInfo.updateGPU();
 		int chunkCount{ uiManager.mChunkCount.data() };
 		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
 
@@ -391,14 +409,14 @@ public:
 
 private:
 	// Buffers
-	UniformBuffer<BufferTypes::TerrainParams> mTerrainParams{ 0 };
-	UniformBuffer<BufferTypes::ArtisticParams> mArtisticParams{ 1 };
-	UniformBuffer<BufferTypes::WaterParams> mWaterParams{ 2 };
-	UniformBuffer<BufferTypes::ColourParams> mColourParams{ 3 };
-	UniformBuffer<BufferTypes::PerFrameInfo> mPerFrameInfo{ 4 };
-	UniformBuffer<BufferTypes::TerrainImagesInfo> mTerrainImagesInfo{ 5, true };
-	UniformBuffer<BufferTypes::AtmosphereInfo> mAtmosphereInfo{ 6 };
-	UniformBuffer<BufferTypes::ShadowInfo> mShadowMatrices{ 7, true };
+	OpenGLBuffer<BufferData::TerrainParams>      mTerrainParams    { 0, BufferTypes::uniform };
+	OpenGLBuffer<BufferData::ArtisticParams>     mArtisticParams   { 1, BufferTypes::uniform };
+	OpenGLBuffer<BufferData::WaterParams>        mWaterParams      { 2, BufferTypes::uniform };
+	OpenGLBuffer<BufferData::ColourParams>       mColourParams     { 3, BufferTypes::uniform };
+	OpenGLBuffer<BufferData::PerFrameInfo>       mPerFrameInfo     { 4, BufferTypes::uniform };
+	OpenGLBuffer<BufferData::TerrainImagesInfo>  mTerrainImagesInfo{ 5, BufferTypes::ssbo };
+	OpenGLBuffer<BufferData::AtmosphereInfo>     mAtmosphereInfo   { 6, BufferTypes::uniform };
+	OpenGLBuffer<BufferData::ShadowInfo>         mShadowInfo       { 7, BufferTypes::ssbo };
 	ChunkBuffers<3> mChunkBuffers{ 8 };
 	StarManager mStarManager{ 9 };
 

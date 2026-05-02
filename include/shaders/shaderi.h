@@ -20,6 +20,7 @@ public:
 	ShaderI(const std::string& vertPath, const std::string& fragPath);
 	~ShaderI() { glDeleteProgram(mID); }
 	virtual void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const = 0;
+	unsigned int getShaderID() const { return mID; }
 
 protected:
 	unsigned int mID;

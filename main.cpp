@@ -8,7 +8,6 @@
 
 
 
-
 void APIENTRY glDebugOutput(GLenum source,
     GLenum type,
     unsigned int id,
@@ -55,7 +54,6 @@ void APIENTRY glDebugOutput(GLenum source,
     } std::cout << std::endl;
     std::cout << std::endl;
 }
-
 
 int main() {
 	glfwInit();
