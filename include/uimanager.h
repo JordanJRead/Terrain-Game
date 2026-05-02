@@ -392,7 +392,7 @@ public:
 			ImGui::End();
 		}
 
-		mDayTime.mData += 0.005f * deltaTime;
+		//mDayTime.mData += 0.005f * deltaTime;
 		if (mDayTime.mData > 2)
 			mDayTime.mData -= 2;
 		if (mDayTime.mData < 0)
