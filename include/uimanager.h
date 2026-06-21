@@ -526,10 +526,10 @@ public:
 
 	// Star Parameters
 	UIElement<float> mSunSize{ 2.56f }; // degrees
-	UIElement<float> mStarMinSize{ 0.08f };
-	UIElement<float> mStarMaxSize{ 0.08f };
-	UIElement<int> mStarCount{ 500 };
-	UIElement<float> mStarBrightness{ 10 };
+	UIElement<float> mStarMinSize{ 0.048f };
+	UIElement<float> mStarMaxSize{ 0.108f };
+	UIElement<int> mStarCount{ 3500 };
+	UIElement<float> mStarBrightness{ 2 };
 
 	// Shadow Parameters
 	UIElement<float> mShadowBlurWidth{ 0.5f };
