@@ -7,7 +7,7 @@
 #include <string_view>
 #include <iostream>
 #include <array>
-#include <OpenGLObjects/BUF.h>
+#include "OpenGLObjects/BUF.h"
 #include "glad/glad.h"
 #include <cassert>
 #include "glm/glm.hpp"
@@ -66,6 +66,60 @@ namespace BufferTypes {
 	} };
 }
 
+// Buffer helpers TODO clean up
+namespace {
+	inline int numFloats(int numBytes) {
+		return numBytes / 4;
+	}
+
+	template <typename>
+	inline constexpr bool always_false_v = false;
+
+	template <typename T>
+	inline int getBaseAlignment(BufferTypes::Type bufferType) {
+		if constexpr (std::same_as<T, int>)
+			return 4;
+		else if constexpr (std::same_as<T, bool>)
+			return 4;
+		else if constexpr (std::same_as<T, float>)
+			return 4;
+		else if constexpr (std::same_as<T, glm::vec2>)
+			return 8;
+		else if constexpr (std::same_as<T, glm::vec3>)
+			return 16;
+		else if constexpr (std::same_as<T, glm::vec4>)
+			return 16;
+		else if constexpr (std::same_as<T, glm::mat4>)
+			return 16;
+		else if constexpr (IsClassOrStruct<T>)
+			return 16;
+		else if constexpr (IsArrayLike<T>)
+			return bufferType == BufferTypes::uniform ? 16 : getBaseAlignment<typename T::value_type>(bufferType);
+		else
+			static_assert(always_false_v<T>, "getBaseAlignment<T> requires T to be one of int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat4, std::vector, std::array, any struct");
+	}
+
+	template <typename T>
+	inline int getNumOfFloatsInObject() {
+		if constexpr (std::same_as<T, int>)
+			return 1;
+		else if constexpr (std::same_as<T, bool>)
+			return 1;
+		else if constexpr (std::same_as<T, float>)
+			return 1;
+		else if constexpr (std::same_as<T, glm::vec2>)
+			return 2;
+		else if constexpr (std::same_as<T, glm::vec3>)
+			return 3;
+		else if constexpr (std::same_as<T, glm::vec4>)
+			return 4;
+		else if constexpr (std::same_as<T, glm::mat4>)
+			return 16;
+		else
+			static_assert(always_false_v<T>, "getNumOfFloatsInObject<T> requires T to be one of int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat4");
+	}
+}
+
 // The buffer class
 // T must only contain int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat4, and may have an std::vector as the last member if bufferType == ssbo
 template <IsClassOrStruct BaseStructType>
@@ -109,8 +163,8 @@ private:
 		int i{ 0 };
 		constexpr int maxI{ boost::pfr::tuple_size<StructType>::value - 1 };
 
-		boost::pfr::for_each_field_with_name(structToAdd, [&]<typename MemberType>(std::string_view name, const MemberType& value) mutable {
-			int baseAlignment{ getBaseAlignment<MemberType>() };
+		boost::pfr::for_each_field(structToAdd, [&]<typename MemberType>(const MemberType& value) mutable {
+			int baseAlignment{ getBaseAlignment<MemberType>(mBufferType) };
 
 			// Move to start of object (aligned offset)
 			if (baseOffset % baseAlignment != 0)
@@ -118,7 +172,7 @@ private:
 			data.resize(numFloats(baseOffset));
 
 			if constexpr (is_array_like_v<MemberType>) {
-				addArrayToData<MemberType::value_type>(value, data, baseOffset);
+				addArrayToData<typename MemberType::value_type>(value, data, baseOffset);
 			}
 			else if constexpr (std::is_class_v<MemberType> && !is_glm_v<MemberType>) {
 				addStructToData(value, data, baseOffset, i != maxI);
@@ -149,97 +203,13 @@ private:
 			}
 		}
 		else {
-			int stride{ getBaseAlignment<ArrayMemberType>() };
+			int stride{ getBaseAlignment<ArrayMemberType>(mBufferType) };
 			for (const ArrayMemberType& item : arr) {
 				data.insert(data.end(), (float*)&item, (float*)&item + getNumOfFloatsInObject<ArrayMemberType>()); // Insert tightly packed floats
 				baseOffset += stride;
 				data.resize(numFloats(baseOffset));
 			}
 		}
-	}
-
-	static int numFloats(int numBytes) {
-		return numBytes / 4;
-	}
-
-	template <typename MemberType>
-	int getBaseAlignment() {
-		static_assert(false, "OpenGLBuffer::getBaseAlignment<T> requires T to be one of int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat4, std::vector, std::array, any struct");
-	}
-
-	template <IsClassOrStruct StructType>
-	int getBaseAlignment() {
-		return 16;
-	}
-
-	template <IsArrayLike ArrayType>
-	int getBaseAlignment() {
-		return mBufferType == BufferTypes::uniform ? 16 : getBaseAlignment<typename ArrayType::value_type>();
-	}
-
-	template <>
-	int getBaseAlignment<int>() {
-		return 4;
-	}
-
-	template <>
-	int getBaseAlignment<float>() {
-		return 4;
-	}
-
-	template <>
-	int getBaseAlignment<glm::vec2>() {
-		return 8;
-	}
-
-	template <>
-	int getBaseAlignment<glm::vec3>() {
-		return 16;
-	}
-
-	template <>
-	int getBaseAlignment<glm::vec4>() {
-		return 16;
-	}
-
-	template <>
-	int getBaseAlignment<glm::mat4>() {
-		return 64;
-	}
-
-	template <typename MemberType>
-	static int getNumOfFloatsInObject() {
-		static_assert(false, "OpenGLBuffer::getNumOfFloatsInObject<T> requires T to be one of int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat4");
-	}
-
-	template <>
-	static int getNumOfFloatsInObject<int>() {
-		return 1;
-	}
-
-	template <>
-	static int getNumOfFloatsInObject<float>() {
-		return 1;
-	}
-
-	template <>
-	static int getNumOfFloatsInObject<glm::vec2>() {
-		return 2;
-	}
-
-	template <>
-	static int getNumOfFloatsInObject<glm::vec3>() {
-		return 3;
-	}
-
-	template <>
-	static int getNumOfFloatsInObject<glm::vec4>() {
-		return 4;
-	}
-
-	template <>
-	static int getNumOfFloatsInObject<glm::mat4>() {
-		return 16;
 	}
 };
 
