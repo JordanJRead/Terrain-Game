@@ -230,6 +230,7 @@
     <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\uniformbuffer.h" />
     <ClInclude Include="include\vertexarray.h" />
+    <ClInclude Include="include\volumes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

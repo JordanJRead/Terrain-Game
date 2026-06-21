@@ -20,7 +20,6 @@ public:
 
 private:
 	VertexArray mVertexArray;
-	bool isPhysics{ false };
 };
 
 #endif

@@ -40,7 +40,7 @@ public:
 		, mHighQualityPlane{ 2 }
 		, mReallyLowQualityPlane{ 2 }
 
-		,mScreenQuad{ VertexArray::createScreenVertexArray() }
+		, mScreenQuad{ VertexArray::createScreenVertexArray() }
 
 		, mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
 		, mShaderTerrainForward{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
