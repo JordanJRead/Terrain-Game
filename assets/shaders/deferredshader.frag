@@ -230,8 +230,6 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 
 		samplePos += rayDir * dx;
 	}
-	if (isSky)
-		return inScatteredLight + colourOfObject;
 
 	return inScatteredLight + colourOfObject * exp(-(currentOpticalDepthRayleigh * atmosphereInfo.rayleighScattering + currentOpticalDepthMie * atmosphereInfo.mieScattering));
  }
