@@ -34,3 +34,4 @@ All of the above images, except for the last three, give me around 50 FPS
 <img width="1907" height="1070" alt="UI jumpscare" src="https://github.com/user-attachments/assets/7781d81e-8393-401b-a8d2-b59b99b7153e" />
 
 <img width="1906" height="1065" alt="Debug mode" src="https://github.com/user-attachments/assets/2aad4665-869e-4f28-bd63-bd3d3dc620f2" />
+
