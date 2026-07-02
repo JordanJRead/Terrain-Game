@@ -4,31 +4,38 @@
 #include "cameracascaded.h"
 #include "cameraplayer.h"
 #include "aabb.h"
-#include "uimanager.h"
 #include <array>
 #include <vector>
 #include "framebufferdepth.h"
 #include "constants.h"
 #include "shaders/shaderchunk.h"
+#include <span>
+#include <cassert>
+#include <algorithm>
+#include "imgui/imgui.h"
 
 template <int CascadeCount>
 class ShadowMapper {
 public:
-	ShadowMapper(const UIManager& uiManager) {
+	ShadowMapper(std::array<float, CascadeCount - 1> splits) {
 		for (size_t i{ 0 }; i < CascadeCount; ++i) {
 			mFramebuffers.emplace_back(2048 * 2, 2048 * 2);
 		}
+		mSplits = splits;
+	}
 
-		for (size_t i{ 0 }; i < CascadeCount - 1; ++i) {
-			mSplits[i] = uiManager.mCascadeSplits[i].data();
+	void renderSplitsUI() {
+		for (size_t i{ 0 }; i < mSplits.size(); ++i) {
+			std::string indexString{ std::to_string(i + 1) };
+			ImGui::DragFloat(("Split " + indexString).c_str(), &mSplits[i], 0.001f + 0.01f * i * i);
 		}
 	}
 
-	void updateCameras(const glm::vec3& dirToLight, const CameraPlayer& playerCamera, const AABB& sceneAABB, const UIManager& uiManager) {
-		for (size_t i{ 0 }; i < CascadeCount - 1; ++i) {
-			mSplits[i] = uiManager.mCascadeSplits[i].data();
-		}
+	void setSplits(std::array<float, CascadeCount - 1> splits) {
+		mSplits = splits;
+	}
 
+	void updateCameras(const glm::vec3& dirToLight, const CameraPlayer& playerCamera, const AABB& sceneAABB) {
 		// Get world space frustum points
 		std::array<glm::vec3, 8> frustumPointsCameraSpace{ playerCamera.getFrustumPointsCameraSpace() };
 		std::array<glm::vec3, 8> frustumPoints;

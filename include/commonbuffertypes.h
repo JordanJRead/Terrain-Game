@@ -1,9 +1,8 @@
-#ifndef UNIFORM_BUFFER_H
-#define UNIFORM_BUFFER_H
+#ifndef COMMON_BUFFER_TYPES_H
+#define COMMON_BUFFER_TYPES_H
 
 #include "glad/glad.h"
 #include "OpenGLObjects/BUF.h"
-#include "uimanager.h"
 #include "glm/glm.hpp"
 #include "cameraplayer.h"
 #include <iostream>
@@ -11,30 +10,12 @@
 #include "constants.h"
 #include "shadowmapper.h"
 #include "mathhelper.h"
+#include <cassert>
+#include <cmath>
 
-namespace BufferData {
-	
+namespace CommonBufferTypes {
+
 	struct TerrainParams {
-		void fromUI(const UIManager& uiManager) {
-			octaveCount = uiManager.mTerrainOctaveCount.data();
-			smoothOctaveCount = uiManager.mTerrainSmoothOctaveCount.data();
-			initialAmplitude = uiManager.mTerrainAmplitude.data();
-			amplitudeDecay = uiManager.mTerrainAmplitudeMultiplier.data();
-			spreadFactor = uiManager.mTerrainSpreadFactor.data();
-			mountainFrequency = uiManager.mMountainFrequency.data();
-			mountainExponent = uiManager.mMountainExponent.data();
-			antiFlatFactor = uiManager.mAntiFlatFactor.data();
-			riverScale = uiManager.mRiverFrequency.data();
-			riverStrength = uiManager.mRiverStrength.data();
-			riverExponent = uiManager.mRiverExponent.data();
-			waterEatingMountain = uiManager.mWaterEatingMountain.data();
-			lakeScale = uiManager.mLakeFrequency.data();
-			lakeStrength = uiManager.mLakeStrength.data();
-			lakeExponent = uiManager.mLakeExponent.data();
-		}
-
-		bool operator==(const TerrainParams&) const = default;
-
 		int   octaveCount{};
 		int   smoothOctaveCount{};
 		float initialAmplitude{};
@@ -50,31 +31,31 @@ namespace BufferData {
 		float lakeScale{};
 		float lakeStrength{};
 		float lakeExponent{};
+
+		bool operator==(const TerrainParams&) const = default;
+
+		static TerrainParams getDefaultValue() {
+			return TerrainParams {
+				.octaveCount = 15,
+				.smoothOctaveCount = 6,
+				.initialAmplitude = 250,
+				.amplitudeDecay = 0.4f,
+				.spreadFactor = 2,
+				.mountainFrequency = 0.2f,
+				.mountainExponent = 4,
+				.antiFlatFactor = 0.04f,
+				.riverScale = 0.05f,
+				.riverStrength = 20,
+				.riverExponent = 32,
+				.waterEatingMountain = 30,
+				.lakeScale = 0.06f,
+				.lakeStrength = 40,
+				.lakeExponent = 100
+			};
+		}
 	};
 
 	struct ArtisticParams {
-		void fromUI(const UIManager& uiManager) {
-			terrainScale = uiManager.mTerrainScale.data();
-			maxViewDistance = uiManager.mTerrainSpan.data() * 0.5f * 0.95f;
-			fogEncroach = maxViewDistance * 0.1f;
-
-			grassDotCutoff = uiManager.mGrassDotCutoff.data();
-			snowDotCutoff = uiManager.mSnowDotCutoff.data();
-			shellMaxHeight = uiManager.mShellMaxHeight.data();
-			grassNoiseScale = uiManager.mGrassNoiseScale.data();
-			snowNoiseScale = uiManager.mSnowNoiseScale.data();
-			shellMaxCutoff = uiManager.mShellMaxCutoff.data();
-			shellBaseCutoff = uiManager.mShellBaseCutoff.data();
-			snowHeight = uiManager.mSnowHeight.data();
-			seafoamStrength = uiManager.mSeaFoam.data();
-			snowLineNoiseScale = uiManager.mSnowLineNoiseScale.data();
-			snowLineNoiseAmplitude = uiManager.mSnowLineNoiseAmplitude.data();
-			mountainSnowCutoff = uiManager.mMountainSnowCutoff.data();
-			snowLineEase = uiManager.mSnowLineEase.data();
-			shellAmbientOcclusion = uiManager.mShellAmbientOcclusion.data();
-		}
-		bool operator==(const ArtisticParams&) const = default;
-
 		float terrainScale{};
 		float maxViewDistance{};
 		float fogEncroach{};
@@ -92,22 +73,33 @@ namespace BufferData {
 		float mountainSnowCutoff{};
 		float snowLineEase{};
 		float shellAmbientOcclusion{};
+
+		static ArtisticParams getDefaultValue() {
+			return ArtisticParams {
+				.terrainScale = 58,
+				.maxViewDistance = 1,
+				.fogEncroach = 1,
+				.grassDotCutoff = 0.6f,
+				.snowDotCutoff = 0.3f,
+				.shellMaxHeight = 0.117f,
+				.grassNoiseScale = 100,
+				.snowNoiseScale = 1,
+				.shellMaxCutoff = 1,
+				.shellBaseCutoff = 0.2f,
+				.snowHeight = 65,
+				.seafoamStrength = 0.4f,
+				.snowLineNoiseScale = 0.3f,
+				.snowLineNoiseAmplitude = 2.75f,
+				.mountainSnowCutoff = 0.9f,
+				.snowLineEase = 4.5f,
+				.shellAmbientOcclusion = 0.2f
+			};
+		}
+
+		bool operator==(const ArtisticParams&) const = default;
 	};
 
 	struct WaterParams {
-		void fromUI(const UIManager& uiManager) {
-			waveCount = uiManager.mWaterWaveCount.data();
-			initialAmplitude = uiManager.mWaterAmplitude.data();
-			amplitudeMult = uiManager.mWaterAmplitudeMultiplier.data();
-			initialFreq = uiManager.mWaterFrequency.data();
-			freqMult = uiManager.mWaterFrequencyMultiplier.data();
-			initialSpeed = uiManager.mWaterSpeed.data();
-			speedMult = uiManager.mWaterSpeedMultiplier.data();
-			specExp = uiManager.mWaterShininess.data();
-			height = uiManager.mWaterHeight.data();
-		}
-		bool operator==(const WaterParams&) const = default;
-
 		int waveCount{};
 		float initialAmplitude{};
 		float amplitudeMult{};
@@ -117,27 +109,25 @@ namespace BufferData {
 		float speedMult{};
 		float specExp{};
 		float height{};
+
+		bool operator==(const WaterParams&) const = default;
+
+		static WaterParams getDefaultValue() {
+			return WaterParams{
+				.waveCount = 24,
+				.initialAmplitude = 0.01f,
+				.amplitudeMult = 0.82f,
+				.initialFreq = 1,
+				.freqMult = 1.13f,
+				.initialSpeed = 2,
+				.speedMult = 1.07f,
+				.specExp = 200,
+				.height = -1.5f
+			};
+		}
 	};
 
-	inline float starBrightnessAtTime(float time) {
-		constexpr int n{ 30 };
-		return (0 <= time && time <= 1) ? (pow(2, n-1) * pow(time - 0.5, n)) : (-pow(2, n-1) * pow(time - 1.5, n)) + 1;
-	}
-
 	struct ColourParams {
-		void fromUI(const UIManager& uiManager) {
-			dirtColour = uiManager.mDirtColour.data();
-			mountainColour = uiManager.mMountainColour.data();
-			grassColour1 = uiManager.mGrassColour1.data();
-			grassColour2 = uiManager.mGrassColour2.data();
-			snowColour = uiManager.mSnowColour.data();
-			waterColour = uiManager.mWaterColour.data();
-			sunColour = uiManager.mSunColour.data() * uiManager.mSunBrightness.data();
-			moonColour = uiManager.mMoonColour.data()* uiManager.mMoonBrightness.data();
-			starColour = uiManager.mStarBrightness.data()* glm::vec3{1, 1, 1} *starBrightnessAtTime(uiManager.mDayTime.data());
-		}
-		bool operator==(const ColourParams&) const = default;
-
 		glm::vec3 dirtColour{};
 		glm::vec3 mountainColour{};
 		glm::vec3 grassColour1{};
@@ -145,31 +135,30 @@ namespace BufferData {
 		glm::vec3 snowColour{};
 		glm::vec3 waterColour{};
 		glm::vec3 sunColour{};
+		float sunBrightness{};
 		glm::vec3 moonColour{};
+		float moonBrightness{};
 		glm::vec3 starColour{};
-	};
-#define PI 3.14159f
-	struct PerFrameInfo {
-		void fromData(const CameraI& camera, glm::vec3 _dirToSun, float _time, const UIManager& uiManager) {
-			viewMatrix = camera.getViewMatrix();
-			projectionMatrix = camera.getProjectionMatrix();
-			starRotationMatrix = glm::rotate(glm::mat4(1.0f), -PI * uiManager.mDayTime.data(), {0, 0, 1});
-			cameraPos = camera.getPosition();
-			dirToSun = _dirToSun;
-			time = _time;
-			fovX = camera.getFOVX();
-			fovY = camera.getFOVY();
-			yaw = camera.getYaw();
-			pitch = camera.getPitch();
-			cameraNear = camera.getNearPlaneDist();
-			cameraFar = camera.getFarPlaneDist();
-			tanHalfFOVX = glm::tan(camera.getFOVX() / 2);
-			tanHalfFOVY = glm::tan(camera.getFOVY() / 2);
-			dayTime = uiManager.mDayTime.data();
-			nightStrength = starBrightnessAtTime(uiManager.mDayTime.data());
-		}
-		bool operator==(const PerFrameInfo&) const = default;
+		float starBrightness{};
 
+		bool operator==(const ColourParams&) const = default;
+
+		static ColourParams getDefaultValue() {
+			return ColourParams{
+				.dirtColour     = {40 / 255.0f, 21 / 255.0f, 10 / 255.0f},
+				.mountainColour = {34 / 255.0f, 34 / 255.0f, 34 / 255.0f},
+				.grassColour1   = {0 / 255.0f, 56 / 255.0f, 0 / 255.0f},
+				.grassColour2   = {15 / 255.0f, 56 / 255.0f, 0 / 255.0f},
+				.snowColour     = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
+				.waterColour    = {0 / 255.0f, 1.7 / 255.0f, 56 / 255.0f},
+				.sunColour      = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
+				.moonColour     = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
+				.starColour     = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f}
+			};
+		}
+	};
+
+	struct PerFrameInfo {
 		glm::mat4 viewMatrix{};
 		glm::mat4 projectionMatrix{};
 		glm::mat4 starRotationMatrix{};
@@ -186,40 +175,37 @@ namespace BufferData {
 		float tanHalfFOVY{};
 		float dayTime{};
 		float nightStrength{};
+
+		void fromData(const CameraI& camera, glm::vec3 _dirToSun, float time, float dayTime) {
+			viewMatrix = camera.getViewMatrix();
+			projectionMatrix = camera.getProjectionMatrix();
+			starRotationMatrix = glm::rotate(glm::mat4(1.0f), -MathHelper::PI * dayTime, { 0, 0, 1 });
+			cameraPos = camera.getPosition();
+			dirToSun = _dirToSun;
+			this->time = time;
+			fovX = camera.getFOVX();
+			fovY = camera.getFOVY();
+			yaw = camera.getYaw();
+			pitch = camera.getPitch();
+			cameraNear = camera.getNearPlaneDist();
+			cameraFar = camera.getFarPlaneDist();
+			tanHalfFOVX = glm::tan(camera.getFOVX() / 2);
+			tanHalfFOVY = glm::tan(camera.getFOVY() / 2);
+			this->dayTime = dayTime;
+			nightStrength = MathHelper::starBrightnessAtTime(dayTime);
+		}
+
+		bool operator==(const PerFrameInfo&) const = default;
 	};
 
 	struct TerrainImagesInfo {
-		void fromData(const std::array<float, ImageCount>& _imageScales, const std::array<glm::vec2, ImageCount>& _imagePositions) {
-			imageScales = _imageScales;
-			imagePositions = _imagePositions;
-		}
-		bool operator==(const TerrainImagesInfo&) const = default;
-
 		std::array<glm::vec2, ImageCount> imagePositions{};
 		std::array<float, ImageCount> imageScales{};
+
+		bool operator==(const TerrainImagesInfo&) const = default;
 	};
 
 	struct AtmosphereInfo {
-		void fromUI(const UIManager& uiManager) {
-			maxRadius = (4 * uiManager.mAtmosphereHeight.data() * uiManager.mAtmosphereHeight.data() + uiManager.mAtmosphereWidth.data() * uiManager.mAtmosphereWidth.data()) / (8 * uiManager.mAtmosphereHeight.data());
-			minRadius = maxRadius - uiManager.mAtmosphereHeight.data();
-			centerY = uiManager.mAtmosphereHeight.data() - maxRadius;
-			rayleighDensityFalloff = uiManager.mAtmosphereRayleighDensityFalloff.data();
-			mieDensityFalloff = uiManager.mAtmosphereMieDensityFalloff.data();
-			rayleighDensityScale = uiManager.mAtmosphereRayleighDensityScale.data() * 0.0001F;
-			mieDensityScale = uiManager.mAtmosphereMieDensityScale.data() * 0.0001F;
-			rayleighScattering = uiManager.mAtmosphereRayleighScattering.data();
-			mieScattering = uiManager.mAtmosphereMieScattering.data();
-			rayleighG = uiManager.mAtmosphereRayleighG.data();
-			mieG = uiManager.mAtmosphereMieG.data();
-			rayAtmosphereStepCount = uiManager.mRayAtmosphereStepCount.data();
-			raySunStepCount = uiManager.mRaySunStepCount.data();
-			brightness = uiManager.mAtmosphereBrightness.data();
-			ditherStrength = uiManager.mAtmosphereDitherStrength.data();
-			sunSizeDeg = uiManager.mSunSize.data();
-		}
-		bool operator==(const AtmosphereInfo&) const = default;
-
 		glm::vec3 rayleighScattering{};
 		glm::vec3 mieScattering{};
 		float maxRadius{};
@@ -227,8 +213,8 @@ namespace BufferData {
 		float centerY{};
 		float rayleighDensityFalloff{};
 		float mieDensityFalloff{};
-		float rayleighDensityScale{};
-		float mieDensityScale{};
+		float rayleighDensity{};
+		float mieDensity{};
 		float rayleighG{};
 		float mieG{};
 		int rayAtmosphereStepCount{};
@@ -236,15 +222,51 @@ namespace BufferData {
 		float brightness{};
 		float ditherStrength{};
 		float sunSizeDeg{};
+
+		float getWidth() {
+			float height = maxRadius - minRadius;
+			return std::sqrt(8 * maxRadius * height - 4 * height * height);
+		}
+
+		float getHeight() {
+			return maxRadius - minRadius;
+		}
+
+		void updateSphere(float width, float height) {
+			maxRadius = MathHelper::getRadiusFromChordWidthAndHeight(width, height);
+			minRadius = maxRadius - height;
+		}
+
+		bool operator==(const AtmosphereInfo&) const = default;
+
+		static AtmosphereInfo getDefaultValue() {
+			float height{ 3498 };
+			float width{ 136100 };
+			float maxRadius = MathHelper::getRadiusFromChordWidthAndHeight(width, height);
+			return AtmosphereInfo{
+				.rayleighScattering = { 5, 106, 594 },
+				.mieScattering = { 2, 2, 2 },
+				.maxRadius = maxRadius,
+				.minRadius = maxRadius - height,
+				.centerY = height - maxRadius,
+				.rayleighDensityFalloff = 1,
+				.mieDensityFalloff = 5,
+				.rayleighDensity = 0.004f,
+				.mieDensity = 0.06f,
+				.rayleighG = 0,
+				.mieG = 0.957f,
+				.rayAtmosphereStepCount = 30,
+				.raySunStepCount = 3,
+				.brightness = 25,
+				.ditherStrength = 1.8f,
+				.sunSizeDeg = 2.65f
+			};
+		}
 	};
 
 	struct ShadowInfo {
-		void fromData(const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon, const UIManager& uiManager) {
-			blurWidth = uiManager.mShadowBlurWidth.data();
-			blurQuality = uiManager.mShadowBlurQuality.data();
-			exposure = uiManager.mExposure.data();
-			minBias = uiManager.mMinShadowBias.data();
-			maxBias = uiManager.mMaxShadowBias.data();
+		void computeValues(const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon) {
+			assert(blurQuality % 2 == 1);
 			if (blurQuality % 2 == 0)
 				blurQuality += 1;
 
@@ -276,6 +298,7 @@ namespace BufferData {
 				}
 			}
 		}
+
 		bool operator==(const ShadowInfo&) const = default;
 
 		std::array<glm::mat4, CascadeCount> viewMatricesSun{};
@@ -291,34 +314,17 @@ namespace BufferData {
 		float exposure{};
 		float minBias{};
 		float maxBias{};
+
+		static ShadowInfo getDefaultValue() {
+			ShadowInfo value;
+			value.blurWidth = 0.5f;
+			value.blurQuality = 7;
+			value.exposure = 0.1f;
+			value.minBias = 2.7f;
+			value.maxBias = 7.5f;
+			return value;
+		}
 	};
 }
-
-//template <typename T>
-//class UniformBuffer {
-//public:
-//	UniformBuffer(int bindingIndex, bool isSSBO = false) : mIsSSBO{ isSSBO } {
-//		glBindBuffer(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, mBUF);
-//		glBufferData(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, sizeof(T), 0, GL_STATIC_DRAW);
-//		glBindBufferBase(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, bindingIndex, mBUF);
-//	}
-//
-//	// Returns whether the data was changed between calls
-//	bool updateGPU(const T& data) {
-//		if (data != mPrevData) {
-//			auto x{ sizeof(T) };
-//			glBindBuffer(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, mBUF);
-//			glBufferSubData(mIsSSBO ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER, 0, sizeof(T), &data);
-//			mPrevData = data;
-//			return true;
-//		}
-//		return false;
-//	}
-//
-//private:
-//	BUF mBUF;
-//	T mPrevData;
-//	bool mIsSSBO;
-//};
 
 #endif

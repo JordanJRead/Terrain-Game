@@ -5,7 +5,6 @@
 #include "GLFW/glfw3.h"
 #include "imgui_impl_glfw.h"
 #include "terrainrenderer.h"
-#include "uimanager.h"
 #include "framebuffercolour.h"
 #include "vertexarray.h"
 #include "shaders/shaderphysics.h"
@@ -21,7 +20,6 @@ private:
 	int mScreenHeight;
 	bool mIsUIVisible{ true };
 	CameraPlayer mCamera;
-	UIManager mUIManager;
 	TerrainRenderer mTerrainRenderer;
 	GLFWwindow* mWindow;
 	ShaderPhysics mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
@@ -29,6 +27,7 @@ private:
 	FramebufferColour mFramebuffer;
 	VertexArray mScreenQuad;
 	bool mIsCursorHidden{ true };
+	bool mShowPhysicsPlane{ false };
 
 	static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
 		App& app{ *static_cast<App*>(glfwGetWindowUserPointer(window)) };

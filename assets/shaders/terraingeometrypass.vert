@@ -17,6 +17,7 @@ uniform float planeWorldWidth;
 void main() {
 	// Sample plane info
 	vec2 flatPlanePos = vec2(chunkData.data[gl_InstanceID * 3 + 0], chunkData.data[gl_InstanceID * 3 + 1]);
+	//vec2 flatPlanePos = vec2(gl_InstanceID / 30 % 205 - 102, gl_InstanceID / 30 / 205 - 102) * 24.3;
 	float shellProgress = chunkData.data[gl_InstanceID * 3 + 2];
 	vertOut.shellProgress = shellProgress;
 

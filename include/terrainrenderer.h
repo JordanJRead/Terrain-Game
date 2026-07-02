@@ -3,429 +3,60 @@
 
 #include "glm/glm.hpp"
 #include "vertexarray.h"
-#include "terrainimagegenerator.h"
 #include "planegpu.h"
+#include "chunkmanager.h"
 #include <array>
-#include <string>
-#include <string_view>
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
-#include "cameraplayer.h"
-#include <iostream>
 #include "cubemap.h"
 #include "cubevertices.h"
-#include "uimanager.h"
-#include "mathhelper.h"
-#include "framebufferi.h"
-#include "uniformbuffer.h"
+#include "commonbuffertypes.h"
 #include "deferredrenderer.h"
 #include "constants.h"
-#include "camerai.h"
-#include "aabb.h"
 #include "shadowmapper.h"
 #include "shaders/shaderterrainimage.h"
 #include "shaders/shaderchunk.h"
 #include "shaders/shaderskybox.h"
-#include "chunkbuffers.h"
 #include "shaders/shaderortho.h"
 #include "starmanager.h"
 #include "openglbuffer.h"
+#include "terrainimageset.h"
+
+class FrameBufferI;
+class FrameBufferColour;
+class CameraI;
+struct AABB;
 
 class TerrainRenderer {
 public:
-	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos, const UIManager& uiManager)
-		: mLowQualityPlane{ 2 }
-		, mMediumQualityPlane{ 2 }
-		, mHighQualityPlane{ 2 }
-		, mReallyLowQualityPlane{ 2 }
+	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos);
 
-		, mScreenQuad{ VertexArray::createScreenVertexArray() }
+	void updateAndRenderUI(const glm::vec3& cameraPos);
+	void render(const CameraPlayer& camera, float time, const FramebufferColour& targetFramebuffer);
 
-		, mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
-		, mShaderTerrainForward{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
-		, mShaderWaterForward{ "assets/shaders/water.vert", "assets/shaders/water.frag" }
-		, mSkyboxShader{ "assets/shaders/skybox.vert", "assets/shaders/skybox.frag" }
-
-		, mImages{ {
-			{uiManager.mImagePixelDimensions[0].data(), uiManager.mImageWorldSizes[0].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 0, uiManager)},
-			{uiManager.mImagePixelDimensions[1].data(), uiManager.mImageWorldSizes[1].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 1, uiManager)},
-			{uiManager.mImagePixelDimensions[2].data(), uiManager.mImageWorldSizes[2].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 2, uiManager)},
-			{uiManager.mImagePixelDimensions[3].data(), uiManager.mImageWorldSizes[3].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 3, uiManager)},
-			{uiManager.mImagePixelDimensions[4].data(), uiManager.mImageWorldSizes[4].data(), screenWidth, screenHeight, getClosestWorldPixelPos(cameraPos, 4, uiManager)}
-		} }
-
-		, mDaySkybox{ {
-				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_2_Left+X.png",
-				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_3_Right-X.png",
-				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_4_Up+Y.png",
-				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_5_Down-Y.png",
-				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_0_Front+Z.png",
-				"assets/AllSkyFree/Epic_BlueSunset/Epic_BlueSunset_Cam_1_Back-Z.png"
-			} }
-		, mNightSkybox{ {
-				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_2_Left+X.png",
-				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_3_Right-X.png",
-				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_4_Up+Y.png",
-				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_5_Down-Y.png",
-				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_0_Front+Z.png",
-				"assets/AllSkyFree/Night MoonBurst/Night Moon Burst_Cam_1_Back-Z.png"
-			} }
-		, mDeferredRenderer{ screenWidth, screenHeight }
-		, mShadowMapperSun{ uiManager }
-		, mShadowMapperMoon{ uiManager }
-	{
-		mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
-		mMaxTerrainHeight = getHeightWithPerlin(uiManager, mMaxPerlinValues);
-
-		// Note: takes a couple minutes to run
-		//mMinPerlinValues = getMinHeightPerlinValues(uiManager);
-		//mMaxPerlinValues = getMaxHeightPerlinValues(uiManager);
-
-		mTerrainParams.mValue.fromUI(uiManager);
-		mTerrainParams.updateGPU();
-		mArtisticParams.mValue.fromUI(uiManager);
-		mArtisticParams.updateGPU();
-		mWaterParams.mValue.fromUI(uiManager);
-		mWaterParams.updateGPU();
-		mColourParams.mValue.fromUI(uiManager);
-		mColourParams.updateGPU();
-		mAtmosphereInfo.mValue.fromUI(uiManager);
-		mAtmosphereInfo.updateGPU();
-
-		for (int i{ 0 }; i < ImageCount; ++i) {
-			mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage);
-		}
-	}
-
-	void bindTerrainImage(int i, int unit) const {
-		mImages[i].bindImage(unit);
-	}
-
-	const DeferredRenderer& getDeferredRenderer() const {
-		return mDeferredRenderer;
-	}
-
-	const ShadowMapper<CascadeCount>& getShadowMapperSun() const {
-		return mShadowMapperSun;
-	}
-
-	const ShadowMapper<CascadeCount>& getShadowMapperMoon() const {
-		return mShadowMapperMoon;
-	}
-
-	void render(const CameraPlayer& camera, float time, const UIManager& uiManager, const FramebufferColour& targetFramebuffer) {
-		mStarManager.update({ uiManager.mStarMinSize.data(), uiManager.mStarMaxSize.data(), uiManager.mStarCount.data() });
-		mTerrainParams.mValue.fromUI(uiManager);
-		bool hasTerrainChanged{ mTerrainParams.updateGPU() };
-		if (hasTerrainChanged) {
-			mMinTerrainHeight = getHeightWithPerlin(uiManager, mMinPerlinValues);
-			mMaxTerrainHeight = getHeightWithPerlin(uiManager, mMaxPerlinValues);
-		}
-		glm::vec3 dirToSun{ MathHelper::getDirToSun(uiManager) };
-		mArtisticParams.mValue.fromUI(uiManager);
-		mArtisticParams.updateGPU();
-		mWaterParams.mValue.fromUI(uiManager);
-		mWaterParams.updateGPU();
-		mColourParams.mValue.fromUI(uiManager);
-		mColourParams.updateGPU();
-		mAtmosphereInfo.mValue.fromUI(uiManager);
-		mAtmosphereInfo.updateGPU();
-
-		int chunkCount{ uiManager.mChunkCount.data() };
-		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
-		// Update plane types
-		int lowQualityPlaneVerticesPerEdge{ (int)(chunkWidth * uiManager.mLowQualityVertexDensity.data()) };
-		if (lowQualityPlaneVerticesPerEdge < 2)
-			lowQualityPlaneVerticesPerEdge = 2;
-		if (lowQualityPlaneVerticesPerEdge != mLowQualityPlane.getVerticesPerEdge()) {
-			mLowQualityPlane.rebuild(lowQualityPlaneVerticesPerEdge);
-		}
-		int highQualityVerticesPerEdge{ uiManager.mHighQualityPlaneQualityScale.data() * (lowQualityPlaneVerticesPerEdge - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this
-		if (highQualityVerticesPerEdge != mHighQualityPlane.getVerticesPerEdge()) {
-			mHighQualityPlane.rebuild(highQualityVerticesPerEdge);
-		}
-
-		int mediumQualityVerticesPerEdge{ uiManager.mMediumQualityPlaneQualityScale.data() * (lowQualityPlaneVerticesPerEdge - 1) + 1 }; // We want the distance between vertices to be multiples of each other, so we do this`	
-		if (mediumQualityVerticesPerEdge != mMediumQualityPlane.getVerticesPerEdge()) {
-			mMediumQualityPlane.rebuild(mediumQualityVerticesPerEdge);
-		}
-
-		// Update images
-		for (int i{ 0 }; i < ImageCount; ++i) {
-
-			// Move images along with the player
-			glm::vec2 scaledCameraPos{ glm::vec2(camera.getPosition().x, camera.getPosition().z) / uiManager.mTerrainScale.data() };
-			double cameraDistFromImageCenter{ glm::length(scaledCameraPos - mImageWorldPositions[i]) };
-			if (cameraDistFromImageCenter * 2 > 0.2 * uiManager.mImageWorldSizes[i].data()) { // If near edge of image, update image
-				glm::vec3 pixelPosition{ getClosestWorldPixelPos(camera.getPosition() / uiManager.mTerrainScale.data(), i, uiManager) };
-				mImageWorldPositions[i] = glm::vec2(pixelPosition.x, pixelPosition.z);
-			}
-
-			// Recalculate image checks
-			std::string indexString{ std::to_string(i) };
-			bool hasImageChanged{ false };
-
-			// GUI
-			if (uiManager.mImageWorldSizes[i].hasChanged()) {
-				mImages[i].setWorldSize(uiManager.mImageWorldSizes[i].data());
-				hasImageChanged = true;
-			}
-
-			// GUI
-			if (uiManager.mImagePixelDimensions[i].hasChanged()) {
-				mImages[i].updatePixelDim(uiManager.mImagePixelDimensions[i].data());
-				hasImageChanged = true;
-			}
-
-			// The above position calculation
-			if (mImages[i].getWorldPos() != mImageWorldPositions[i]) { // Updated automatically
-				mImages[i].setWorldPos(mImageWorldPositions[i]);
-				hasImageChanged = true;
-			}
-
-			if (hasImageChanged || hasTerrainChanged) {
-				mImages[i].updateTexture(mScreenQuad, mShaderTerrainImage); // binds another shader
-			}
-		}
-		mTerrainImagesInfo.mValue.fromData(uiManager.getImageSizes(), mImageWorldPositions);
-		mTerrainImagesInfo.updateGPU();
-
-		// Render skybox
-		if (!uiManager.mIsDeferredRendering.data()) {
-			mPerFrameInfo.mValue.fromData(camera, dirToSun, time, uiManager);
-			mPerFrameInfo.updateGPU();
-			mSkyboxShader.setRenderData(mDaySkybox);
-			mSkyboxShader.render(targetFramebuffer, mCubeVertices.getVertexArray());
-		}
-
-		for (int i{ 0 }; i < ImageCount; ++i) {
-			mImages[i].bindImage(i);
-		}
-
-		if (uiManager.mIsDeferredRendering.data()) {
-			mDeferredRenderer.mFramebuffer.use();
-			glClearColor(0, 0, 0, -3);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			const CameraI* pCamera{ &camera };
-			const CameraI* pCamera0{ &mShadowMapperSun.getCamera(0) };
-			const CameraI* pCamera1{ &mShadowMapperSun.getCamera(1) };
-			const CameraI* pCamera2{ &mShadowMapperSun.getCamera(2) };
-			const CameraI* currCamera{ uiManager.mCurrCamera.data() == -1 ? pCamera : (uiManager.mCurrCamera.data() == 0 ? pCamera0 : (uiManager.mCurrCamera.data() == 1 ? pCamera1 : (pCamera2))) };
-
-			glEnable(GL_CULL_FACE);
-			renderTerrain(mDeferredRenderer.mFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, uiManager, dirToSun, time);
-			glDisable(GL_CULL_FACE);
-
-			mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			mShadowMapperMoon.updateCameras(-dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			mShadowInfo.mValue.fromData(mShadowMapperSun, mShadowMapperMoon, uiManager);
-			mShadowInfo.updateGPU();
-			for (size_t i{ 0 }; i < CascadeCount; ++i) {
-				bool isDay = uiManager.mDayTime.data() < 1;
-
-				const CameraI& depthCameraSun{ mShadowMapperSun.getCamera(i) };
-				const FramebufferI& depthFramebufferSun{ mShadowMapperSun.getFramebuffer(i) };
-				depthFramebufferSun.use();
-				glClearColor(0, 0, 0, 0);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				renderTerrain(depthFramebufferSun, depthCameraSun, camera.getPosition(), mShadowMapperSun.mTerrainDepthShader, mShadowMapperSun.mWaterDepthShader, uiManager, dirToSun, time, true, !isDay);
-
-				const CameraI& depthCameraMoon{ mShadowMapperMoon.getCamera(i) };
-				const FramebufferI& depthFramebufferMoon{ mShadowMapperMoon.getFramebuffer(i) };
-				depthFramebufferMoon.use();
-				glClearColor(0, 0, 0, 0);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				renderTerrain(depthFramebufferMoon, depthCameraMoon, camera.getPosition(), mShadowMapperMoon.mTerrainDepthShader, mShadowMapperMoon.mWaterDepthShader, uiManager, dirToSun, time, true, isDay);
-			}
-
-			mPerFrameInfo.mValue.fromData(camera, dirToSun, time, uiManager);
-			mPerFrameInfo.updateGPU();
-			mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
-		}
-		else {
-			mShadowInfo.mValue.fromData(mShadowMapperSun, mShadowMapperMoon, uiManager);
-			mShadowInfo.updateGPU();
-			renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mShaderWaterForward, uiManager, dirToSun, time);
-			
-			// Shadow map ortho volume debugging (messy)
-			if (uiManager.mSunBrightness.data() < 10)
-				mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition(), uiManager), uiManager);
-			VertexArray orthoVertexArray;
-
-			std::vector<unsigned int> indices{ 0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 2, 3, 6, 3, 6, 7, 0, 1, 4, 1, 4, 5, 0, 2, 4, 2, 4, 6, 1, 3, 5, 3, 5, 7 };
-			std::vector<int> layout{ 3 };
-			for (int i{ 0 }; i < CascadeCount; ++i) {
-				const std::array<glm::vec3, 8>& orthoPoints{ mShadowMapperSun.getOrthoWorldPositions(i) };
-				std::vector<float> vertexData;
-				for (const glm::vec3& orthoPoint : orthoPoints) {
-					vertexData.push_back(orthoPoint.x);
-					vertexData.push_back(orthoPoint.y);
-					vertexData.push_back(orthoPoint.z);
-				}
-				orthoVertexArray.create(vertexData, indices, layout);
-				mPerFrameInfo.mValue.fromData(camera, dirToSun, time, uiManager);
-				mPerFrameInfo.updateGPU();
-				glm::vec3 colour = { 0, 0, 0 };
-				colour[i] = 1;
-				mShaderOrtho.setColour(colour);
-				mShaderOrtho.render(targetFramebuffer, orthoVertexArray);
-			}
-		}
-	}
-
-	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderChunk& terrainShader, ShaderChunk& waterShader, const UIManager& uiManager, const glm::vec3& dirToSun, float time, bool depthPass = false, bool forceLowQuality = false) {
-		mPerFrameInfo.mValue.fromData(camera, dirToSun, time, uiManager);
-		mPerFrameInfo.updateGPU();
-		int chunkCount{ uiManager.mChunkCount.data() };
-		float chunkWidth{ uiManager.mTerrainSpan.data() / chunkCount };
-
-		for (int x{ -chunkCount / 2 }; x <= chunkCount / 2; ++x) {
-			for (int z{ -chunkCount / 2 }; z <= chunkCount / 2; ++z) {
-				int shellCount{ uiManager.mShellCount.data() };
-				
- 				glm::vec3 chunkPos{ MathHelper::getClosestWorldStepPosition(playerCameraPosition, chunkWidth) + glm::vec3(x * chunkWidth, 0, z * chunkWidth) };
-
-				// Frustum culling
-				std::array<float, 2> xVals{ chunkPos.x - chunkWidth / 2.0f, chunkPos.x + chunkWidth / 2.0f };
-				std::array<float, 2> yVals{ mMinTerrainHeight, mMaxTerrainHeight };
-				std::array<float, 2> zVals{ chunkPos.z - chunkWidth / 2.0f, chunkPos.z + chunkWidth / 2.0f };
-
-				bool isVisible{ true };
-				if (uiManager.mFrustumCulling.data())
-					isVisible = camera.isAABBVisible({ {chunkPos.x - chunkWidth / 2.0f, mMinTerrainHeight, chunkPos.z - chunkWidth / 2.0f}, {chunkPos.x + chunkWidth / 2.0f, mMaxTerrainHeight, chunkPos.z + chunkWidth / 2.0f} });
-
-				if (isVisible) {
-					float chunkDist{ glm::length(chunkPos - camera.getPosition()) };
-					bool isNeighbourChunck{ x >= -1 && x <= 1 && z >= -1 && z <= 1 };
-					bool highQuality{ !forceLowQuality && isNeighbourChunck || chunkDist < uiManager.mVertexLODDistanceNear.data() };
-					bool mediumQuality{ !forceLowQuality && chunkDist > uiManager.mVertexLODDistanceNear.data() && chunkDist < uiManager.mVertexLODDistanceFar.data() };
-					int qualityIndex{ highQuality ? 2 : (mediumQuality ? 1 : 0) };
-
-					// LOD shell count
-					if (depthPass)
-						shellCount = 0;
-					else if (!isNeighbourChunck) {
-						int oldShellCount{ uiManager.mShellCount.data() };
-						float shellLODDistance{ uiManager.mShellLODDistance.data() };
-						if (chunkDist > shellLODDistance * 4) {
-							shellCount = oldShellCount > 3 ? 3 : oldShellCount;
-						}
-						if (chunkDist > shellLODDistance * 2) {
-							shellCount = oldShellCount > 7 ? 7 : oldShellCount;
-						}
-						else if (chunkDist > shellLODDistance) {
-							shellCount = oldShellCount > 10 ? 10 : oldShellCount;
-						}
-					}
-
-					mChunkBuffers.addTerrainChunk(qualityIndex, glm::vec2{ chunkPos.x, chunkPos.z }, shellCount);
-					mChunkBuffers.addWaterChunk(glm::vec2{ chunkPos.x, chunkPos.z });
-				}
-			}
-		}
-
-		// Draw water
-		waterShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushWater(), mDaySkybox);
-		waterShader.render(targetFramebuffer, mReallyLowQualityPlane.getVertexArray());
-
-		// Draw terrain
-		glDisable(GL_BLEND);
-		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(2), mDaySkybox);
-		terrainShader.render(targetFramebuffer, mHighQualityPlane.getVertexArray());
-
-		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(1), mDaySkybox);
-		terrainShader.render(targetFramebuffer, mMediumQualityPlane.getVertexArray());
-
-		terrainShader.setRenderData(*this, chunkWidth, mChunkBuffers.flushTerrain(0), mDaySkybox);
-		terrainShader.render(targetFramebuffer, mLowQualityPlane.getVertexArray());
-	}
-
-	AABB getSceneWorldAABB(const glm::vec3& playerCameraPos, const UIManager& uiManager) const {
-		glm::vec3 minPosition{ -uiManager.mTerrainSpan.data() / 2, mMinTerrainHeight, -uiManager.mTerrainSpan.data() / 2 };
-		glm::vec3 maxPosition{  uiManager.mTerrainSpan.data() / 2, mMaxTerrainHeight,  uiManager.mTerrainSpan.data() / 2 };
-		minPosition += playerCameraPos;
-		maxPosition += playerCameraPos;
-		return AABB{ minPosition * 1.1f, maxPosition * 1.1f};
-	}
-
-	glm::vec3 getClosestWorldPixelPos(const glm::vec3 pos, int imageIndex, const UIManager& uiManager) {
-		return MathHelper::getClosestWorldStepPosition(pos, uiManager.mImageWorldSizes[imageIndex].data() / uiManager.mImagePixelDimensions[imageIndex].data() * uiManager.mTerrainScale.data());
-	}
-
-	float getHeightAtPoint(const glm::vec2& worldPos, const UIManager& uiManager) const {
-		glm::vec2 pos = worldPos / uiManager.mTerrainScale.data();
-		float mountain = MathHelper::perlin(pos * uiManager.mMountainFrequency.data(), 0);
-		mountain = pow(mountain, uiManager.mMountainExponent.data());
-
-		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
-
-		// Rivers
-		float river = MathHelper::perlin(pos * uiManager.mRiverFrequency.data(), 1);
-
-		river *= 2;
-		river -= 1;
-		river = abs(river);
-		river = 1 - river;
-
-		river = pow(river, uiManager.mRiverExponent.data());
-
-		river *= uiManager.mRiverStrength.data();
-		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
-
-		// Lakes
-		float lake = MathHelper::perlin(pos * uiManager.mLakeFrequency.data(), 1);
-		
-		lake = MathHelper::extreme(lake);
-
-		lake = pow(lake, uiManager.mLakeExponent.data());
-
-		lake *= uiManager.mLakeStrength.data();
-		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
-
-		float terrainInfo = 0;
-
-		float amplitude = uiManager.mTerrainAmplitude.data();
-		float spread = 1;
-
-		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			glm::vec2 samplePos = pos * spread;
-			float perlinData = MathHelper::perlin(samplePos, 0);
-
-			terrainInfo += amplitude * perlinData;
-			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
-			spread *= uiManager.mTerrainSpreadFactor.data();
-		}
-
-		terrainInfo *= mountain;
-
-		terrainInfo -= river;
-
-		terrainInfo -= lake;
-
-		return terrainInfo;
-	}
+	void bindTerrainImage(int i, int unit) const;
+	const DeferredRenderer& getDeferredRenderer() const;
+	const ShadowMapper<CascadeCount>& getShadowMapperSun() const;
+	const ShadowMapper<CascadeCount>& getShadowMapperMoon() const;
+	AABB getSceneWorldAABB(const glm::vec3& playerCameraPos) const;
+	const CommonBufferTypes::TerrainParams& getTerrainParams() const { return mTerrainParams.mValue; }
+	float getTerrainScale() const { return mArtisticParams.mValue.terrainScale; }
 
 private:
-	// Buffers
-	OpenGLBuffer<BufferData::TerrainParams>      mTerrainParams    { 0, BufferTypes::uniform };
-	OpenGLBuffer<BufferData::ArtisticParams>     mArtisticParams   { 1, BufferTypes::uniform };
-	OpenGLBuffer<BufferData::WaterParams>        mWaterParams      { 2, BufferTypes::uniform };
-	OpenGLBuffer<BufferData::ColourParams>       mColourParams     { 3, BufferTypes::uniform };
-	OpenGLBuffer<BufferData::PerFrameInfo>       mPerFrameInfo     { 4, BufferTypes::uniform };
-	OpenGLBuffer<BufferData::TerrainImagesInfo>  mTerrainImagesInfo{ 5, BufferTypes::ssbo };
-	OpenGLBuffer<BufferData::AtmosphereInfo>     mAtmosphereInfo   { 6, BufferTypes::uniform };
-	OpenGLBuffer<BufferData::ShadowInfo>         mShadowInfo       { 7, BufferTypes::ssbo };
-	ChunkBuffers<3> mChunkBuffers{ 8 };
+	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderChunk& terrainShader, ShaderChunk& waterShader, const glm::vec3& dirToSun, float time, bool depthPass = false, bool forceLowQuality = false);
+
+private:
+	OpenGLBuffer<CommonBufferTypes::TerrainParams>      mTerrainParams{ 0, BufferTypes::uniform, CommonBufferTypes::TerrainParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::ArtisticParams>     mArtisticParams   { 1, BufferTypes::uniform, CommonBufferTypes::ArtisticParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::WaterParams>        mWaterParams      { 2, BufferTypes::uniform, CommonBufferTypes::WaterParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::ColourParams>       mColourParams     { 3, BufferTypes::uniform, CommonBufferTypes::ColourParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::PerFrameInfo>       mPerFrameInfo     { 4, BufferTypes::uniform };
+	OpenGLBuffer<CommonBufferTypes::TerrainImagesInfo>  mTerrainImagesInfo{ 5, BufferTypes::ssbo };
+	OpenGLBuffer<CommonBufferTypes::AtmosphereInfo>     mAtmosphereInfo   { 6, BufferTypes::uniform, CommonBufferTypes::AtmosphereInfo::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::ShadowInfo>         mShadowInfo       { 7, BufferTypes::ssbo, CommonBufferTypes::ShadowInfo::getDefaultValue() };
 	StarManager mStarManager{ 9 };
 
 	std::array<glm::vec2, ImageCount> mImageWorldPositions;
-	std::array<TerrainImageGenerator, ImageCount> mImages;
 	float mMinTerrainHeight;
 	float mMaxTerrainHeight;
-	std::array<float, 4> mMinPerlinValues{ {1, 0, 1, 0} };
-	std::array<float, 4> mMaxPerlinValues{ {1, 0, 0, 1} };
 
 	ShaderTerrainImage mShaderTerrainImage;
 	ShaderChunk mShaderTerrainForward;
@@ -438,105 +69,14 @@ private:
 	DeferredRenderer mDeferredRenderer;
 	ShadowMapper<CascadeCount> mShadowMapperSun;
 	ShadowMapper<CascadeCount> mShadowMapperMoon;
-
-	PlaneGPU mLowQualityPlane;
-	PlaneGPU mMediumQualityPlane;
-	PlaneGPU mHighQualityPlane;
-
-	PlaneGPU mReallyLowQualityPlane; // For water only
+	ChunkManager mChunkManager{ 3, 8, 5000.0f, 205, mTerrainParams.mValue };
 
 	VertexArray mScreenQuad;
-
-	std::array<float, 4> getMaxHeightPerlinValues(const UIManager& uiManager) {
-		std::array<float, 4> maxPerlinValues{ 1, 0, 0, 1 };
-		float maxHeight{ getHeightWithPerlin(uiManager, maxPerlinValues) };
-		for (int i1{ 0 }; i1 <= 100; ++i1) {
-			for (int i2{ 0 }; i2 <= 100; ++i2) {
-				for (int i3{ 0 }; i3 <= 100; ++i3) {
-					for (int i4{ 0 }; i4 <= 100; ++i4) {
-						std::array<float, 4> testPerlinValues{ {i1 / 100.0f, i2 / 100.0f, i3 / 100.0f, i4 / 100.0f} };
-						float height{ getHeightWithPerlin(uiManager, testPerlinValues) };
-						if (height > maxHeight) {
-							maxPerlinValues = testPerlinValues;
-							maxHeight = height;
-						}
-					}
-				}
-			}
-		}
-		return maxPerlinValues;
-	}
-
-	std::array<float, 4> getMinHeightPerlinValues(const UIManager& uiManager) {
-		std::array<float, 4> minPerlinValues{ 0, 1, 1, 0 };
-		float minHeight{ getHeightWithPerlin(uiManager, minPerlinValues) };
-		for (int i1{ 0 }; i1 <= 100; ++i1) {
-			for (int i2{ 0 }; i2 <= 100; ++i2) {
-				for (int i3{ 0 }; i3 <= 100; ++i3) {
-					for (int i4{ 0 }; i4 <= 100; ++i4) {
-						std::array<float, 4> testPerlinValues{ {i1 / 100.0f, i2 / 100.0f, i3 / 100.0f, i4 / 100.0f} };
-						float height{ getHeightWithPerlin(uiManager, testPerlinValues) };
-						if (height < minHeight) {
-							minPerlinValues = testPerlinValues;
-							minHeight = height;
-						}
-					}
-				}
-			}
-		}
-		return minPerlinValues;
-	}
-
-	float getHeightWithPerlin(const UIManager& uiManager, const std::array<float, 4>& perlinValues) {
-		float mountain = perlinValues[0];
-		mountain = pow(mountain, uiManager.mMountainExponent.data());
-
-		mountain = mountain * (1 - uiManager.mAntiFlatFactor.data()) + uiManager.mAntiFlatFactor.data();
-
-		// Rivers
-		float river = perlinValues[1];
-
-		river *= 2;
-		river -= 1;
-		river = abs(river);
-		river = 1 - river;
-
-		river = pow(river, uiManager.mRiverExponent.data());
-
-		river *= uiManager.mRiverStrength.data();
-		river *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
-
-		// Lakes
-		float lake = perlinValues[2];
-
-		lake = MathHelper::extreme(lake);
-
-		lake = pow(lake, uiManager.mLakeExponent.data());
-
-		lake *= uiManager.mLakeStrength.data();
-		lake *= (mountain * uiManager.mWaterEatingMountain.data() + 1);
-
-		float terrainInfo = 0;
-
-		float amplitude = uiManager.mTerrainAmplitude.data();
-		float spread = 1;
-
-		for (int i = 0; i < uiManager.mTerrainOctaveCount.data(); ++i) {
-			float perlinData = perlinValues[3];
-
-			terrainInfo += amplitude * perlinData;
-			amplitude *= uiManager.mTerrainAmplitudeMultiplier.data();
-			spread *= uiManager.mTerrainSpreadFactor.data();
-		}
-
-		terrainInfo *= mountain;
-
-		terrainInfo -= river;
-
-		terrainInfo -= lake;
-
-		return terrainInfo;
-	}
+	int mShellCount{ 30 };
+	float mDayTime{};
+	bool mDoDeferredRendering{ true };
+	bool mDoFrustumCulling{ true };
+	TerrainImageSet mTerrainImageSet;
 };
 
 #endif

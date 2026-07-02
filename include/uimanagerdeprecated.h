@@ -276,7 +276,7 @@ public:
 			mMoonColour.update();
 
 			ImGui::ColorPicker3("Star", (float*)mStarColour.getDataPtr());
-			mStarBrightness.update();
+			mStarColour.update();
 
 			ImGui::End();
 
@@ -470,7 +470,7 @@ public:
 	UIElement<int>    mChunkCount{ 205 };
 	UIElement<float>  mTerrainSpan{ 5000 };
 	UIElement<float>    mLowQualityVertexDensity{ 0.15f };
-	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 }; // TODO another plane LOD?
+	UIElement<int>    mMediumQualityPlaneQualityScale{ 4 };
 	UIElement<int>    mHighQualityPlaneQualityScale{ 25 };
 	UIElement<float> mVertexLODDistanceNear{ 256 };
 	UIElement<float> mVertexLODDistanceFar{ 1000 };

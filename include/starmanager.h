@@ -15,13 +15,15 @@ struct StarParameters {
 	StarParameters(float _minSize, float _maxSize, int _count)
 		: minSize{ _minSize }
 		, maxSize{ _maxSize }
-		, count{ _count } { }
+		, count{ _count }
+	{ }
 };
 
 class StarManager {
 public:
 	StarManager(int bufferUnit);
 	void update(const StarParameters& starParamters);
+	StarParameters getPrevParametersCopy() const { return mPrevParameters; }
 
 private:
 	static int getSplitIndex(const glm::vec3& dir);

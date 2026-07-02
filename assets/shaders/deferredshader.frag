@@ -110,26 +110,26 @@ float rayleighDensityAtPoint(vec3 pos) {
 	vec3 atmosphereCenter = getAtmosphereCenter();
 	float distFromCenter = length(atmosphereCenter - pos);
 	if (distFromCenter < atmosphereInfo.minRadius) {
-		return atmosphereInfo.rayleighDensityScale;
+		return atmosphereInfo.rayleighDensity;
 	}
 	if (distFromCenter > atmosphereInfo.maxRadius) {
 		return 0;
 	}
 	float norm = (distFromCenter - atmosphereInfo.minRadius) / (atmosphereInfo.maxRadius - atmosphereInfo.minRadius);
-	return exp(-atmosphereInfo.rayleighDensityFalloff * norm) * (1 - norm) * atmosphereInfo.rayleighDensityScale;
+	return exp(-atmosphereInfo.rayleighDensityFalloff * norm) * (1 - norm) * atmosphereInfo.rayleighDensity;
 }
 
 float mieDensityAtPoint(vec3 pos) {
 	vec3 atmosphereCenter = getAtmosphereCenter();
 	float distFromCenter = length(atmosphereCenter - pos);
 	if (distFromCenter < atmosphereInfo.minRadius) {
-		return atmosphereInfo.mieDensityScale;
+		return atmosphereInfo.mieDensity;
 	}
 	if (distFromCenter > atmosphereInfo.maxRadius) {
 		return 0;
 	}
 	float norm = (distFromCenter - atmosphereInfo.minRadius) / (atmosphereInfo.maxRadius - atmosphereInfo.minRadius);
-	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensityScale;
+	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensity;
 }
 
 float opticalDepth(vec3 pos, vec3 dir, bool isRayleigh) {
@@ -312,7 +312,7 @@ void main() {
 	vec3 starColour = getStarColor(cameraRayDir);
 
 	vec3 skyColour = lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour);
-
+	
 	if (isSky) {
 		FragColor = vec4(skyColour, 1);
 	}

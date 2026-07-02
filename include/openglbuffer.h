@@ -126,6 +126,15 @@ template <IsClassOrStruct BaseStructType>
 class OpenGLBuffer {
 public:
 
+	OpenGLBuffer(int bindingIndex, BufferTypes::Type bufferType, const BaseStructType& value)
+		: mBindingIndex{ bindingIndex }
+		, mBufferType{ bufferType }
+		, mValue{ value }
+	{
+		mBuffer.bind(BufferTypes::bufferTargets[(int)bufferType]);
+		glBindBufferBase(BufferTypes::bufferTargets[(int)mBufferType], mBindingIndex, mBuffer);
+	}
+
 	OpenGLBuffer(int bindingIndex, BufferTypes::Type bufferType)
 		: mBindingIndex{ bindingIndex }
 		, mBufferType{ bufferType }
@@ -163,7 +172,7 @@ private:
 		int i{ 0 };
 		constexpr int maxI{ boost::pfr::tuple_size<StructType>::value - 1 };
 
-		boost::pfr::for_each_field(structToAdd, [&]<typename MemberType>(const MemberType& value) mutable {
+		boost::pfr::for_each_field_with_name(structToAdd, [&]<typename MemberType>(std::string_view name, const MemberType& value) mutable {
 			int baseAlignment{ getBaseAlignment<MemberType>(mBufferType) };
 
 			// Move to start of object (aligned offset)
@@ -172,7 +181,7 @@ private:
 			data.resize(numFloats(baseOffset));
 
 			if constexpr (is_array_like_v<MemberType>) {
-				addArrayToData<typename MemberType::value_type>(value, data, baseOffset);
+				addArrayToData<MemberType, typename MemberType::value_type>(value, data, baseOffset);
 			}
 			else if constexpr (std::is_class_v<MemberType> && !is_glm_v<MemberType>) {
 				addStructToData(value, data, baseOffset, i != maxI);
@@ -181,7 +190,6 @@ private:
 				data.insert(data.end(), (float*)&value, (float*)&value + getNumOfFloatsInObject<MemberType>()); // Insert tightly packed floats
 
 				baseOffset += getNumOfFloatsInObject<MemberType>() * sizeof(float);
-				data.resize(numFloats(baseOffset)); // Ensure data has possible padding of object (vec3)
 			}
 			++i;
 		});
@@ -192,18 +200,24 @@ private:
 		data.resize(numFloats(baseOffset));
 	}
 
-	template <typename ArrayMemberType>
+	template <typename ArrayType, typename ArrayMemberType>
 	void addArrayToData(std::span<const ArrayMemberType> arr, std::vector<float>& data, int& baseOffset) {
 		// Either contains structs or simple items
 
 		// Array of structs
 		if constexpr (std::is_class_v<ArrayMemberType> && !is_glm_v<ArrayMemberType>) {
 			for (const ArrayMemberType& item : arr) {
-				addStructToData(item, data, baseOffset);
+				addStructToData(item, data, baseOffset); // bool?
 			}
 		}
 		else {
-			int stride{ getBaseAlignment<ArrayMemberType>(mBufferType) };
+			int stride;
+			if constexpr (std::is_same_v<ArrayMemberType, glm::mat4>) {
+				stride = 64;
+			}
+			else {
+				stride = getBaseAlignment<ArrayType>(mBufferType);
+			}
 			for (const ArrayMemberType& item : arr) {
 				data.insert(data.end(), (float*)&item, (float*)&item + getNumOfFloatsInObject<ArrayMemberType>()); // Insert tightly packed floats
 				baseOffset += stride;

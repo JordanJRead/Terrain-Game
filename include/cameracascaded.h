@@ -5,7 +5,6 @@
 #include "cameraplayer.h"
 #include <array>
 #include "glm/glm.hpp"
-#include "uimanager.h"
 #include "aabb.h"
 
 class CameraCascaded : public CameraI {

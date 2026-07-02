@@ -52,7 +52,6 @@ void main() {
 			randomTexelHeight = 1;
 		}
 	}
-	
 	// Terrain at center of texel
 	vec2 shellWorldMiddlePos = vec2(shellGridX / shellScale, shellGridZ / shellScale);
 	vec4 shellMiddleTerrainInfo = getTerrainInfo(shellWorldMiddlePos, false);
@@ -61,7 +60,7 @@ void main() {
 	// Wetness
 	float wetHeight = 0.4;
 	float distAboveWater = (isShell ? shellMiddleTerrainInfo.x : fragIn.groundWorldPos.y) - waterParams.height;
-	float wet =  1 - (distAboveWater / wetHeight);
+	float wet = 1 - (distAboveWater / wetHeight); // one of these (distAboveWater)
 	wet = clamp(wet, 0.0, 1.0);
 
 	// Dot cutoff
@@ -83,7 +82,7 @@ void main() {
 	if (isGrass)
 		shellCutoff += extreme(mountain); // Grass can't grow on mountains
 
-	bool doesShellExist = shallowEnough && randomTexelHeight >= shellCutoff && wet == 0;
+	bool doesShellExist = shallowEnough && randomTexelHeight >= shellCutoff && wet == 0; // one of these - 1
 	if (isShell && !doesShellExist)
 		discard;
 	OutNormalDoesTexelExist = vec4(isGrass && isShell ? shellNormal : normal, doesShellExist);

@@ -11,10 +11,10 @@ void main() {
 	vec3 color = texture(source, texCoord).xyz;
 
 	// Tone mapping
-	color = vec3(1) - exp(-color * shadowInfo.exposure);
+	//color = vec3(1) - exp(-color * shadowInfo.exposure);
 
 	// Gamma
-	color = pow(color, vec3(1/2.2));
+	//color = pow(color, vec3(1/2.2));
 	
 	// Noise
 	vec2 noiseSamplePos = gl_FragCoord.xy / textureSize(noise, 0).xy;

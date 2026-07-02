@@ -27,7 +27,7 @@ vec3 getWaterHeight(vec2 pos) {
 		float randNum = randToFloat(rand(i));
 		vec2 waterDir = randUnitVector(randNum);
 		//waterInfo.x += amplitude * sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed);
-		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) - 1.4);
+		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) + waterParams.height);
 		waterInfo.yz += amplitude * exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) * cos(dot(waterDir, pos) * freq + perFrameInfo.time * speed) * freq * waterDir;
 
 		amplitude *= waterParams.amplitudeMult;
