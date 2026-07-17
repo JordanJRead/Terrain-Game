@@ -145,15 +145,18 @@ namespace CommonBufferTypes {
 
 		static ColourParams getDefaultValue() {
 			return ColourParams{
-				.dirtColour     = {40 / 255.0f, 21 / 255.0f, 10 / 255.0f},
+				.dirtColour = {40 / 255.0f, 21 / 255.0f, 10 / 255.0f},
 				.mountainColour = {34 / 255.0f, 34 / 255.0f, 34 / 255.0f},
-				.grassColour1   = {0 / 255.0f, 56 / 255.0f, 0 / 255.0f},
-				.grassColour2   = {15 / 255.0f, 56 / 255.0f, 0 / 255.0f},
-				.snowColour     = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
-				.waterColour    = {0 / 255.0f, 1.7 / 255.0f, 56 / 255.0f},
-				.sunColour      = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
-				.moonColour     = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
-				.starColour     = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f}
+				.grassColour1 = {0 / 255.0f, 56 / 255.0f, 0 / 255.0f},
+				.grassColour2 = {15 / 255.0f, 56 / 255.0f, 0 / 255.0f},
+				.snowColour = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
+				.waterColour = {0 / 255.0f, 1.7 / 255.0f, 56 / 255.0f},
+				.sunColour = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
+				.sunBrightness = 25.0f,
+				.moonColour = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
+				.moonBrightness = 0.1f,
+				.starColour     = {255 / 255.0f, 255 / 255.0f, 255 / 255.0f},
+				.starBrightness = 2
 			};
 		}
 	};
@@ -251,8 +254,8 @@ namespace CommonBufferTypes {
 				.centerY = height - maxRadius,
 				.rayleighDensityFalloff = 1,
 				.mieDensityFalloff = 5,
-				.rayleighDensity = 0.004f,
-				.mieDensity = 0.06f,
+				.rayleighDensity = 0.004f * 0.0001F,
+				.mieDensity = 0.06f * 0.0001F,
 				.rayleighG = 0,
 				.mieG = 0.957f,
 				.rayAtmosphereStepCount = 30,

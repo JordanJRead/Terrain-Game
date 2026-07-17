@@ -46,7 +46,7 @@ void ChunkManager::renderUI() {
 	}
 }
 
-void ChunkManager::populateBuffers(const CameraI& camera, bool skipShells, bool forceLowQuality, bool frustumCulling) {
+void ChunkManager::populateBuffers(const CameraI& camera, bool skipShells, bool forceLowQuality, bool frustumCulling, bool simpleWater) {
 	for (int x{ -mChunkCount / 2 }; x <= mChunkCount / 2; ++x) {
 		for (int z{ -mChunkCount / 2 }; z <= mChunkCount / 2; ++z) {
 			float chunkWidth{ mTerrainSpan / mChunkCount };
@@ -73,7 +73,8 @@ void ChunkManager::populateBuffers(const CameraI& camera, bool skipShells, bool 
 				size_t waterQualityIndex{ forceLowQuality ? mWaterPlanes.getPlaneCount() - 1 : mWaterPlanes.getPlaneIndexAtDistance(chunkDistance) };
 
 				mTerrainChunkBuffers[terrainQualityIndex].addChunk(glm::vec2{ chunkPos.x, chunkPos.z }, shellCount);
-				mWaterChunkBuffers[waterQualityIndex].addChunk(glm::vec2{ chunkPos.x, chunkPos.z });
+				if (!simpleWater || (x == 0 && z == 0))
+					mWaterChunkBuffers[waterQualityIndex].addChunk(glm::vec2{ chunkPos.x, chunkPos.z });
 			}
 		}
 	}

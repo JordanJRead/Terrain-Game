@@ -31,8 +31,10 @@ void PlaneQualitySet::updateFromUIValues(float chunkWidth) {
 	for (size_t planeI{ 1 }; planeI < mPlanes.size(); ++planeI) {
 		size_t scaleI{ planeI - 1 };
 
-		float properScale = 1.0 / std::round(1 / mScalesUI[scaleI]);
+		float properScale = mScalesUI[scaleI];// 1.0 / std::round(1 / mScalesUI[scaleI]);
 		int verticesPerEdge = (int)((highQualityVerticesPerEdge - 1) * properScale + 1); // TODO?
+		if (verticesPerEdge < 2)
+			verticesPerEdge = 2;
 		if (verticesPerEdge != mPlanes[planeI].getVerticesPerEdge()) {
 			mPlanes[planeI].rebuild(verticesPerEdge);
 		}

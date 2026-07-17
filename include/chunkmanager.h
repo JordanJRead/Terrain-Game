@@ -21,7 +21,7 @@ public:
 
 	float getChunkWidth() const { return mTerrainSpan / mChunkCount; }
 	float getTerrainSpan() const { return mTerrainSpan; }
-	void populateBuffers(const CameraI& camera, bool skipShells = false, bool forceLowQuality = false, bool frustumCulling = true);
+	void populateBuffers(const CameraI& camera, bool skipShells = false, bool forceLowQuality = false, bool frustumCulling = true, bool simpleWater = true);
 	std::optional<std::pair<const VertexArray&, int>> flushSomeTerrain();
 	std::optional<std::pair<const VertexArray&, int>> flushSomeWater();
 

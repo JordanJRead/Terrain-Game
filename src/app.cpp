@@ -99,7 +99,6 @@ void App::loop() {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(mWindow);
-		glFinish();
 		glfwPollEvents();
 	}
 	ImGui_ImplOpenGL3_Shutdown();

@@ -65,8 +65,11 @@ layout(std140, binding = 3) uniform Colours {
 	vec3 snowColour;
 	vec3 waterColour;
 	vec3 sunColour;
+	float sunBrightness;
 	vec3 moonColour;
+	float moonBrightness;
 	vec3 starColour;
+	float starBrightness;
 } colours;
 
 layout(std140, binding = 4) uniform PerFrameInfo {

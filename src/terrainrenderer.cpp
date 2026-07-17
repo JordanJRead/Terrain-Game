@@ -132,9 +132,13 @@ void TerrainRenderer::updateAndRenderUI(const glm::vec3& cameraPos) {
 
 		ImGui::DragFloat("Mie density falloff", &mAtmosphereInfo.mValue.mieDensityFalloff, 0.001f);
 
-		ImGui::DragFloat("Rayleigh density scale", &mAtmosphereInfo.mValue.rayleighDensity, 0.001f);
+		float uiRayleighDensity = mAtmosphereInfo.mValue.rayleighDensity / 0.0001F;
+		ImGui::DragFloat("Rayleigh density scale", &uiRayleighDensity, 0.001f);
+		mAtmosphereInfo.mValue.rayleighDensity = uiRayleighDensity * 0.0001F;
 
-		ImGui::DragFloat("Mie density scale", &mAtmosphereInfo.mValue.mieDensity, 0.001f);
+		float uiMieDensity = mAtmosphereInfo.mValue.mieDensity / 0.0001F;
+		ImGui::DragFloat("Mie density scale", &uiMieDensity, 0.001f);
+		mAtmosphereInfo.mValue.mieDensity = uiMieDensity * 0.0001F;
 
 		ImGui::DragFloat3("Rayleigh scattering", (float*)&mAtmosphereInfo.mValue.rayleighScattering, 1);
 
@@ -364,8 +368,8 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 		renderTerrain(targetFramebuffer, camera, camera.getPosition(), mShaderTerrainForward, mShaderWaterForward, dirToSun, time);
 
 		// Shadow map ortho volume debugging (messy)
-		if (mColourParams.mValue.sunBrightness < 10) // TODO?
-			mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition()));
+		//if (mColourParams.mValue.sunBrightness < 10) // TODO?
+		//	mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition()));
 		VertexArray orthoVertexArray;
 
 		std::vector<unsigned int> indices{ 0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 2, 3, 6, 3, 6, 7, 0, 1, 4, 1, 4, 5, 0, 2, 4, 2, 4, 6, 1, 3, 5, 3, 5, 7 };
@@ -393,7 +397,7 @@ void TerrainRenderer::renderTerrain(const FramebufferI& targetFramebuffer, const
 	mPerFrameInfo.mValue.fromData(camera, dirToSun, time, mDayTime);
 	mPerFrameInfo.updateGPU();
 
-	mChunkManager.populateBuffers(camera, depthPass, forceLowQuality, mDoFrustumCulling);
+	mChunkManager.populateBuffers(camera, depthPass, forceLowQuality, mDoFrustumCulling, depthPass);
 
 	for (size_t i{ 0 }; i < mTerrainImageSet.getImageCount(); ++i) {
 		mTerrainImageSet.getImage(i).bindImage(i);
@@ -405,7 +409,7 @@ void TerrainRenderer::renderTerrain(const FramebufferI& targetFramebuffer, const
 		if (instanceCount == 0) {
 			continue;
 		}
-		waterShader.setRenderData(*this, mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
+		waterShader.setRenderData(*this, depthPass ? 10000 : mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
 		waterShader.render(targetFramebuffer, optionalVAOAndInstanceCount.value().first);
 	}
 
