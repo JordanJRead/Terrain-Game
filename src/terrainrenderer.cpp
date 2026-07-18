@@ -300,6 +300,16 @@ void TerrainRenderer::updateAndRenderUI(const glm::vec3& cameraPos) {
 	mShadowInfo.updateGPU();
 }
 
+class ScopedDebugGroup {
+public:
+	ScopedDebugGroup(const char* message) {
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, message);
+	}
+	~ScopedDebugGroup() {
+		glPopDebugGroup();
+	}
+};
+
 void TerrainRenderer::render(const CameraPlayer& camera, float time, const FramebufferColour& targetFramebuffer) {
 	glm::vec3 dirToSun{ MathHelper::getDirToSun(mDayTime) };
 
@@ -329,22 +339,25 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 		mShadowInfo.mValue.computeValues(mShadowMapperSun, mShadowMapperMoon);
 		mShadowInfo.updateGPU();
 
-		for (size_t i{ 0 }; i < CascadeCount; ++i) {
-			bool isDay = mDayTime < 1;
+		{
+			ScopedDebugGroup d{ "Shadow Pass "};
+			for (size_t i{ 0 }; i < CascadeCount; ++i) {
+				bool isDay = mDayTime < 1;
 
-			const CameraI& depthCameraSun{ mShadowMapperSun.getCamera(i) };
-			const FramebufferI& depthFramebufferSun{ mShadowMapperSun.getFramebuffer(i) };
-			depthFramebufferSun.use();
-			glClearColor(0, 0, 0, 0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			renderTerrain(depthFramebufferSun, depthCameraSun, camera.getPosition(), mShadowMapperSun.mTerrainDepthShader, mShadowMapperSun.mWaterDepthShader, dirToSun, time, true, !isDay);
+				const CameraI& depthCameraSun{ mShadowMapperSun.getCamera(i) };
+				const FramebufferI& depthFramebufferSun{ mShadowMapperSun.getFramebuffer(i) };
+				depthFramebufferSun.use();
+				glClearColor(0, 0, 0, 0);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				renderTerrain(depthFramebufferSun, depthCameraSun, camera.getPosition(), mShadowMapperSun.mTerrainDepthShader, mShadowMapperSun.mWaterDepthShader, dirToSun, time, true, !isDay);
 
-			const CameraI& depthCameraMoon{ mShadowMapperMoon.getCamera(i) };
-			const FramebufferI& depthFramebufferMoon{ mShadowMapperMoon.getFramebuffer(i) };
-			depthFramebufferMoon.use();
-			glClearColor(0, 0, 0, 0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			renderTerrain(depthFramebufferMoon, depthCameraMoon, camera.getPosition(), mShadowMapperMoon.mTerrainDepthShader, mShadowMapperMoon.mWaterDepthShader, dirToSun, time, true, isDay);
+				const CameraI& depthCameraMoon{ mShadowMapperMoon.getCamera(i) };
+				const FramebufferI& depthFramebufferMoon{ mShadowMapperMoon.getFramebuffer(i) };
+				depthFramebufferMoon.use();
+				glClearColor(0, 0, 0, 0);
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				renderTerrain(depthFramebufferMoon, depthCameraMoon, camera.getPosition(), mShadowMapperMoon.mTerrainDepthShader, mShadowMapperMoon.mWaterDepthShader, dirToSun, time, true, isDay);
+			}
 		}
 
 		//const CameraI* pCamera{ &camera };
@@ -355,12 +368,18 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 		const CameraI* currCamera{ &camera };
 
 		glEnable(GL_CULL_FACE);
-		renderTerrain(mDeferredRenderer.mFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, dirToSun, time);
+		{
+			ScopedDebugGroup d{ "Geometry Pass" };
+			renderTerrain(mDeferredRenderer.mFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, dirToSun, time);
+		}
 		glDisable(GL_CULL_FACE);
 
 		mPerFrameInfo.mValue.fromData(camera, dirToSun, time, mDayTime);
 		mPerFrameInfo.updateGPU();
-		mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
+		{
+			ScopedDebugGroup d{ "Deferred Pass" };
+			mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
+		}
 	}
 	else {
 		mShadowInfo.mValue.computeValues(mShadowMapperSun, mShadowMapperMoon);
@@ -404,24 +423,42 @@ void TerrainRenderer::renderTerrain(const FramebufferI& targetFramebuffer, const
 	}
 
 	// Draw water
-	while (auto optionalVAOAndInstanceCount = mChunkManager.flushSomeWater()) {
-		int instanceCount = optionalVAOAndInstanceCount.value().second;
-		if (instanceCount == 0) {
-			continue;
+	{
+		ScopedDebugGroup d{ "Water" };
+		int i{ 0 };
+		while (auto optionalVAOAndInstanceCount = mChunkManager.flushSomeWater()) {
+			std::string debug{ "Quality Index " };
+			debug += std::to_string(i);
+			debug += " (low is higher quality)";
+			ScopedDebugGroup d{ debug.c_str() };
+			int instanceCount = optionalVAOAndInstanceCount.value().second;
+			if (instanceCount == 0) {
+				continue;
+			}
+			waterShader.setRenderData(*this, depthPass ? 10000 : mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
+			waterShader.render(targetFramebuffer, optionalVAOAndInstanceCount.value().first);
+			i++;
 		}
-		waterShader.setRenderData(*this, depthPass ? 10000 : mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
-		waterShader.render(targetFramebuffer, optionalVAOAndInstanceCount.value().first);
 	}
 
 	// Draw terrain
 	glDisable(GL_BLEND);
-	while (auto optionalVAOAndInstanceCount = mChunkManager.flushSomeTerrain()) {
-		int instanceCount = optionalVAOAndInstanceCount.value().second;
-		if (instanceCount == 0) {
-			continue;
+	{
+		ScopedDebugGroup d{ "Terrain" };
+		int i{ 0 };
+		while (auto optionalVAOAndInstanceCount = mChunkManager.flushSomeTerrain()) {
+			std::string debug{ "Quality Index " };
+			debug += std::to_string(i);
+			debug += " (low is higher quality)";
+			ScopedDebugGroup d{ debug.c_str() };
+			int instanceCount = optionalVAOAndInstanceCount.value().second;
+			if (instanceCount == 0) {
+				continue;
+			}
+			terrainShader.setRenderData(*this, mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
+			terrainShader.render(targetFramebuffer, optionalVAOAndInstanceCount.value().first);
+			i++;
 		}
-		terrainShader.setRenderData(*this, mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
-		terrainShader.render(targetFramebuffer, optionalVAOAndInstanceCount.value().first);
 	}
 }
 

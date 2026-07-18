@@ -9,10 +9,9 @@
 ChunkManager::ChunkManager(int qualityCount, int bufferBindingIndex, float terrainSpan, int chunkCount, const CommonBufferTypes::TerrainParams& terrainParams)
 	: mTerrainSpan{ terrainSpan }
 	, mChunkCount{ chunkCount }
-	, mTerrainPlanes{ 4.0f, std::array{1.0f / 6, 1.0f / 25}, std::array{ 256.0f, 1000.0f }, terrainSpan / chunkCount }
-	//, mWaterPlanes{ 0.0f, std::array<float, 0>{}, std::array<float, 0>{}, terrainSpan / chunkCount }
+	, mTerrainPlanes{ 2.125f, std::array{0.16f, 0.059f}, std::array{ 256.0f, 1000.0f }, terrainSpan / chunkCount }
 	, mWaterPlanes{ 2.0f, std::array<float, 1>{0.5f}, std::array<float, 1>{240.0f}, terrainSpan / chunkCount }
-	, mShellQualities{ 30, std::array{ 0.7f }, std::array{ 200.0f } }
+	, mShellQualities{ 30, std::array{ 1.0f / 3, 0.233333f, 1.0f / 10 }, std::array{ 60.0f, 120.0f, 240.0f } }
 {
 	mMinTerrainHeight = HeightFunction::getHeightWithPerlin(terrainParams, HeightFunction::gMinPerlinValues);
 	mMaxTerrainHeight = HeightFunction::getHeightWithPerlin(terrainParams, HeightFunction::gMaxPerlinValues);
