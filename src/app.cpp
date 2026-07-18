@@ -78,9 +78,22 @@ void App::loop() {
 		mTerrainRenderer.updateAndRenderUI(mCamera.getPosition(), mIsUIVisible);
 
 		if (mIsUIVisible) {
+			mFPSFrameCount++;
 			ImGui::Begin("Physics plane");
 			ImGui::Checkbox("Show", &mShowPhysicsPlane);
 			ImGui::End();
+
+			ImGui::Begin("FPS");
+			ImGui::Text(std::to_string((int)mDisplayFPS).c_str());
+			ImGui::End();
+
+			if (mFPSUpdateInterval.update(deltaTime)) {
+				mDisplayFPS = mFPSFrameCount / mFPSUpdateInterval.getPeriod();
+				mFPSFrameCount = 0;
+			}
+		}
+		else {
+			mFPSFrameCount = 0;
 		}
 
 		// Terrain

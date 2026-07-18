@@ -141,6 +141,9 @@
     <ClCompile Include="src\terrainimageset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\interval.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="libraries\glfw3dll.lib" />
@@ -300,6 +303,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\terrainimageset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\interval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

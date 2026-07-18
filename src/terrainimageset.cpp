@@ -38,7 +38,7 @@ void TerrainImageSet::renderUIAndUpdate(bool hasTerrainParamsChanged, const glm:
 		std::string label{ "Image " };
 		label += std::to_string(i + 1);
 		if (renderUI)
-		ImGui::SeparatorText(label.c_str());
+			ImGui::SeparatorText(label.c_str());
 		mImages[i].renderUIAndUpdate(i == 0 ? 0 : mImages[i - 1].getWorldSize(), cameraPos, terrainScale, hasTerrainParamsChanged, screenQuad, terrainImageShader, renderUI);
 	}
 }

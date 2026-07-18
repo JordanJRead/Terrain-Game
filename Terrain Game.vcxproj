@@ -227,6 +227,7 @@
     <ClCompile Include="src\framebuffercolour.cpp" />
     <ClCompile Include="src\framebufferdepth.cpp" />
     <ClCompile Include="src\framebufferi.cpp" />
+    <ClCompile Include="src\interval.cpp" />
     <ClCompile Include="src\planequalityset.cpp" />
     <ClCompile Include="src\mathhelper.cpp" />
     <ClCompile Include="src\cameraplayer.cpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="include\commonbuffertypes.h" />
     <ClInclude Include="include\framebufferdepth.h" />
     <ClInclude Include="include\framebufferi.h" />
+    <ClInclude Include="include\interval.h" />
     <ClInclude Include="include\planequalityset.h" />
     <ClInclude Include="include\heightfunction.h" />
     <ClInclude Include="include\noise.h" />

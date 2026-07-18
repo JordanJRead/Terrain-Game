@@ -295,11 +295,13 @@ void TerrainRenderer::updateAndRenderUI(const glm::vec3& cameraPos, bool renderU
 	std::array<float, ImageCount> imageWorldSizes;
 	std::array<int, ImageCount> imagePixelDimensions;
 
-	ImGui::Begin("Terrain Images");
+	if (renderUI)
+		ImGui::Begin("Terrain Images");
 
-		mTerrainImageSet.renderUIAndUpdate(hasTerrainChanged, cameraPos, mArtisticParams.mValue.terrainScale, mScreenQuad, mShaderTerrainImage, renderUI);
+	mTerrainImageSet.renderUIAndUpdate(hasTerrainChanged, cameraPos, mArtisticParams.mValue.terrainScale, mScreenQuad, mShaderTerrainImage, renderUI);
 
-	ImGui::End();
+	if (renderUI)
+		ImGui::End();
 }
 
 class ScopedDebugGroup {

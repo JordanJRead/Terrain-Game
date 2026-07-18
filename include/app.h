@@ -9,6 +9,7 @@
 #include "vertexarray.h"
 #include "shaders/shaderphysics.h"
 #include "shaders/shadergamma.h"
+#include "interval.h"
 
 class App {
 public:
@@ -18,7 +19,10 @@ public:
 private:
 	int mScreenWidth;
 	int mScreenHeight;
+	int mFPSFrameCount{ 0 };
+	double mDisplayFPS{ 0 };
 	bool mIsUIVisible{ true };
+	Interval mFPSUpdateInterval{ 0.5 };
 	CameraPlayer mCamera;
 	TerrainRenderer mTerrainRenderer;
 	GLFWwindow* mWindow;

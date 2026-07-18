@@ -238,24 +238,25 @@ namespace CommonBufferTypes {
 		void updateSphere(float width, float height) {
 			maxRadius = MathHelper::getRadiusFromChordWidthAndHeight(width, height);
 			minRadius = maxRadius - height;
+			centerY = height - maxRadius;
 		}
 
 		bool operator==(const AtmosphereInfo&) const = default;
 
 		static AtmosphereInfo getDefaultValue() {
-			float height{ 3498 };
-			float width{ 136100 };
+			float height{ 72144 };
+			float width{ 2151231 };
 			float maxRadius = MathHelper::getRadiusFromChordWidthAndHeight(width, height);
 			return AtmosphereInfo{
-				.rayleighScattering = { 5, 106, 594 },
-				.mieScattering = { 2, 2, 2 },
+				.rayleighScattering = { 3, 28, 66 },
+				.mieScattering = { 1, 1, 1 },
 				.maxRadius = maxRadius,
 				.minRadius = maxRadius - height,
 				.centerY = height - maxRadius,
 				.rayleighDensityFalloff = 1,
 				.mieDensityFalloff = 5,
 				.rayleighDensity = 0.004f * 0.0001F,
-				.mieDensity = 0.06f * 0.0001F,
+				.mieDensity = 0,// 0.06f * 0.0001F,
 				.rayleighG = 0,
 				.mieG = 0.957f,
 				.rayAtmosphereStepCount = 30,
