@@ -32,13 +32,14 @@ const TerrainImage& TerrainImageSet::getImage(size_t i) const {
 	return mImages[i];
 }
 
-void TerrainImageSet::renderUIAndUpdate(bool hasTerrainParamsChanged, const glm::vec3& cameraPos, float terrainScale, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader) {
+void TerrainImageSet::renderUIAndUpdate(bool hasTerrainParamsChanged, const glm::vec3& cameraPos, float terrainScale, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader, bool renderUI) {
 	// UI
 	for (int i{ 0 }; i < mImages.size(); ++i) {
 		std::string label{ "Image " };
 		label += std::to_string(i + 1);
+		if (renderUI)
 		ImGui::SeparatorText(label.c_str());
-		mImages[i].renderUIAndUpdate(i == 0 ? 0 : mImages[i - 1].getWorldSize(), cameraPos, terrainScale, hasTerrainParamsChanged, screenQuad, terrainImageShader);
+		mImages[i].renderUIAndUpdate(i == 0 ? 0 : mImages[i - 1].getWorldSize(), cameraPos, terrainScale, hasTerrainParamsChanged, screenQuad, terrainImageShader, renderUI);
 	}
 }
 

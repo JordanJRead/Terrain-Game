@@ -12,7 +12,7 @@ class ShaderTerrainImage;
 class TerrainImageSet {
 public:
 	TerrainImageSet(int imageCount, const glm::vec3& cameraPos, float terrainScale, const VertexArray& screenQuad, const ShaderTerrainImage& imageShader);
-	void renderUIAndUpdate(bool hasTerrainParamsChanged, const glm::vec3& cameraPos, float terrainScale, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader);
+	void renderUIAndUpdate(bool hasTerrainParamsChanged, const glm::vec3& cameraPos, float terrainScale, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader, bool renderUI);
 	const TerrainImage& getImage(size_t i) const;
 	std::vector<glm::vec2> getImagePositions() const;
 	std::vector<float> getImageWorldWidths() const;

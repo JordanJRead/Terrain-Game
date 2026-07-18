@@ -22,7 +22,7 @@ public:
 
 	void updatePixelDimAndClear();
 	void updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader);
-	void renderUIAndUpdate(float minSize, const glm::vec3& cameraPos, float terrainScale, bool hasTerrainParamsChanged, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader);
+	void renderUIAndUpdate(float minSize, const glm::vec3& cameraPos, float terrainScale, bool hasTerrainParamsChanged, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader, bool renderUI);
 
 private:
 	FramebufferColour mFramebuffer;

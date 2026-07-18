@@ -31,21 +31,21 @@ glm::vec3 TerrainImage::getClosestWorldPixelPos(const glm::vec3 pos, float terra
 	return MathHelper::getClosestWorldStepPosition(pos, mWorldSize / mPixelDim * terrainScale);
 }
 
-void TerrainImage::renderUIAndUpdate(float minSize, const glm::vec3& cameraPos, float terrainScale, bool hasTerrainParamsChanged, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader) {
-	ImGui::PushID(this);
-
-	float prevWorldSize{ mWorldSize };
-	ImGui::DragFloat("World size", &mWorldSize, 1, 1, 100000);
-	bool hasWorldSizeChanged{ prevWorldSize != mWorldSize };
-
-	if (mWorldSize < minSize)
-		mWorldSize = minSize;
-
+void TerrainImage::renderUIAndUpdate(float minSize, const glm::vec3& cameraPos, float terrainScale, bool hasTerrainParamsChanged, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader, bool renderUI) {
 	int prevPixelDim{ mPixelDim };
-	ImGui::InputInt("Pixel quality", &mPixelDim, 100, 1000);
-	bool hasPixelDimChanged{ prevPixelDim != mPixelDim };
+	float prevWorldSize{ mWorldSize };
 
-	ImGui::PopID();
+	if (renderUI) {
+		ImGui::PushID(this);
+		ImGui::DragFloat("World size", &mWorldSize, 1, 1, 100000);
+		if (mWorldSize < minSize)
+			mWorldSize = minSize;
+		ImGui::InputInt("Pixel quality", &mPixelDim, 100, 1000);
+		ImGui::PopID();
+	}
+
+	bool hasWorldSizeChanged{ prevWorldSize != mWorldSize };
+	bool hasPixelDimChanged{ prevPixelDim != mPixelDim };
 
 	if (hasPixelDimChanged) {
 		updatePixelDimAndClear();

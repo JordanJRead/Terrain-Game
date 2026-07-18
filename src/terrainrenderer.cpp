@@ -54,250 +54,252 @@ const ShadowMapper<CascadeCount>& TerrainRenderer::getShadowMapperMoon() const {
 	return mShadowMapperMoon;
 }
 
-void TerrainRenderer::updateAndRenderUI(const glm::vec3& cameraPos) {
+void TerrainRenderer::updateAndRenderUI(const glm::vec3& cameraPos, bool renderUI) {
+	bool hasTerrainChanged{ false };
+	if (renderUI) {
+		ImGui::Begin("Terrain Parameters");
 
-	ImGui::Begin("Terrain Parameters");
+			ImGui::DragInt("Octave count", &mTerrainParams.mValue.octaveCount, 0.1f, 1, 30);
 
-		ImGui::DragInt("Octave count", &mTerrainParams.mValue.octaveCount, 0.1f, 1, 30);
+			ImGui::DragInt("Smooth octave count", &mTerrainParams.mValue.smoothOctaveCount, 0.1f, 1, 30);
 
-		ImGui::DragInt("Smooth octave count", &mTerrainParams.mValue.smoothOctaveCount, 0.1f, 1, 30);
+			ImGui::DragFloat("Amplitude", &mTerrainParams.mValue.initialAmplitude, 0.7f, 0, 500);
 
-		ImGui::DragFloat("Amplitude", &mTerrainParams.mValue.initialAmplitude, 0.7f, 0, 500);
+			ImGui::DragFloat("Amplitude decay", &mTerrainParams.mValue.amplitudeDecay, 0.0005f, 0, 100);
 
-		ImGui::DragFloat("Amplitude decay", &mTerrainParams.mValue.amplitudeDecay, 0.0005f, 0, 100);
+			ImGui::DragFloat("Spread factor", &mTerrainParams.mValue.spreadFactor, 0.001f, 0, 100);
 
-		ImGui::DragFloat("Spread factor", &mTerrainParams.mValue.spreadFactor, 0.001f, 0, 100);
+			ImGui::DragFloat("Mountain frequency", &mTerrainParams.mValue.mountainFrequency, 0.003f, 0, 2);
 
-		ImGui::DragFloat("Mountain frequency", &mTerrainParams.mValue.mountainFrequency, 0.003f, 0, 2);
+			ImGui::DragFloat("Mountain exponent", &mTerrainParams.mValue.mountainExponent, 0.01f, 0.1f, 30);
 
-		ImGui::DragFloat("Mountain exponent", &mTerrainParams.mValue.mountainExponent, 0.01f, 0.1f, 30);
+			ImGui::DragFloat("Anti flat factor", &mTerrainParams.mValue.antiFlatFactor, 0.001f, 0, 1);
 
-		ImGui::DragFloat("Anti flat factor", &mTerrainParams.mValue.antiFlatFactor, 0.001f, 0, 1);
+			ImGui::DragFloat("River frequency", &mTerrainParams.mValue.riverScale, 0.001f, 0, 2);
 
-		ImGui::DragFloat("River frequency", &mTerrainParams.mValue.riverScale, 0.001f, 0, 2);
+			ImGui::DragFloat("River strength", &mTerrainParams.mValue.riverStrength, 1, 0, 1000);
 
-		ImGui::DragFloat("River strength", &mTerrainParams.mValue.riverStrength, 1, 0, 1000);
+			ImGui::DragFloat("River exponent", &mTerrainParams.mValue.riverExponent, 1, 0, 1000);
 
-		ImGui::DragFloat("River exponent", &mTerrainParams.mValue.riverExponent, 1, 0, 1000);
+			ImGui::DragFloat("Water eating mountains", &mTerrainParams.mValue.waterEatingMountain, 0.1f, 0, 5);
 
-		ImGui::DragFloat("Water eating mountains", &mTerrainParams.mValue.waterEatingMountain, 0.1f, 0, 5);
+			ImGui::DragFloat("Lake frequency", &mTerrainParams.mValue.lakeScale, 0.001f, 0, 2);
 
-		ImGui::DragFloat("Lake frequency", &mTerrainParams.mValue.lakeScale, 0.001f, 0, 2);
+			ImGui::DragFloat("Lake strength", &mTerrainParams.mValue.lakeStrength, 0.5f, 0, 1000);
 
-		ImGui::DragFloat("Lake strength", &mTerrainParams.mValue.lakeStrength, 0.5f, 0, 1000);
+			ImGui::DragFloat("Lake exponent", &mTerrainParams.mValue.lakeExponent, 0.01f, 0, 1000);
 
-		ImGui::DragFloat("Lake exponent", &mTerrainParams.mValue.lakeExponent, 0.01f, 0, 1000);
+		ImGui::End();
+		hasTerrainChanged = mTerrainParams.updateGPU();
+		if (hasTerrainChanged) {
+			mMinTerrainHeight = HeightFunction::getHeightWithPerlin(mTerrainParams.mValue, HeightFunction::gMinPerlinValues);
+			mMaxTerrainHeight = HeightFunction::getHeightWithPerlin(mTerrainParams.mValue, HeightFunction::gMaxPerlinValues);
+		}
 
-	ImGui::End();
-	bool hasTerrainChanged{ mTerrainParams.updateGPU() };
-	if (hasTerrainChanged) {
-		mMinTerrainHeight = HeightFunction::getHeightWithPerlin(mTerrainParams.mValue, HeightFunction::gMinPerlinValues);
-		mMaxTerrainHeight = HeightFunction::getHeightWithPerlin(mTerrainParams.mValue, HeightFunction::gMaxPerlinValues);
+		ImGui::Begin("Water Parameters");
+
+			ImGui::DragInt("Wave count", &mWaterParams.mValue.waveCount, 0.1f, 1, 100);
+
+			ImGui::DragFloat("Initial amplitude", &mWaterParams.mValue.initialAmplitude, 0.005f, 0.01f, 1);
+
+			ImGui::DragFloat("Amplitude multiplier", &mWaterParams.mValue.amplitudeMult, 0.001f, 0, 1);
+
+			ImGui::DragFloat("Initial frequency", &mWaterParams.mValue.initialFreq, 0.01f, 0, 5);
+
+			ImGui::DragFloat("Frequency multiplier", &mWaterParams.mValue.freqMult, 0.01f, 0, 1.5f);
+
+			ImGui::DragFloat("Initial speed", &mWaterParams.mValue.initialSpeed, 0.02f, 0, 20);
+
+			ImGui::DragFloat("Speed multiplier", &mWaterParams.mValue.speedMult, 0.007f, 0, 2);
+
+			ImGui::DragFloat("Shininess", &mWaterParams.mValue.specExp);
+
+			ImGui::DragFloat("Height", &mWaterParams.mValue.height);
+
+		ImGui::End();
+		mWaterParams.updateGPU();
+
+		ImGui::Begin("Atmosphere");
+
+			float atmosphereHeightUI{ mAtmosphereInfo.mValue.getHeight() };
+			ImGui::DragFloat("Atmosphere height", &atmosphereHeightUI);
+
+			float atmosphereWidthUI{ mAtmosphereInfo.mValue.getWidth() };
+			ImGui::DragFloat("Atmosphere width", &atmosphereWidthUI, 1000);
+
+			mAtmosphereInfo.mValue.updateSphere(atmosphereWidthUI, atmosphereHeightUI);
+
+			ImGui::DragFloat("Rayleigh density falloff", &mAtmosphereInfo.mValue.rayleighDensityFalloff, 0.001f);
+
+			ImGui::DragFloat("Mie density falloff", &mAtmosphereInfo.mValue.mieDensityFalloff, 0.001f);
+
+			float uiRayleighDensity = mAtmosphereInfo.mValue.rayleighDensity / 0.0001F;
+			ImGui::DragFloat("Rayleigh density scale", &uiRayleighDensity, 0.001f);
+			mAtmosphereInfo.mValue.rayleighDensity = uiRayleighDensity * 0.0001F;
+
+			float uiMieDensity = mAtmosphereInfo.mValue.mieDensity / 0.0001F;
+			ImGui::DragFloat("Mie density scale", &uiMieDensity, 0.001f);
+			mAtmosphereInfo.mValue.mieDensity = uiMieDensity * 0.0001F;
+
+			ImGui::DragFloat3("Rayleigh scattering", (float*)&mAtmosphereInfo.mValue.rayleighScattering, 1);
+
+			ImGui::DragFloat3("Mie scattering", (float*)&mAtmosphereInfo.mValue.mieScattering, 1);
+
+			ImGui::DragFloat("Rayleigh G", &mAtmosphereInfo.mValue.rayleighG, 0.001f);
+
+			ImGui::DragFloat("Mie G", &mAtmosphereInfo.mValue.mieG, 0.001f);
+
+			ImGui::DragInt("Ray atmosphere steps", &mAtmosphereInfo.mValue.rayAtmosphereStepCount, 0.1f, 1, 100);
+
+			ImGui::DragInt("Ray sun steps", &mAtmosphereInfo.mValue.raySunStepCount, 0.1f, 1, 100);
+
+			ImGui::DragFloat("Atmosphere brightness", &mAtmosphereInfo.mValue.brightness, 0.05f);
+
+			ImGui::DragFloat("Atmopshere dither strength", &mAtmosphereInfo.mValue.ditherStrength, 0.1f);
+
+			ImGui::DragFloat("Sun size", &mAtmosphereInfo.mValue.sunSizeDeg, 0.1f);
+
+		ImGui::End();
+		mAtmosphereInfo.updateGPU();
+
+		ImGui::Begin("Colours");
+
+			ImGui::Checkbox("Deferred Rendering", &mDoDeferredRendering);
+
+			ImGui::ColorPicker3("Dirt", (float*)&mColourParams.mValue.dirtColour);
+
+			ImGui::ColorPicker3("Mountain", (float*)&mColourParams.mValue.mountainColour);
+
+			ImGui::ColorPicker3("Grass 1", (float*)&mColourParams.mValue.grassColour1);
+
+			ImGui::ColorPicker3("Grass 2", (float*)&mColourParams.mValue.grassColour2);
+
+			ImGui::ColorPicker3("Snow", (float*)&mColourParams.mValue.snowColour);
+
+			ImGui::ColorPicker3("Water", (float*)&mColourParams.mValue.waterColour);
+
+			ImGui::ColorPicker3("Sun", (float*)&mColourParams.mValue.sunColour);
+
+			ImGui::DragFloat("Sun brightness", &mColourParams.mValue.sunBrightness, 0.01f);
+
+			ImGui::ColorPicker3("Moon", (float*)&mColourParams.mValue.moonColour);
+
+			ImGui::DragFloat("Moon brightness", &mColourParams.mValue.moonBrightness, 0.01f);
+
+			ImGui::ColorPicker3("Star", (float*)&mColourParams.mValue.starColour);
+
+			ImGui::DragFloat("Star brightness", &mColourParams.mValue.starBrightness, 0.01f);
+
+		ImGui::End();
+		mColourParams.updateGPU();
+
+		ImGui::Begin("Star Parameters");
+
+			StarParameters starParams{ mStarManager.getPrevParametersCopy() };
+
+			ImGui::DragFloat("Star size min", &starParams.minSize, 0.001f);
+
+			ImGui::DragFloat("Star size max", &starParams.maxSize, 0.001f);
+
+			ImGui::DragInt("Star count", &starParams.count);
+
+		ImGui::End();
+		mStarManager.update(starParams);
+
+		ImGui::Begin("Chunks");
+
+			mChunkManager.renderUI();
+
+		ImGui::End();
+
+		ImGui::Begin("Artistic Parameters");
+
+			ImGui::DragFloat("Terrain scale", &mArtisticParams.mValue.terrainScale);
+
+			ImGui::DragFloat("Grass dot cutoff", &mArtisticParams.mValue.grassDotCutoff, 0.005f, 0, 1);
+
+			ImGui::DragFloat("Snow dot cutoff", &mArtisticParams.mValue.snowDotCutoff, 0.005f, 0, 1);
+
+			ImGui::DragInt("Shell count", &mShellCount, 0.1f, 0, 256);
+
+			ImGui::DragFloat("Shell max height", &mArtisticParams.mValue.shellMaxHeight, 0.001f, 0, 10);
+
+			ImGui::DragFloat("Grass noise scale", &mArtisticParams.mValue.grassNoiseScale, 1, 1, 1000);
+
+			ImGui::DragFloat("Shell max cutoff", &mArtisticParams.mValue.shellMaxCutoff, 0.01f, 0, 1);
+
+			ImGui::DragFloat("Shell base cutoff", &mArtisticParams.mValue.shellBaseCutoff, 0.01f, 0, 1);
+
+			ImGui::DragFloat("Snow height", &mArtisticParams.mValue.snowHeight, 0.05f);
+
+			ImGui::DragFloat("Seafoam", &mArtisticParams.mValue.seafoamStrength, 0.01f, 0, 10);
+
+			ImGui::DragFloat("Snow line noise scale", &mArtisticParams.mValue.snowLineNoiseScale, 0.001f, 0, 100);
+
+			ImGui::DragFloat("Snow line noise amplitude", &mArtisticParams.mValue.snowLineNoiseAmplitude, 0.01f, 0, 10);
+
+			ImGui::DragFloat("Mountain snow cutoff", &mArtisticParams.mValue.mountainSnowCutoff, 0.01f, 0, 10);
+
+			ImGui::DragFloat("Snow line ease", &mArtisticParams.mValue.snowLineEase, 0.01f, 0, 10);
+
+			ImGui::DragFloat("Shell ambient occlusion", &mArtisticParams.mValue.shellAmbientOcclusion, 0.001f, 0, 1);
+
+		ImGui::End();
+		mArtisticParams.mValue.maxViewDistance = mChunkManager.getTerrainSpan() * 0.5f * 0.95f;
+		mArtisticParams.mValue.fogEncroach = mArtisticParams.mValue.maxViewDistance * 0.1f;
+		mArtisticParams.updateGPU();
+
+		ImGui::Begin("Frustum Culling");
+
+			ImGui::Checkbox("Frustum culling", &mDoFrustumCulling);
+
+		ImGui::End();
+
+		ImGui::Begin("Time");
+			ImGui::DragFloat("Day time", &mDayTime, 0.001f);
+			if (mDayTime < 0) {
+				mDayTime += 2;
+			}
+			else if (mDayTime > 2) {
+				mDayTime -= 2;
+			}
+		ImGui::End();
+
+
+		ImGui::Begin("Shadow Parameters");
+
+			ImGui::DragFloat("Blur width", &mShadowInfo.mValue.blurWidth, 0.01f, 0, 10);
+
+			ImGui::DragInt("Blur quality", &mShadowInfo.mValue.blurQuality, 0.03f, 0, 9);
+
+			//int currCamera;
+			//ImGui::InputInt("Curr camera", &currCamera, 1);
+
+			ImGui::DragFloat("Exposure", &mShadowInfo.mValue.exposure, 0.001f);
+
+			ImGui::DragFloat("Min bias", &mShadowInfo.mValue.minBias, 0.1f);
+
+			ImGui::DragFloat("Max bias", &mShadowInfo.mValue.maxBias, 0.1f);
+
+			if (mShadowInfo.mValue.minBias > mShadowInfo.mValue.maxBias)
+				mShadowInfo.mValue.minBias = mShadowInfo.mValue.maxBias;
+
+			mShadowMapperSun.renderSplitsUI();
+			mShadowMapperMoon.setSplits(mShadowMapperSun.getSplits());
+			mShadowInfo.mValue.computeValues(mShadowMapperSun, mShadowMapperMoon);
+
+		ImGui::End();
+		mShadowInfo.updateGPU();
 	}
-
-	ImGui::Begin("Water Parameters");
-
-		ImGui::DragInt("Wave count", &mWaterParams.mValue.waveCount, 0.1f, 1, 100);
-
-		ImGui::DragFloat("Initial amplitude", &mWaterParams.mValue.initialAmplitude, 0.005f, 0.01f, 1);
-
-		ImGui::DragFloat("Amplitude multiplier", &mWaterParams.mValue.amplitudeMult, 0.001f, 0, 1);
-
-		ImGui::DragFloat("Initial frequency", &mWaterParams.mValue.initialFreq, 0.01f, 0, 5);
-
-		ImGui::DragFloat("Frequency multiplier", &mWaterParams.mValue.freqMult, 0.01f, 0, 1.5f);
-
-		ImGui::DragFloat("Initial speed", &mWaterParams.mValue.initialSpeed, 0.02f, 0, 20);
-
-		ImGui::DragFloat("Speed multiplier", &mWaterParams.mValue.speedMult, 0.007f, 0, 2);
-
-		ImGui::DragFloat("Shininess", &mWaterParams.mValue.specExp);
-
-		ImGui::DragFloat("Height", &mWaterParams.mValue.height);
-
-	ImGui::End();
-	mWaterParams.updateGPU();
-
-	ImGui::Begin("Atmosphere");
-
-		float atmosphereHeightUI{ mAtmosphereInfo.mValue.getHeight() };
-		ImGui::DragFloat("Atmosphere height", &atmosphereHeightUI);
-
-		float atmosphereWidthUI{ mAtmosphereInfo.mValue.getWidth() };
-		ImGui::DragFloat("Atmosphere width", &atmosphereWidthUI, 1000);
-
-		mAtmosphereInfo.mValue.updateSphere(atmosphereWidthUI, atmosphereHeightUI);
-
- 		ImGui::DragFloat("Rayleigh density falloff", &mAtmosphereInfo.mValue.rayleighDensityFalloff, 0.001f);
-
-		ImGui::DragFloat("Mie density falloff", &mAtmosphereInfo.mValue.mieDensityFalloff, 0.001f);
-
-		float uiRayleighDensity = mAtmosphereInfo.mValue.rayleighDensity / 0.0001F;
-		ImGui::DragFloat("Rayleigh density scale", &uiRayleighDensity, 0.001f);
-		mAtmosphereInfo.mValue.rayleighDensity = uiRayleighDensity * 0.0001F;
-
-		float uiMieDensity = mAtmosphereInfo.mValue.mieDensity / 0.0001F;
-		ImGui::DragFloat("Mie density scale", &uiMieDensity, 0.001f);
-		mAtmosphereInfo.mValue.mieDensity = uiMieDensity * 0.0001F;
-
-		ImGui::DragFloat3("Rayleigh scattering", (float*)&mAtmosphereInfo.mValue.rayleighScattering, 1);
-
-		ImGui::DragFloat3("Mie scattering", (float*)&mAtmosphereInfo.mValue.mieScattering, 1);
-
-		ImGui::DragFloat("Rayleigh G", &mAtmosphereInfo.mValue.rayleighG, 0.001f);
-
-		ImGui::DragFloat("Mie G", &mAtmosphereInfo.mValue.mieG, 0.001f);
-
-		ImGui::DragInt("Ray atmosphere steps", &mAtmosphereInfo.mValue.rayAtmosphereStepCount, 0.1f, 1, 100);
-
-		ImGui::DragInt("Ray sun steps", &mAtmosphereInfo.mValue.raySunStepCount, 0.1f, 1, 100);
-
-		ImGui::DragFloat("Atmosphere brightness", &mAtmosphereInfo.mValue.brightness, 0.05f);
-
-		ImGui::DragFloat("Atmopshere dither strength", &mAtmosphereInfo.mValue.ditherStrength, 0.1f);
-
-		ImGui::DragFloat("Sun size", &mAtmosphereInfo.mValue.sunSizeDeg, 0.1f);
-
-	ImGui::End();
-	mAtmosphereInfo.updateGPU();
-
-	ImGui::Begin("Colours");
-
-		ImGui::Checkbox("Deferred Rendering", &mDoDeferredRendering);
-
-		ImGui::ColorPicker3("Dirt", (float*)&mColourParams.mValue.dirtColour);
-
-		ImGui::ColorPicker3("Mountain", (float*)&mColourParams.mValue.mountainColour);
-
-		ImGui::ColorPicker3("Grass 1", (float*)&mColourParams.mValue.grassColour1);
-
-		ImGui::ColorPicker3("Grass 2", (float*)&mColourParams.mValue.grassColour2);
-
-		ImGui::ColorPicker3("Snow", (float*)&mColourParams.mValue.snowColour);
-
-		ImGui::ColorPicker3("Water", (float*)&mColourParams.mValue.waterColour);
-
-		ImGui::ColorPicker3("Sun", (float*)&mColourParams.mValue.sunColour);
-
-		ImGui::DragFloat("Sun brightness", &mColourParams.mValue.sunBrightness, 0.01f);
-
-		ImGui::ColorPicker3("Moon", (float*)&mColourParams.mValue.moonColour);
-
-		ImGui::DragFloat("Moon brightness", &mColourParams.mValue.moonBrightness, 0.01f);
-
-		ImGui::ColorPicker3("Star", (float*)&mColourParams.mValue.starColour);
-
-		ImGui::DragFloat("Star brightness", &mColourParams.mValue.starBrightness, 0.01f);
-
-	ImGui::End();
-	mColourParams.updateGPU();
-
-	ImGui::Begin("Star Parameters");
-
-		StarParameters starParams{ mStarManager.getPrevParametersCopy() };
-
-		ImGui::DragFloat("Star size min", &starParams.minSize, 0.001f);
-
-		ImGui::DragFloat("Star size max", &starParams.maxSize, 0.001f);
-
-		ImGui::DragInt("Star count", &starParams.count);
-
-	ImGui::End();
-	mStarManager.update(starParams);
-
-	ImGui::Begin("Chunks");
-
-		mChunkManager.renderUI();
-
-	ImGui::End();
-
-	ImGui::Begin("Artistic Parameters");
-
-		ImGui::DragFloat("Terrain scale", &mArtisticParams.mValue.terrainScale);
-
-		ImGui::DragFloat("Grass dot cutoff", &mArtisticParams.mValue.grassDotCutoff, 0.005f, 0, 1);
-
-		ImGui::DragFloat("Snow dot cutoff", &mArtisticParams.mValue.snowDotCutoff, 0.005f, 0, 1);
-
-		ImGui::DragInt("Shell count", &mShellCount, 0.1f, 0, 256);
-
-		ImGui::DragFloat("Shell max height", &mArtisticParams.mValue.shellMaxHeight, 0.001f, 0, 10);
-
-		ImGui::DragFloat("Grass noise scale", &mArtisticParams.mValue.grassNoiseScale, 1, 1, 1000);
-
-		ImGui::DragFloat("Shell max cutoff", &mArtisticParams.mValue.shellMaxCutoff, 0.01f, 0, 1);
-
-		ImGui::DragFloat("Shell base cutoff", &mArtisticParams.mValue.shellBaseCutoff, 0.01f, 0, 1);
-
-		ImGui::DragFloat("Snow height", &mArtisticParams.mValue.snowHeight, 0.05f);
-
-		ImGui::DragFloat("Seafoam", &mArtisticParams.mValue.seafoamStrength, 0.01f, 0, 10);
-
-		ImGui::DragFloat("Snow line noise scale", &mArtisticParams.mValue.snowLineNoiseScale, 0.001f, 0, 100);
-
-		ImGui::DragFloat("Snow line noise amplitude", &mArtisticParams.mValue.snowLineNoiseAmplitude, 0.01f, 0, 10);
-
-		ImGui::DragFloat("Mountain snow cutoff", &mArtisticParams.mValue.mountainSnowCutoff, 0.01f, 0, 10);
-
-		ImGui::DragFloat("Snow line ease", &mArtisticParams.mValue.snowLineEase, 0.01f, 0, 10);
-
-		ImGui::DragFloat("Shell ambient occlusion", &mArtisticParams.mValue.shellAmbientOcclusion, 0.001f, 0, 1);
-
-	ImGui::End();
-	mArtisticParams.mValue.maxViewDistance = mChunkManager.getTerrainSpan() * 0.5f * 0.95f;
-	mArtisticParams.mValue.fogEncroach = mArtisticParams.mValue.maxViewDistance * 0.1f;
-	mArtisticParams.updateGPU();
-
-	ImGui::Begin("Frustum Culling");
-
-		ImGui::Checkbox("Frustum culling", &mDoFrustumCulling);
-
-	ImGui::End();
-
-	ImGui::Begin("Time");
-		ImGui::DragFloat("Day time", &mDayTime, 0.001f);
-		if (mDayTime < 0) {
-			mDayTime += 2;
-		}
-		else if (mDayTime > 2) {
-			mDayTime -= 2;
-		}
-	ImGui::End();
 
 	std::array<float, ImageCount> imageWorldSizes;
 	std::array<int, ImageCount> imagePixelDimensions;
 
 	ImGui::Begin("Terrain Images");
 
-		mTerrainImageSet.renderUIAndUpdate(hasTerrainChanged, cameraPos, mArtisticParams.mValue.terrainScale, mScreenQuad, mShaderTerrainImage);
+		mTerrainImageSet.renderUIAndUpdate(hasTerrainChanged, cameraPos, mArtisticParams.mValue.terrainScale, mScreenQuad, mShaderTerrainImage, renderUI);
 
 	ImGui::End();
-
-
-	ImGui::Begin("Shadow Parameters");
-
-		ImGui::DragFloat("Blur width", &mShadowInfo.mValue.blurWidth, 0.01f, 0, 10);
-
-		ImGui::DragInt("Blur quality", &mShadowInfo.mValue.blurQuality, 0.03f, 0, 9);
-
-		//int currCamera;
-		//ImGui::InputInt("Curr camera", &currCamera, 1);
-
-		ImGui::DragFloat("Exposure", &mShadowInfo.mValue.exposure, 0.001f);
-
-		ImGui::DragFloat("Min bias", &mShadowInfo.mValue.minBias, 0.1f);
-
-		ImGui::DragFloat("Max bias", &mShadowInfo.mValue.maxBias, 0.1f);
-
-		if (mShadowInfo.mValue.minBias > mShadowInfo.mValue.maxBias)
-			mShadowInfo.mValue.minBias = mShadowInfo.mValue.maxBias;
-
-		mShadowMapperSun.renderSplitsUI();
-		mShadowMapperMoon.setSplits(mShadowMapperSun.getSplits());
-		mShadowInfo.mValue.computeValues(mShadowMapperSun, mShadowMapperMoon);
-
-	ImGui::End();
-	mShadowInfo.updateGPU();
 }
 
 class ScopedDebugGroup {

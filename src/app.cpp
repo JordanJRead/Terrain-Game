@@ -75,10 +75,13 @@ void App::loop() {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		mTerrainRenderer.updateAndRenderUI(mCamera.getPosition());
-		ImGui::Begin("Physics plane");
-		ImGui::Checkbox("Show", &mShowPhysicsPlane);
-		ImGui::End();
+		mTerrainRenderer.updateAndRenderUI(mCamera.getPosition(), mIsUIVisible);
+
+		if (mIsUIVisible) {
+			ImGui::Begin("Physics plane");
+			ImGui::Checkbox("Show", &mShowPhysicsPlane);
+			ImGui::End();
+		}
 
 		// Terrain
 		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mFramebuffer);

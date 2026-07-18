@@ -29,7 +29,7 @@ class TerrainRenderer {
 public:
 	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos);
 
-	void updateAndRenderUI(const glm::vec3& cameraPos);
+	void updateAndRenderUI(const glm::vec3& cameraPos, bool renderUI);
 	void render(const CameraPlayer& camera, float time, const FramebufferColour& targetFramebuffer);
 
 	void bindTerrainImage(int i, int unit) const;
