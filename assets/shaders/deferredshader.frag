@@ -202,8 +202,8 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 	vec3 inScatteredLight = vec3(0, 0, 0);
 
 	for (int n = 0; n < stepCount; ++n) {
-		bool inSunShadow  = isPointInSunShadow (samplePos, normal) > 0.5;
-		bool inMoonShadow = isPointInMoonShadow(samplePos, normal) > 0.5;
+		bool inSunShadow  = doShadows ? (isPointInSunShadow(samplePos, normal) > 0.5) : false;
+		bool inMoonShadow = doShadows ? (isPointInMoonShadow(samplePos, normal) > 0.5) : false;
 
 		float rayleighDensity = rayleighDensityAtPoint(samplePos);
 		float mieDensity = mieDensityAtPoint(samplePos);
