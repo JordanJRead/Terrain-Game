@@ -20,23 +20,17 @@ vec3 getWaterHeight(vec2 pos) {
 	float freq = waterParams.initialFreq;
 	float speed = waterParams.initialSpeed;
 
-	float amplitudeSum = 0;
-
 	for (int i = 0; i < waterParams.waveCount; ++i) {
-		amplitudeSum += amplitude;
 		float randNum = randToFloat(rand(i));
 		vec2 waterDir = randUnitVector(randNum);
-		//waterInfo.x += amplitude * sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed);
-		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) + waterParams.height);
+		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)));
 		waterInfo.yz += amplitude * exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) * cos(dot(waterDir, pos) * freq + perFrameInfo.time * speed) * freq * waterDir;
 
 		amplitude *= waterParams.amplitudeMult;
 		freq *= waterParams.freqMult;
 		speed *= waterParams.speedMult;
 	}
-	if (amplitudeSum == 0)
-		return vec3(0, 0, 0);
-	return waterInfo / amplitudeSum * waterParams.initialAmplitude;
+	return waterInfo;
 }
 
 void main() {

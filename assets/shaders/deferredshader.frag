@@ -156,8 +156,10 @@ float phase(float cosTheta, float g) {
 	return 1 / (4 * PI) * (1 - g * g) / pow(1 + g * g - 2 * g * cosTheta, 3/2);
 }
 
-vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0), bool doShadows = true) {
+vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleObject, vec3 albedo, vec3 normal = vec3(0), bool doShadows = true, bool water = false) {
 	vec3 colourOfObject = albedo;
+	if (water) // temporary, will rework deferred renderer soon
+		return colourOfObject;
 	if (!isSky) {
 		float sunShadow  = isPointInSunShadow(worldPosOfVisibleObject, normal, true);
 		float moonShadow  = isPointInMoonShadow(worldPosOfVisibleObject, normal, true);
@@ -349,11 +351,11 @@ void main() {
 				fogStrength = (distFromCamera - fogStart) / artisticParams.fogEncroach;
 
 			if (fogStrength == 0)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal, true, true), 1);
 			else if (fogStrength == 1)
 				FragColor = vec4(skyColour, 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + skyColour * fogStrength, 1);
+				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal, true, true) * (1 - fogStrength) + skyColour * fogStrength, 1);
 		}
 		else {
 			vec4 terrainAlbedoWet = getTerrainAlbedoWet(groundWorldPosShellProgress.xyz, groundWorldPosShellProgress.w, worldPosMountain.w, bool(normalDoesTexelExist.w));
