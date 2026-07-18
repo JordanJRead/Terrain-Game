@@ -12,6 +12,7 @@ StarManager::StarManager(int bufferUnit) : mPrevParameters{ -1, -1, -1 }
 	glBufferData(GL_SHADER_STORAGE_BUFFER, 0, 0, GL_STATIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bufferUnit, mBuffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	update({ 0.048f, 0.108f, 3500 });
 }
 
 int StarManager::getSplitIndex(const glm::vec3& dir) {

@@ -10,13 +10,14 @@
 #include "planephysics.h"
 #include "planegpu.h"
 #include "openglbuffer.h"
+#include <iostream>
 
 App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	: mCamera{ screenWidth, screenHeight, {0, 20, 0} } // x = 2883548 for farlands
 	, mWindow{ window }
 	, mScreenWidth{ screenWidth }
 	, mScreenHeight{ screenHeight }
-	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition(), mUIManager }
+	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition() }
 	, mFramebuffer{ 1, screenWidth, screenHeight, GL_RGBA32F }
 	, mScreenQuad{ VertexArray::createScreenVertexArray() }
 {
@@ -60,7 +61,7 @@ void App::loop() {
 		prevFrame = glfwGetTime();
 		//-385 1703 - cool thing
 		// Physics
-		PlanePhysics physicsPlane{ 30, mCamera.getPosition(), 10, mTerrainRenderer, mUIManager};
+		PlanePhysics physicsPlane{ 30, mCamera.getPosition(), 10, mTerrainRenderer.getTerrainParams(), mTerrainRenderer.getTerrainScale() };
 
 		/// Input
 		handleInput();
@@ -70,9 +71,33 @@ void App::loop() {
 		mFramebuffer.use();
 		glClearColor(0.5f, 0.5f, 0.5f, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// UI
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		mTerrainRenderer.updateAndRenderUI(mCamera.getPosition(), mIsUIVisible);
+
+		if (mIsUIVisible) {
+			mFPSFrameCount++;
+			ImGui::Begin("Physics plane");
+			ImGui::Checkbox("Show", &mShowPhysicsPlane);
+			ImGui::End();
+
+			ImGui::Begin("FPS");
+			ImGui::Text(std::to_string((int)mDisplayFPS).c_str());
+			ImGui::End();
+
+			if (mFPSUpdateInterval.update(deltaTime)) {
+				mDisplayFPS = mFPSFrameCount / mFPSUpdateInterval.getPeriod();
+				mFPSFrameCount = 0;
+			}
+		}
+		else {
+			mFPSFrameCount = 0;
+		}
 
 		// Terrain
-		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mUIManager, mFramebuffer);
+		mTerrainRenderer.render(mCamera, (float)glfwGetTime(), mFramebuffer);
 
 		// Gamma
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -81,14 +106,14 @@ void App::loop() {
 		mGammaShader.setRenderData(mFramebuffer.getColourTex(0), mTerrainRenderer.getDeferredRenderer().getNoise());
 		mGammaShader.render(mScreenQuad);
 
-		mUIManager.render(deltaTime, mIsUIVisible);
-
 		// Debug physics plane
-		if (mUIManager.mShowPhysicsPlane.data()) {
+		if (mShowPhysicsPlane) {
 			PlaneGPU gpuPlane{ physicsPlane };
 			mPhysicsShader.render(gpuPlane.getVertexArray());
 		}
 
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(mWindow);
 		glfwPollEvents();
 	}

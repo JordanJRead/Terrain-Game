@@ -5,10 +5,13 @@
 #include <glm/ext/scalar_constants.hpp>
 #include <array>
 #include <optional>
-#include "uimanager.h"
 #include "mathhelper.h"
 #include <cmath>
 #include "random.h"
+
+float MathHelper::getRadiusFromChordWidthAndHeight(float width, float height) {
+	return (4 * height * height + width * width) / (8 * height);
+}
 
 bool MathHelper::floatEqual(float x, float y, float tol) {
 	return x - y < tol;
@@ -61,9 +64,14 @@ glm::vec3 MathHelper::getClosestWorldStepPosition(const glm::vec3 pos, float ste
 }
 
 
-glm::vec3 MathHelper::getDirToSun(const UIManager& uiManager) {
-	float theta{ uiManager.mDayTime.data() * glm::pi<float>() };
+glm::vec3 MathHelper::getDirToSun(float dayTime) {
+	float theta{ dayTime * glm::pi<float>() };
 	return glm::vec3{ glm::cos(theta), glm::sin(theta), 0 };
+}
+
+float MathHelper::starBrightnessAtTime(float time) {
+	constexpr int n{ 30 };
+	return (0 <= time && time <= 1) ? (pow(2, n - 1) * pow(time - 0.5, n)) : (-pow(2, n - 1) * pow(time - 1.5, n)) + 1;
 }
 
 int MathHelper::getClosestInt(float x) {

@@ -110,26 +110,26 @@ float rayleighDensityAtPoint(vec3 pos) {
 	vec3 atmosphereCenter = getAtmosphereCenter();
 	float distFromCenter = length(atmosphereCenter - pos);
 	if (distFromCenter < atmosphereInfo.minRadius) {
-		return atmosphereInfo.rayleighDensityScale;
+		return atmosphereInfo.rayleighDensity;
 	}
 	if (distFromCenter > atmosphereInfo.maxRadius) {
 		return 0;
 	}
 	float norm = (distFromCenter - atmosphereInfo.minRadius) / (atmosphereInfo.maxRadius - atmosphereInfo.minRadius);
-	return exp(-atmosphereInfo.rayleighDensityFalloff * norm) * (1 - norm) * atmosphereInfo.rayleighDensityScale;
+	return exp(-atmosphereInfo.rayleighDensityFalloff * norm) * (1 - norm) * atmosphereInfo.rayleighDensity;
 }
 
 float mieDensityAtPoint(vec3 pos) {
 	vec3 atmosphereCenter = getAtmosphereCenter();
 	float distFromCenter = length(atmosphereCenter - pos);
 	if (distFromCenter < atmosphereInfo.minRadius) {
-		return atmosphereInfo.mieDensityScale;
+		return atmosphereInfo.mieDensity;
 	}
 	if (distFromCenter > atmosphereInfo.maxRadius) {
 		return 0;
 	}
 	float norm = (distFromCenter - atmosphereInfo.minRadius) / (atmosphereInfo.maxRadius - atmosphereInfo.minRadius);
-	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensityScale;
+	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensity;
 }
 
 float opticalDepth(vec3 pos, vec3 dir, bool isRayleigh) {
@@ -162,8 +162,8 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 		float sunShadow  = isPointInSunShadow(worldPosOfVisibleObject, normal, true);
 		float moonShadow  = isPointInMoonShadow(worldPosOfVisibleObject, normal, true);
 		
-		vec3 sunColourHittingHere  = (1 - sunShadow)  * colours.sunColour  * exp(-(opticalDepth(worldPosOfVisibleObject,  perFrameInfo.dirToSun, true) * atmosphereInfo.rayleighScattering + opticalDepth(worldPosOfVisibleObject,  perFrameInfo.dirToSun, false) * atmosphereInfo.mieScattering));
-		vec3 moonColourHittingHere = (1 - moonShadow) * colours.moonColour * exp(-(opticalDepth(worldPosOfVisibleObject, -perFrameInfo.dirToSun, true) * atmosphereInfo.rayleighScattering + opticalDepth(worldPosOfVisibleObject, -perFrameInfo.dirToSun, false) * atmosphereInfo.mieScattering));
+		vec3 sunColourHittingHere  = (1 - sunShadow)  * colours.sunColour * colours.sunBrightness  * exp(-(opticalDepth(worldPosOfVisibleObject,  perFrameInfo.dirToSun, true) * atmosphereInfo.rayleighScattering + opticalDepth(worldPosOfVisibleObject,  perFrameInfo.dirToSun, false) * atmosphereInfo.mieScattering));
+		vec3 moonColourHittingHere = (1 - moonShadow) * colours.moonColour * colours.moonBrightness * exp(-(opticalDepth(worldPosOfVisibleObject, -perFrameInfo.dirToSun, true) * atmosphereInfo.rayleighScattering + opticalDepth(worldPosOfVisibleObject, -perFrameInfo.dirToSun, false) * atmosphereInfo.mieScattering));
 
 		float sunDot = dot(normal, perFrameInfo.dirToSun);
 		float moonDot = dot(normal, -perFrameInfo.dirToSun);
@@ -202,8 +202,8 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 	vec3 inScatteredLight = vec3(0, 0, 0);
 
 	for (int n = 0; n < stepCount; ++n) {
-		bool inSunShadow  = isPointInSunShadow (samplePos, normal) > 0.5;
-		bool inMoonShadow = isPointInMoonShadow(samplePos, normal) > 0.5;
+		bool inSunShadow  = doShadows ? (isPointInSunShadow(samplePos, normal) > 0.5) : false;
+		bool inMoonShadow = doShadows ? (isPointInMoonShadow(samplePos, normal) > 0.5) : false;
 
 		float rayleighDensity = rayleighDensityAtPoint(samplePos);
 		float mieDensity = mieDensityAtPoint(samplePos);
@@ -221,10 +221,10 @@ vec3 lightReceived(vec3 rayPos, vec3 rayDir, bool isSky, vec3 worldPosOfVisibleO
 		float cosThetaMoon = dot(rayDir, -perFrameInfo.dirToSun);
 
 		// In-scattering from sun
-		vec3 inScatteredFromSunRayleigh  = (inSunShadow  ? vec3(0) : colours.sunColour  * rayleighDensity * phase(cosThetaSun,  atmosphereInfo.rayleighG) * atmosphereInfo.rayleighScattering * exp(-(currentOpticalDepthRayleigh + toSunRayleighOpticalDepth)       * atmosphereInfo.rayleighScattering));
-		vec3 inScatteredFromMoonRayleigh = (inMoonShadow ? vec3(0) : colours.moonColour * rayleighDensity * phase(cosThetaMoon, atmosphereInfo.rayleighG) * atmosphereInfo.rayleighScattering * exp(-(currentOpticalDepthRayleigh + toMoonRayleighOpticalDepth)     * atmosphereInfo.rayleighScattering));
-		vec3 inScatteredFromSunMie       = (inSunShadow  ? vec3(0) : colours.sunColour  * mieDensity      * phase(cosThetaSun,  atmosphereInfo.mieG)      * atmosphereInfo.mieScattering      * exp(-(currentOpticalDepthMie      + toSunMieOpticalDepth)             * atmosphereInfo.mieScattering));
-		vec3 inScatteredFromMoonMie      = (inMoonShadow ? vec3(0) : colours.moonColour * mieDensity      * phase(cosThetaMoon, atmosphereInfo.mieG)      * atmosphereInfo.mieScattering      * exp(-(currentOpticalDepthMie      + toMoonMieOpticalDepth)            * atmosphereInfo.mieScattering));
+		vec3 inScatteredFromSunRayleigh  = (inSunShadow  ? vec3(0) : colours.sunColour * colours.sunBrightness  * rayleighDensity * phase(cosThetaSun,  atmosphereInfo.rayleighG) * atmosphereInfo.rayleighScattering * exp(-(currentOpticalDepthRayleigh + toSunRayleighOpticalDepth)       * atmosphereInfo.rayleighScattering));
+		vec3 inScatteredFromMoonRayleigh = (inMoonShadow ? vec3(0) : colours.moonColour * colours.moonBrightness * rayleighDensity * phase(cosThetaMoon, atmosphereInfo.rayleighG) * atmosphereInfo.rayleighScattering * exp(-(currentOpticalDepthRayleigh + toMoonRayleighOpticalDepth)     * atmosphereInfo.rayleighScattering));
+		vec3 inScatteredFromSunMie       = (inSunShadow  ? vec3(0) : colours.sunColour * colours.sunBrightness  * mieDensity      * phase(cosThetaSun,  atmosphereInfo.mieG)      * atmosphereInfo.mieScattering      * exp(-(currentOpticalDepthMie      + toSunMieOpticalDepth)             * atmosphereInfo.mieScattering));
+		vec3 inScatteredFromMoonMie      = (inMoonShadow ? vec3(0) : colours.moonColour * colours.moonBrightness * mieDensity      * phase(cosThetaMoon, atmosphereInfo.mieG)      * atmosphereInfo.mieScattering      * exp(-(currentOpticalDepthMie      + toMoonMieOpticalDepth)            * atmosphereInfo.mieScattering));
 
 		inScatteredLight += (inScatteredFromSunRayleigh + inScatteredFromMoonRayleigh + inScatteredFromSunMie + inScatteredFromMoonMie) * atmosphereInfo.brightness * dx;
 
@@ -257,30 +257,30 @@ bool isStarVisibleInSplit(vec3 dir, int i) {
 	vec3 rotatedDir = mat3(perFrameInfo.starRotationMatrix) * dir;
 
 	if (dot(dir, perFrameInfo.dirToSun) > cos(radians(atmosphereInfo.sunSizeDeg))) {
-		return colours.sunColour;
+		return colours.sunColour * colours.sunBrightness;
 	}
 
 	if (dot(dir, -perFrameInfo.dirToSun) > cos(radians(atmosphereInfo.sunSizeDeg))) {
-		return colours.moonColour;
+		return colours.moonColour * colours.moonBrightness;
 	}
 
 	int ySplitIndex = clamp(getSplitIndex(rotatedDir), 0, STARYSPLITCOUNT - 1);
 
 	if (isStarVisibleInSplit(rotatedDir, ySplitIndex))
-		return colours.starColour;
+		return colours.starColour * colours.starBrightness * perFrameInfo.nightStrength;
 
 	if (ySplitIndex != 0)
 		ySplitIndex -= 1;
 		
 	if (isStarVisibleInSplit(rotatedDir, ySplitIndex))
-		return colours.starColour;
+		return colours.starColour * colours.starBrightness * perFrameInfo.nightStrength;
 
 	ySplitIndex++;
 	if (ySplitIndex != STARYSPLITCOUNT - 1)
 		ySplitIndex += 1;
 		
 	if (isStarVisibleInSplit(rotatedDir, ySplitIndex))
-		return colours.starColour;
+		return colours.starColour * colours.starBrightness * perFrameInfo.nightStrength;
 	
 	return vec3(0);
  }
@@ -312,7 +312,7 @@ void main() {
 	vec3 starColour = getStarColor(cameraRayDir);
 
 	vec3 skyColour = lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour);
-
+	
 	if (isSky) {
 		FragColor = vec4(skyColour, 1);
 	}

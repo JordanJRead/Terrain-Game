@@ -5,13 +5,11 @@
 #include "glm/glm.hpp"
 #include <functional>
 #include <vector>
-
-class TerrainRenderer;
-class UIManager;
+#include "commonbuffertypes.h"
 
 class PlanePhysics : public PlaneI {
 public:
-	PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float width, const TerrainRenderer& terrainRenderer, const UIManager& uiManager);
+	PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float width, const CommonBufferTypes::TerrainParams& terrainParams, float terrainScale);
 	glm::vec3 getClosestWorldVertexPos(const glm::vec3 pos);
 	float getStepSize() const { return (1.0f / (mVerticesPerEdge - 1)) * mWidth; }
 	const std::vector<float>& getVertexData() const { return mVertexData; }

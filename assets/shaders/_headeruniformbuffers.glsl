@@ -7,66 +7,69 @@
 #extension GL_ARB_bindless_texture : require
 
 layout(std140, binding = 0) uniform TerrainParams {
-	uniform int   octaveCount;
-	uniform int   smoothOctaveCount;
-	uniform float initialAmplitude;
-	uniform float amplitudeDecay;
-	uniform float spreadFactor;
+	int   octaveCount;
+	int   smoothOctaveCount;
+	float initialAmplitude;
+	float amplitudeDecay;
+	float spreadFactor;
 
-	uniform float mountainFrequency;
-	uniform float mountainExponent;
-	uniform float antiFlatFactor;
-	uniform float riverScale;
-	uniform float riverStrength;
-	uniform float riverExponent;
-	uniform float waterEatingMountain;
-	uniform float lakeScale;
-	uniform float lakeStrength;
-	uniform float lakeExponent;
+	float mountainFrequency;
+	float mountainExponent;
+	float antiFlatFactor;
+	float riverScale;
+	float riverStrength;
+	float riverExponent;
+	float waterEatingMountain;
+	float lakeScale;
+	float lakeStrength;
+	float lakeExponent;
 } terrainParams;
 
 layout(std140, binding = 1) uniform ArtisticParams {
-	uniform float terrainScale;
-	uniform float maxViewDistance;
-	uniform float fogEncroach;
-	uniform float grassDotCutoff;
-	uniform float snowDotCutoff;
-	uniform float shellMaxHeight;
-	uniform float grassNoiseScale;
-	uniform float snowNoiseScale;
-	uniform float shellMaxCutoff;
-	uniform float shellBaseCutoff;
-	uniform float snowHeight;
-	uniform float seafoamStrength;
-	uniform float snowLineNoiseScale;
-	uniform float snowLineNoiseAmplitude;
-	uniform float mountainSnowCutoff;
-	uniform float snowLineEase;
-	uniform float shellAmbientOcclusion;
+	float terrainScale;
+	float maxViewDistance;
+	float fogEncroach;
+	float grassDotCutoff;
+	float snowDotCutoff;
+	float shellMaxHeight;
+	float grassNoiseScale;
+	float snowNoiseScale;
+	float shellMaxCutoff;
+	float shellBaseCutoff;
+	float snowHeight;
+	float seafoamStrength;
+	float snowLineNoiseScale;
+	float snowLineNoiseAmplitude;
+	float mountainSnowCutoff;
+	float snowLineEase;
+	float shellAmbientOcclusion;
 } artisticParams;
 
 layout(std140, binding = 2) uniform WaterParams {
-	uniform int waveCount;
-	uniform float initialAmplitude;
-	uniform float amplitudeMult;
-	uniform float initialFreq;
-	uniform float freqMult;
-	uniform float initialSpeed;
-	uniform float speedMult;
-	uniform float specExp;
-	uniform float height;
+	int waveCount;
+	float initialAmplitude;
+	float amplitudeMult;
+	float initialFreq;
+	float freqMult;
+	float initialSpeed;
+	float speedMult;
+	float specExp;
+	float height;
 } waterParams;
 
 layout(std140, binding = 3) uniform Colours {
-	uniform vec3 dirtColour;
-	uniform vec3 mountainColour;
-	uniform vec3 grassColour1;
-	uniform vec3 grassColour2;
-	uniform vec3 snowColour;
-	uniform vec3 waterColour;
-	uniform vec3 sunColour;
-	uniform vec3 moonColour;
-	uniform vec3 starColour;
+	vec3 dirtColour;
+	vec3 mountainColour;
+	vec3 grassColour1;
+	vec3 grassColour2;
+	vec3 snowColour;
+	vec3 waterColour;
+	vec3 sunColour;
+	float sunBrightness;
+	vec3 moonColour;
+	float moonBrightness;
+	vec3 starColour;
+	float starBrightness;
 } colours;
 
 layout(std140, binding = 4) uniform PerFrameInfo {
@@ -101,8 +104,8 @@ layout(std140, binding = 6) uniform AtmosphereInfo {
 	float centerY;
 	float rayleighDensityFalloff;
 	float mieDensityFalloff;
-	float rayleighDensityScale;
-	float mieDensityScale;
+	float rayleighDensity;
+	float mieDensity;
 	float rayleighG;
 	float mieG;
 	int rayAtmosphereStepCount;

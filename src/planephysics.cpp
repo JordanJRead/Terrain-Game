@@ -1,10 +1,10 @@
 #include "planephysics.h"
 #include "planeunit.h"
-#include "terrainrenderer.h"
+#include "heightfunction.h"
 #include "mathhelper.h"
-#include "uimanager.h"
+#include "commonbuffertypes.h"
 
-PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float width, const TerrainRenderer& terrainRenderer, const UIManager& uiManager)
+PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float width, const CommonBufferTypes::TerrainParams& terrainParams, float terrainScale)
 	: PlaneI{ verticesPerEdge }
 	, mWidth{ width }
 {
@@ -27,7 +27,7 @@ PlanePhysics::PlanePhysics(int verticesPerEdge, const glm::vec3& worldPos, float
 		xValue += flatStepWorldPos.x;
 		zValue *= mWidth;
 		zValue += flatStepWorldPos.z;
-		float yValue = terrainRenderer.getHeightAtPoint({ xValue, zValue }, uiManager);
+		float yValue = HeightFunction::getHeightAtPoint({ xValue, zValue }, terrainParams, terrainScale);
 		mVertexData.push_back(xValue);
 		mVertexData.push_back(yValue);
 		mVertexData.push_back(zValue);

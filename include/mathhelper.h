@@ -5,11 +5,14 @@
 #include <glm/ext/scalar_constants.hpp>
 #include <array>
 #include <optional>
-#include "uimanager.h"
 
 namespace MathHelper {
+	inline constexpr float PI{ 3.14159f };
+
 	int taxicabDist(glm::ivec2 p1, glm::ivec2 p2);
 	bool floatEqual(float x, float y, float tol = 0.001);
+
+	float getRadiusFromChordWidthAndHeight(float width, float height);
 
 	float signedDistFromPlane(const glm::vec3 pos, const glm::vec3 planeNormal, const glm::vec3& planePoint);
 	double areaOfTriangle(const std::array<glm::vec3, 3>& trianglePoints);
@@ -30,9 +33,11 @@ namespace MathHelper {
 		return { minI, min };
 	}
 
+	float starBrightnessAtTime(float time);
+
 	glm::vec3 getClosestWorldStepPosition(const glm::vec3 pos, float stepSize);
 
-	glm::vec3 getDirToSun(const UIManager& uiManager);
+	glm::vec3 getDirToSun(float dayTime);
 
 	int getClosestInt(float x);
 

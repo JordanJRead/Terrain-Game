@@ -17,7 +17,7 @@ void APIENTRY glDebugOutput(GLenum source,
     const void* userParam)
 {
     // ignore non-significant error/warning codes
-    if (id == 131169 || id == 131185 || id == 131218 || id == 131204 || id == 131188) return;
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204 || id == 131188 || severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
 
     std::cout << "---------------" << std::endl;
     std::cout << "Debug message (" << id << "): " << message << std::endl;

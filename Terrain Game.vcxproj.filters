@@ -54,7 +54,7 @@
     <ClCompile Include="src\shaders\shaderi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\terrainimagegenerator.cpp">
+    <ClCompile Include="src\terrainimage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\vertexarray.cpp">
@@ -75,7 +75,7 @@
     <ClCompile Include="src\physicsobject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="include\uimanager.h">
+    <ClCompile Include="include\uimanagerdeprecated.h">
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="src\mathhelper.cpp">
@@ -121,6 +121,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\starmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\planequalityset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="include\heightfunction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\terrainrenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\chunksbuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\chunkmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\terrainimageset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\interval.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -200,7 +221,7 @@
     <ClInclude Include="include\stb_include.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\terrainimagegenerator.h">
+    <ClInclude Include="include\terrainimage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\terrainrenderer.h">
@@ -245,7 +266,7 @@
     <ClInclude Include="include\framebufferdepth.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\chunkbuffers.h">
+    <ClInclude Include="include\chunksbuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\shaders\shaderortho.h">
@@ -263,5 +284,61 @@
     <ClInclude Include="include\volumes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\planequalityset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\heightfunction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\commonbuffertypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\chunkmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\chunksbuffernoshells.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shellqualityset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\terrainimageset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\interval.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\_headermath.glsl" />
+    <None Include="assets\shaders\_headershadows.glsl" />
+    <None Include="assets\shaders\_headerterraininfo.glsl" />
+    <None Include="assets\shaders\_headeruniformbuffers.glsl" />
+    <None Include="assets\shaders\deferredshader.frag" />
+    <None Include="assets\shaders\deferredshader.vert" />
+    <None Include="assets\shaders\gamma.frag" />
+    <None Include="assets\shaders\gamma.vert" />
+    <None Include="assets\shaders\grid.frag" />
+    <None Include="assets\shaders\grid.vert" />
+    <None Include="assets\shaders\ortho.frag" />
+    <None Include="assets\shaders\ortho.vert" />
+    <None Include="assets\shaders\physics.frag" />
+    <None Include="assets\shaders\physics.vert" />
+    <None Include="assets\shaders\skybox.frag" />
+    <None Include="assets\shaders\skybox.vert" />
+    <None Include="assets\shaders\terrain.frag" />
+    <None Include="assets\shaders\terrain.vert" />
+    <None Include="assets\shaders\terraindepth.frag" />
+    <None Include="assets\shaders\terraindepth.vert" />
+    <None Include="assets\shaders\terraingeometrypass.frag" />
+    <None Include="assets\shaders\terraingeometrypass.vert" />
+    <None Include="assets\shaders\terrainimage.frag" />
+    <None Include="assets\shaders\terrainimage.vert" />
+    <None Include="assets\shaders\water.frag" />
+    <None Include="assets\shaders\water.vert" />
+    <None Include="assets\shaders\waterdepth.frag" />
+    <None Include="assets\shaders\waterdepth.vert" />
+    <None Include="assets\shaders\watergeometrypass.frag" />
+    <None Include="assets\shaders\watergeometrypass.vert" />
   </ItemGroup>
 </Project>
