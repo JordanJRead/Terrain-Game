@@ -11,34 +11,15 @@ uniform samplerCube skybox;
 
 uniform vec3 planePos;
 
-#include "_headeruniformbuffers.glsl";
-#include "_headermath.glsl";
-#include "_headerterraininfo.glsl";
-
-vec3 getWaterHeight(vec2 pos) {
-	vec3 waterInfo = vec3(0, 0, 0);
-
-	float amplitude = waterParams.initialAmplitude;
-	float freq = waterParams.initialFreq;
-	float speed = waterParams.initialSpeed;
-
-	for (int i = 0; i < waterParams.waveCount; ++i) {
-		float randNum = randToFloat(rand(i));
-		vec2 waterDir = randUnitVector(randNum);
-		waterInfo.x += amplitude * (exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)));
-		waterInfo.yz += amplitude * exp(sin(dot(waterDir, pos) * freq + perFrameInfo.time * speed)) * cos(dot(waterDir, pos) * freq + perFrameInfo.time * speed) * freq * waterDir;
-
-		amplitude *= waterParams.amplitudeMult;
-		freq *= waterParams.freqMult;
-		speed *= waterParams.speedMult;
-	}
-	return waterInfo;
-}
+#include "_headeruniformbuffers.glsl"
+#include "_headermath.glsl"
+#include "_headerterraininfo.glsl"
+#include "_headerwaterinfo.glsl"
 
 void main() {
 	// Water / terrain info
 	vec2 flatWorldPos = fragIn.worldPos.xz;
-	vec3 waterInfo = getWaterHeight(flatWorldPos);
+	vec3 waterInfo = getWaterInfo(flatWorldPos);
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	
 	// Albedo
