@@ -73,7 +73,7 @@ private:
 
 	VertexArray mScreenQuad;
 	int mShellCount{ 30 };
-	float mDayTime{};
+	float mDayTime{ 0.75f };
 	bool mDoDeferredRendering{ true };
 	bool mDoFrustumCulling{ true };
 	TerrainImageSet mTerrainImageSet;
