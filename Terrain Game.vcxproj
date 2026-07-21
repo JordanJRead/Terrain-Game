@@ -346,6 +346,8 @@
     <None Include="assets\shaders\terraingeometrypass.vert" />
     <None Include="assets\shaders\terrainimage.frag" />
     <None Include="assets\shaders\terrainimage.vert" />
+    <None Include="assets\shaders\waterdeferred.frag" />
+    <None Include="assets\shaders\waterdeferred.vert" />
     <None Include="assets\shaders\waterforward.frag" />
     <None Include="assets\shaders\waterforward.vert" />
     <None Include="assets\shaders\waterdepth.frag" />

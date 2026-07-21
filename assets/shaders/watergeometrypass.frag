@@ -15,9 +15,6 @@ uniform vec3 planePos;
 #include "_headerwaterinfo.glsl"
 
 void main() {
-	OutWaterWorldPos = vec4(1, 0, 1, 1);
-	OutWaterNormal = vec4(1, 0, 1, 1);
-	return;
 	vec2 flatWorldPos = fragIn.worldPos.xz;
 	vec3 waterInfo = getWaterInfo(flatWorldPos);
 	vec3 normal = normalize(vec3(-waterInfo.y, 1, -waterInfo.z));

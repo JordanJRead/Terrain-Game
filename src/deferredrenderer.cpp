@@ -12,7 +12,7 @@ DeferredRenderer::DeferredRenderer(int screenWidth, int screenHeight)
 	, mShaderTerrainGeometry{ "assets/shaders/terraingeometrypass.vert", "assets/shaders/terraingeometrypass.frag", std::array{0, 1, 2, 3} }
 	, mShaderWaterGeometry{ "assets/shaders/watergeometrypass.vert", "assets/shaders/watergeometrypass.frag", std::array{4, 5} }
 	, mShaderTerrainDeferred{ "assets/shaders/terraindeferred.vert", "assets/shaders/terraindeferred.frag" }
-	//, mShaderWaterDeferred{ "assets/shaders/waterdeferred.vert", "assets/shaders/waterdeferred.frag" }
+	, mShaderWaterDeferred{ "assets/shaders/waterdeferred.vert", "assets/shaders/waterdeferred.frag" }
 	//, mShaderSkyAndFog{ "assets/shaders/skyfog.vert", "assets/shaders/skyfog.frag" }
 {
 }
@@ -32,7 +32,7 @@ void DeferredRenderer::doDeferredShading(const FramebufferColour* const targetFr
 	mShadedTerrainFramebuffer.clear({ -1, -1, -1, -1 }, GL_COLOR_BUFFER_BIT);
 	mShadedTerrainAndWaterFramebuffer.clear({ -1, -1, -1, -1 }, GL_COLOR_BUFFER_BIT);
 
-	mShaderTerrainDeferred.render(targetFramebuffer, screenQuad, terrainImageSet, mGeometryFramebuffer, mBlueNoise, shadowMapperSun, shadowMapperMoon);
-	//mShaderWaterDeferred.render(&mShadedTerrainAndWaterFramebuffer, screenQuad, mGeometryFramebuffer, mBlueNoise, shadowMapperSun, shadowMapperMoon); // Will copy shaded terrain buffer too TODO add src texture?
+	mShaderTerrainDeferred.render(&mShadedTerrainFramebuffer, screenQuad, terrainImageSet, mGeometryFramebuffer, mBlueNoise, shadowMapperSun, shadowMapperMoon);
+	mShaderWaterDeferred.render(targetFramebuffer, screenQuad, mShadedTerrainFramebuffer.getColourTex(0), mGeometryFramebuffer, mBlueNoise, shadowMapperSun, shadowMapperMoon); // Will copy shaded terrain buffer too TODO add src texture?
 	//mShaderSkyAndFog.render(targetFramebuffer, screenQuad, mShadedTerrainAndWaterFramebuffer, shadowMapperSun, shadowMapperMoon);
 }

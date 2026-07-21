@@ -360,5 +360,7 @@
     <None Include="assets\shaders\watergeometrypass.vert" />
     <None Include="assets\shaders\terraindeferred.frag" />
     <None Include="assets\shaders\terraindeferred.vert" />
+    <None Include="assets\shaders\waterdeferred.vert" />
+    <None Include="assets\shaders\waterdeferred.frag" />
   </ItemGroup>
 </Project>

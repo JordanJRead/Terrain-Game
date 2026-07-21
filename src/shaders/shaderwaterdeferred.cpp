@@ -9,8 +9,14 @@ ShaderWaterDeferred::ShaderWaterDeferred(const std::string& vertPath, const std:
 	use();
 	int textureUnit{ 0 };
 
+	setInt("GBuffer_TerrainGroundWorldPos", textureUnit++);
+	setInt("GBuffer_TerrainWorldPos", textureUnit++);
+	setInt("GBuffer_TerrainNormal", textureUnit++);
+	setInt("GBuffer_ShellProgressMountainDoesTexelExist", textureUnit++);
 	setInt("GBuffer_WaterWorldPos", textureUnit++);
 	setInt("GBuffer_WaterNormal", textureUnit++);
+
+	setInt("sceneSource", textureUnit++);
 
 	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
 		std::string indexString{ std::to_string(cascadeI) };
@@ -25,13 +31,18 @@ ShaderWaterDeferred::ShaderWaterDeferred(const std::string& vertPath, const std:
 	setInt("blueNoise", textureUnit++);
 }
 
-void ShaderWaterDeferred::render(const FramebufferI* const framebuffer, const VertexArrayScreenQuad& screenQuad, const FramebufferColour& geometryBuffer, const Noise& noiseTexture,
+void ShaderWaterDeferred::render(const FramebufferI* const framebuffer, const VertexArrayScreenQuad& screenQuad, const TEX& sourceSceneTexture, const FramebufferColour& geometryBuffer, const Noise& noiseTexture,
 	const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon) const
 {
 	int textureUnit{ 0 };
 
+	geometryBuffer.bindColourTexture(0, textureUnit++);
+	geometryBuffer.bindColourTexture(1, textureUnit++);
+	geometryBuffer.bindColourTexture(2, textureUnit++);
+	geometryBuffer.bindColourTexture(3, textureUnit++);
 	geometryBuffer.bindColourTexture(4, textureUnit++);
 	geometryBuffer.bindColourTexture(5, textureUnit++);
+	sourceSceneTexture.bind(GL_TEXTURE_2D, textureUnit++);
 
 	for (int cascadeI{ 0 }; cascadeI < CascadeCount; ++cascadeI) {
 		shadowMapperSun.getFramebuffer(cascadeI).getDepthTexture().bind(GL_TEXTURE_2D, textureUnit++);

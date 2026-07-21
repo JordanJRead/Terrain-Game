@@ -23,7 +23,7 @@ public:
 	ShaderChunkGeometry mShaderTerrainGeometry;
 	ShaderChunkGeometry mShaderWaterGeometry;
 	ShaderTerrainDeferred mShaderTerrainDeferred;
-	//ShaderWaterDeferred mShaderWaterDeferred;
+	ShaderWaterDeferred mShaderWaterDeferred;
 	//ShaderSkyFog mShaderSkyAndFog;
 
 	FramebufferColour mGeometryFramebuffer; // (terrainGroundWorldPos), (terrainWorldPos), (terrainNormal), (shellProgress, mountain, doesTexelExist), (waterWorldPos), (waterNormal)

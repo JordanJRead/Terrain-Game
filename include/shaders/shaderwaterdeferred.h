@@ -13,7 +13,7 @@ class FramebufferColour;
 class ShaderWaterDeferred : public ShaderI {
 public:
 	ShaderWaterDeferred(const std::string& vertPath, const std::string& fragPath);
-	void render(const FramebufferI* const framebuffer, const VertexArrayScreenQuad& screenQuad, const FramebufferColour& geometryBuffer, const Noise& noiseTexture,
+	void render(const FramebufferI* const framebuffer, const VertexArrayScreenQuad& screenQuad, const TEX& sourceSceneTexture, const FramebufferColour& geometryBuffer, const Noise& noiseTexture,
 		const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon) const;
 };
 
