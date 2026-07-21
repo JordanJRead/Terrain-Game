@@ -4,11 +4,12 @@
 #include "shaders/shaderi.h"
 #include "glm/glm.hpp"
 
+class VertexArrayScreenQuad;
+
 class ShaderTerrainImage : public ShaderI {
 public:
 	ShaderTerrainImage(const std::string& vertPath, const std::string& fragPath);
-	void setRenderData(const glm::vec2& worldPos, float worldSize) const;
-	void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const override;
+	void render(const FramebufferI* const framebuffer, const VertexArrayScreenQuad& quad, const glm::vec2& worldPos, float worldSize) const;
 };
 
 #endif

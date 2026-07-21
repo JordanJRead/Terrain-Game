@@ -2,10 +2,11 @@
 #include "shaders/shaderi.h"
 #include "glm/glm.hpp"
 #include "constants.h"
-#include "terrainrenderer.h"
+#include "terrainimageset.h"
 #include "cubemap.h"
+#include "planegpu.h"
 
-ShaderChunk::ShaderChunk(const std::string& vertPath, const std::string& fragPath) : ShaderI{ vertPath, fragPath }, mInstanceCount{ 0 } {
+ShaderChunk::ShaderChunk(const std::string& vertPath, const std::string& fragPath) : ShaderI{ vertPath, fragPath } {
 	use();
 	for (int i{ 0 }; i < ImageCount; ++i) {
 		std::string indexString{ std::to_string(i) };
@@ -14,19 +15,14 @@ ShaderChunk::ShaderChunk(const std::string& vertPath, const std::string& fragPat
 	setInt("skybox", ImageCount);
 }
 
-void ShaderChunk::setRenderData(const TerrainRenderer& terrainRenderer, float planeWidth, int instanceCount, const Cubemap& skybox) {
+void ShaderChunk::render(const FramebufferI* const framebuffer, const PlaneGPU& plane, const TerrainImageSet& terrainImageSet, float planeWidth, int instanceCount, const Cubemap& skybox) const {
 	use();
 	int i{ 0 };
 	for (; i < ImageCount; ++i) {
-		terrainRenderer.bindTerrainImage(i, i);
+		terrainImageSet.getImage(i).bindTexture(i);
 	}
-	setFloat("planeWorldWidth", planeWidth);
-	mInstanceCount = instanceCount;
 	skybox.bindTexture(ImageCount);
-}
 
-void ShaderChunk::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
-	internalRender(framebuffer, vertexArray, true, mInstanceCount);
+	setFloat("planeWorldWidth", planeWidth);
+	internalRender(framebuffer, plane.getVertexArray(), true, instanceCount);
 }
-
-int ShaderChunk::getInstanceCount() const { return mInstanceCount; }

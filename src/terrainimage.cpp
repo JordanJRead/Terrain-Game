@@ -1,7 +1,7 @@
 #include "terrainimage.h"
 #include <vector>
 #include <iostream>
-#include "vertexarray.h"
+#include "vertexarrayscreenquad.h"
 #include "shaders/shaderterrainimage.h"
 #include "mathhelper.h"
 #include "imgui/imgui.h"
@@ -18,20 +18,19 @@ void TerrainImage::updatePixelDimAndClear() {
 	mFramebuffer.updateDimensions(0, mPixelDim, mPixelDim);
 }
 
-void TerrainImage::bindImage(int unit) const {
+void TerrainImage::bindTexture(int unit) const {
 	mFramebuffer.bindColourTexture(0, unit);
 }
 
-void TerrainImage::updateTexture(const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader) {
-	terrainImageShader.setRenderData(mWorldPos, mWorldSize);
-	terrainImageShader.render(mFramebuffer, screenQuad);
+void TerrainImage::updateTexture(const VertexArrayScreenQuad& screenQuad, const ShaderTerrainImage& terrainImageShader) {
+	terrainImageShader.render(&mFramebuffer, screenQuad, mWorldPos, mWorldSize);
 }
 
 glm::vec3 TerrainImage::getClosestWorldPixelPos(const glm::vec3 pos, float terrainScale) const {
 	return MathHelper::getClosestWorldStepPosition(pos, mWorldSize / mPixelDim * terrainScale);
 }
 
-void TerrainImage::renderUIAndUpdate(float minSize, const glm::vec3& cameraPos, float terrainScale, bool hasTerrainParamsChanged, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader, bool renderUI) {
+void TerrainImage::renderUIAndUpdate(float minSize, const glm::vec3& cameraPos, float terrainScale, bool hasTerrainParamsChanged, const VertexArrayScreenQuad& screenQuad, const ShaderTerrainImage& terrainImageShader, bool renderUI) {
 	int prevPixelDim{ mPixelDim };
 	float prevWorldSize{ mWorldSize };
 

@@ -1,6 +1,7 @@
 #include "shaders/shadergamma.h"
 #include "OpenGLObjects/TEX.h"
 #include "noise.h"
+#include "vertexarrayscreenquad.h"
 
 ShaderGamma::ShaderGamma(const std::string& vertPath, const std::string& fragPath) : ShaderI{ vertPath, fragPath } {
 	use();
@@ -8,15 +9,8 @@ ShaderGamma::ShaderGamma(const std::string& vertPath, const std::string& fragPat
 	setInt("noise", 1);
 }
 
-void ShaderGamma::setRenderData(const TEX& sourceTexture, const Noise& noise) {
+void ShaderGamma::render(const FramebufferI* const framebuffer, const VertexArrayScreenQuad& screenQuad, const TEX& sourceTexture, const Noise& noise) const {
 	sourceTexture.bind(GL_TEXTURE_2D, 0);
 	noise.use(1);
-}
-
-void ShaderGamma::render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const {
-	internalRender(framebuffer, vertexArray, false);
-}
-
-void ShaderGamma::render(const VertexArray& vertexArray) const {
-	internalRenderDefaultFramebuffer(vertexArray, false);
+	internalRender(framebuffer, screenQuad.getVertexArray(), false);
 }

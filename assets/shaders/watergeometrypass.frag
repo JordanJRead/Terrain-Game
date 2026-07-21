@@ -4,9 +4,8 @@ in VertOut {
 	vec3 worldPos;
 } fragIn;
 
-layout(location=0) out vec4 OutGroundWorldPosShellIndex;
-layout(location=1) out vec4 OutWorldPosMountain;
-layout(location=2) out vec4 OutNormalDoesTexelExist;
+layout(location=0) out vec4 OutWaterWorldPos;
+layout(location=1) out vec4 OutWaterNormal;
 
 uniform vec3 planePos;
 
@@ -16,11 +15,13 @@ uniform vec3 planePos;
 #include "_headerwaterinfo.glsl"
 
 void main() {
+	OutWaterWorldPos = vec4(1, 0, 1, 1);
+	OutWaterNormal = vec4(1, 0, 1, 1);
+	return;
 	vec2 flatWorldPos = fragIn.worldPos.xz;
 	vec3 waterInfo = getWaterInfo(flatWorldPos);
 	vec3 normal = normalize(vec3(-waterInfo.y, 1, -waterInfo.z));
 
-	OutGroundWorldPosShellIndex = vec4(fragIn.worldPos, -2);
-	OutWorldPosMountain = vec4(fragIn.worldPos, 0);
-	OutNormalDoesTexelExist = vec4(normal, 0);
+	OutWaterWorldPos = vec4(fragIn.worldPos, 1);
+	OutWaterNormal = vec4(normal, 1); // TODO add control for pixel-perfect normals?
 }

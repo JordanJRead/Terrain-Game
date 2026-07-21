@@ -9,7 +9,7 @@ in VertOut {
 	float shellProgress;
 } fragIn;
 
-out vec4 FragColor;
+out vec4 FragColour;
 
 uniform samplerCube skybox;
 
@@ -19,7 +19,7 @@ uniform samplerCube skybox;
 
 void main() {
 	if (fragIn.isEdge) {
-		FragColor = vec4(1, 1, 1, 1);
+		FragColour = vec4(1, 1, 1, 1);
 		return;
 	}
 	vec2 flatWorldPos = fragIn.groundWorldPos.xz;
@@ -143,5 +143,5 @@ void main() {
 	vec3 litAlbedo = (diffuse + ambient) * albedo + spec * colours.sunColour;
 	vec3 skyboxSample = fragIn.worldPos - perFrameInfo.cameraPos;
 	vec3 finalColor = (1 - fogStrength) * litAlbedo + fogStrength * texture(skybox, skyboxSample).xyz;
-	FragColor = vec4(finalColor, 1);
+	FragColour = vec4(finalColor, 1);
 }

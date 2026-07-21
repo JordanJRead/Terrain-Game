@@ -66,11 +66,7 @@ public:
 		mVertexArray.create(vertexData, indices, layout);
 	}
 
-	void useVertexArray() {
-		mVertexArray.use();
-	}
-
-	const VertexArray& getVertexArray() { return mVertexArray; }
+	const VertexArray& getVertexArray() const { return mVertexArray; }
 
 	size_t getIndexCount() {
 		return mVertexArray.getIndexCount();

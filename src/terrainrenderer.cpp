@@ -8,11 +8,9 @@
 #include <algorithm>
 
 TerrainRenderer::TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos)
-	: mScreenQuad{ VertexArray::createScreenVertexArray() }
-
-	, mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
-	, mShaderTerrainForward{ "assets/shaders/terrain.vert", "assets/shaders/terrain.frag" }
-	, mShaderWaterForward{ "assets/shaders/water.vert", "assets/shaders/water.frag" }
+	: mShaderTerrainImage{ "assets/shaders/terrainimage.vert", "assets/shaders/terrainimage.frag" }
+	, mShaderTerrainForward{ "assets/shaders/terrainforward.vert", "assets/shaders/terrainforward.frag" }
+	, mShaderWaterForward{ "assets/shaders/waterforward.vert", "assets/shaders/waterforward.frag" }
 	, mSkyboxShader{ "assets/shaders/skybox.vert", "assets/shaders/skybox.frag" }
 
 	, mTerrainImageSet{ ImageCount, cameraPos, mArtisticParams.mValue.terrainScale, mScreenQuad, mShaderTerrainImage }
@@ -39,7 +37,7 @@ TerrainRenderer::TerrainRenderer(int screenWidth, int screenHeight, const glm::v
 {}
 
 void TerrainRenderer::bindTerrainImage(int i, int unit) const {
-	mTerrainImageSet.getImage(i).bindImage(unit);
+	mTerrainImageSet.getImage(i).bindTexture(unit);
 }
 
 const DeferredRenderer& TerrainRenderer::getDeferredRenderer() const {
@@ -325,19 +323,14 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 	if (!mDoDeferredRendering) {
 		mPerFrameInfo.mValue.fromData(camera, dirToSun, time, mDayTime);
 		mPerFrameInfo.updateGPU();
-		mSkyboxShader.setRenderData(mDaySkybox);
-		mSkyboxShader.render(targetFramebuffer, mCubeVertices.getVertexArray());
+		mSkyboxShader.render(&targetFramebuffer, mCubeVertices, mDaySkybox);
 	}
 
 	for (int i{ 0 }; i < ImageCount; ++i) {
-		mTerrainImageSet.getImage(i).bindImage(i);
+		mTerrainImageSet.getImage(i).bindTexture(i);
 	}
 
 	if (mDoDeferredRendering) {
-		mDeferredRenderer.mFramebuffer.use();
-		glClearColor(0, 0, 0, -3);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		mShadowMapperSun.updateCameras(dirToSun, camera, getSceneWorldAABB(camera.getPosition()));
 		mShadowMapperMoon.updateCameras(-dirToSun, camera, getSceneWorldAABB(camera.getPosition()));
 		mShadowInfo.mValue.computeValues(mShadowMapperSun, mShadowMapperMoon);
@@ -374,7 +367,8 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 		glEnable(GL_CULL_FACE);
 		{
 			ScopedDebugGroup d{ "Geometry Pass" };
-			renderTerrain(mDeferredRenderer.mFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainDeferred, mDeferredRenderer.mShaderWaterDeferred, dirToSun, time);
+			mDeferredRenderer.clearGeometryBuffers();
+			renderTerrain(mDeferredRenderer.mGeometryFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainGeometry, mDeferredRenderer.mShaderWaterGeometry, dirToSun, time);
 		}
 		glDisable(GL_CULL_FACE);
 
@@ -382,7 +376,7 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 		mPerFrameInfo.updateGPU();
 		{
 			ScopedDebugGroup d{ "Deferred Pass" };
-			mDeferredRenderer.doDeferredShading(targetFramebuffer, *this, mScreenQuad);
+			mDeferredRenderer.doDeferredShading(&targetFramebuffer, mTerrainImageSet, mScreenQuad, mShadowMapperSun, mShadowMapperMoon);
 		}
 	}
 	else {
@@ -410,8 +404,7 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 			mPerFrameInfo.updateGPU();
 			glm::vec3 colour = { 0, 0, 0 };
 			colour[i] = 1;
-			mShaderOrtho.setColour(colour);
-			mShaderOrtho.render(targetFramebuffer, orthoVertexArray);
+			mShaderOrtho.render(&targetFramebuffer, orthoVertexArray, colour);
 		}
 	}
 }
@@ -423,26 +416,7 @@ void TerrainRenderer::renderTerrain(const FramebufferI& targetFramebuffer, const
 	mChunkManager.populateBuffers(camera, depthPass, forceLowQuality, mDoFrustumCulling, depthPass);
 
 	for (size_t i{ 0 }; i < mTerrainImageSet.getImageCount(); ++i) {
-		mTerrainImageSet.getImage(i).bindImage(i);
-	}
-
-	// Draw water
-	{
-		ScopedDebugGroup d{ "Water" };
-		int i{ 0 };
-		while (auto optionalVAOAndInstanceCount = mChunkManager.flushSomeWater()) {
-			std::string debug{ "Quality Index " };
-			debug += std::to_string(i);
-			debug += " (low is higher quality)";
-			ScopedDebugGroup d{ debug.c_str() };
-			int instanceCount = optionalVAOAndInstanceCount.value().second;
-			if (instanceCount == 0) {
-				continue;
-			}
-			waterShader.setRenderData(*this, depthPass ? 10000 : mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
-			waterShader.render(targetFramebuffer, optionalVAOAndInstanceCount.value().first);
-			i++;
-		}
+		mTerrainImageSet.getImage(i).bindTexture(i);
 	}
 
 	// Draw terrain
@@ -450,18 +424,37 @@ void TerrainRenderer::renderTerrain(const FramebufferI& targetFramebuffer, const
 	{
 		ScopedDebugGroup d{ "Terrain" };
 		int i{ 0 };
-		while (auto optionalVAOAndInstanceCount = mChunkManager.flushSomeTerrain()) {
+		while (auto chunkData = mChunkManager.flushSomeTerrain()) {
 			std::string debug{ "Quality Index " };
 			debug += std::to_string(i);
 			debug += " (low is higher quality)";
 			ScopedDebugGroup d{ debug.c_str() };
-			int instanceCount = optionalVAOAndInstanceCount.value().second;
+			int instanceCount = chunkData.value().second;
 			if (instanceCount == 0) {
 				continue;
 			}
-			terrainShader.setRenderData(*this, mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
-			terrainShader.render(targetFramebuffer, optionalVAOAndInstanceCount.value().first);
+			terrainShader.render(&targetFramebuffer, chunkData.value().first, mTerrainImageSet, mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
 			i++;
+		}
+	}
+
+	if (!depthPass) {
+		// Draw water
+		{
+			ScopedDebugGroup d{ "Water" };
+			int i{ 0 };
+			while (auto chunkData = mChunkManager.flushSomeWater()) {
+				std::string debug{ "Quality Index " };
+				debug += std::to_string(i);
+				debug += " (low is higher quality)";
+				ScopedDebugGroup d{ debug.c_str() };
+				int instanceCount = chunkData.value().second;
+				if (instanceCount == 0) {
+					continue;
+				}
+				waterShader.render(&targetFramebuffer, chunkData.value().first, mTerrainImageSet, depthPass ? 10000 : mChunkManager.getChunkWidth(), instanceCount, mDaySkybox);
+				i++;
+			}
 		}
 	}
 }

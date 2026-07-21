@@ -1,8 +1,8 @@
 #version 430 core
 
 in flat vec3 fragColor;
-out vec4 FragColor;
+out vec4 FragColour;
 
 void main() {
-	FragColor = vec4(fragColor, 1);
+	FragColour = vec4(fragColor, 1);
 }

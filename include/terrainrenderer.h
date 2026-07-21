@@ -2,7 +2,7 @@
 #define TERRAIN_RENDERER_H
 
 #include "glm/glm.hpp"
-#include "vertexarray.h"
+#include "vertexarrayscreenquad.h"
 #include "planegpu.h"
 #include "chunkmanager.h"
 #include <array>
@@ -54,7 +54,6 @@ private:
 	OpenGLBuffer<CommonBufferTypes::ShadowInfo>         mShadowInfo       { 7, BufferTypes::ssbo, CommonBufferTypes::ShadowInfo::getDefaultValue() };
 	StarManager mStarManager{ 9 };
 
-	std::array<glm::vec2, ImageCount> mImageWorldPositions;
 	float mMinTerrainHeight;
 	float mMaxTerrainHeight;
 
@@ -71,7 +70,7 @@ private:
 	ShadowMapper<CascadeCount> mShadowMapperMoon;
 	ChunkManager mChunkManager{ 3, 8, 5000.0f, 205, mTerrainParams.mValue };
 
-	VertexArray mScreenQuad;
+	VertexArrayScreenQuad mScreenQuad;
 	int mShellCount{ 30 };
 	float mDayTime{ 0.75f };
 	bool mDoDeferredRendering{ true };

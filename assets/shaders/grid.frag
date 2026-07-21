@@ -3,7 +3,7 @@
 in vec3 worldPos;
 in vec3 viewPos;
 
-out vec4 FragColor;
+out vec4 FragColour;
 
 int getClosestInt(float x) {
 	return int(round(x) + 0.1 * (x < 0 ? -1 : 1));
@@ -11,7 +11,7 @@ int getClosestInt(float x) {
 
 void main() {
 	if (length(worldPos) < 0.1) {
-		FragColor = vec4(1, 1, 1, 1);
+		FragColour = vec4(1, 1, 1, 1);
 		return;
 	}
 
@@ -24,7 +24,7 @@ void main() {
 
 		int strength = (closestX % 10 == 0 || closestZ % 10 == 0) ? 3 : 2;
 		float fogScale = 1 - strength * pow(0.9, length(viewPos));
-		FragColor = black * fogScale + lineColor * (1 - fogScale);
+		FragColour = black * fogScale + lineColor * (1 - fogScale);
 	}
 	else {
 		discard;

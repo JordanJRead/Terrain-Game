@@ -6,7 +6,6 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include <vector>
-#include <string>
 #include <string_view>
 
 class FramebufferI;
@@ -16,18 +15,16 @@ class ShaderI {
 public:
 	ShaderI(const ShaderI&) = delete;
 	ShaderI(ShaderI&&) = delete;
+	ShaderI& operator=(const ShaderI&) = delete;
+	ShaderI& operator=(ShaderI&&) = delete;
+	~ShaderI() { glDeleteProgram(mID); }
 
 	ShaderI(const std::string& vertPath, const std::string& fragPath);
-	~ShaderI() { glDeleteProgram(mID); }
-	virtual void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const = 0;
-	unsigned int getShaderID() const { return mID; }
 
 protected:
 	unsigned int mID;
 
-	void internalRender(const FramebufferI& framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = -1) const;
-
-	void internalRenderDefaultFramebuffer(const VertexArray& vertexArray, bool depth, int instanceCount = -1) const;
+	void internalRender(const FramebufferI* const framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = -1) const;
 
 	void use() const { glUseProgram(mID); }
 	void setMatrix4(std::string_view name, const glm::mat4& mat4) const {

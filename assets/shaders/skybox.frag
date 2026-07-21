@@ -2,7 +2,7 @@
 
 in vec3 outVPos;
 
-out vec4 FragColor;
+out vec4 FragColour;
 
 uniform samplerCube skybox;
 
@@ -12,5 +12,5 @@ void main() {
 	float d = dot(normalize(outVPos), perFrameInfo.dirToSun);
 	d = clamp(d, 0.0, 1.0);
 	vec3 sunAdd = pow(d, 200.0) * colours.sunColour;
-	FragColor = texture(skybox, outVPos) + vec4(sunAdd, 1);
+	FragColour = texture(skybox, outVPos) + vec4(sunAdd, 1);
 }

@@ -10,7 +10,6 @@
 #include "planephysics.h"
 #include "planegpu.h"
 #include "openglbuffer.h"
-#include <iostream>
 
 App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	: mCamera{ screenWidth, screenHeight, {0, 20, 0} } // x = 2883548 for farlands
@@ -19,7 +18,6 @@ App::App(int screenWidth, int screenHeight, GLFWwindow* window)
 	, mScreenHeight{ screenHeight }
 	, mTerrainRenderer{ screenWidth, screenHeight, mCamera.getPosition() }
 	, mFramebuffer{ 1, screenWidth, screenHeight, GL_RGBA32F }
-	, mScreenQuad{ VertexArray::createScreenVertexArray() }
 {
 	glfwSetWindowUserPointer(mWindow, this);
 	glfwSetCursorPosCallback(mWindow, mouseCallback);
@@ -68,9 +66,8 @@ void App::loop() {
 		mCamera.move(mWindow, (float)deltaTime, physicsPlane);
 
 		/// Rendering
-		mFramebuffer.use();
-		glClearColor(0.5f, 0.5f, 0.5f, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		mFramebuffer.clear({0.5f, 0.5f, 0.5f, 1}, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		// UI
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -103,13 +100,12 @@ void App::loop() {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, mScreenWidth, mScreenHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		mGammaShader.setRenderData(mFramebuffer.getColourTex(0), mTerrainRenderer.getDeferredRenderer().getNoise());
-		mGammaShader.render(mScreenQuad);
+		mGammaShader.render(nullptr, mScreenQuad, mFramebuffer.getColourTex(0), mTerrainRenderer.getDeferredRenderer().getNoise());
 
 		// Debug physics plane
 		if (mShowPhysicsPlane) {
 			PlaneGPU gpuPlane{ physicsPlane };
-			mPhysicsShader.render(gpuPlane.getVertexArray());
+			mPhysicsShader.render(nullptr, gpuPlane);
 		}
 
 		ImGui::Render();

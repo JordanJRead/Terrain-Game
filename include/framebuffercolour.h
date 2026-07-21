@@ -6,6 +6,7 @@
 #include "OpenGLObjects/RBO.h"
 #include <vector>
 #include "framebufferi.h"
+#include <span>
 
 class FramebufferColour : public FramebufferI {
 public:
@@ -14,6 +15,7 @@ public:
 	FramebufferColour(int colourTextureCount, int width, int height, int glInternalFormat, bool hasDepth = true);
 	void bindColourTexture(int colourTextureIndex, int unit) const;
 	void updateDimensions(int index, int width, int height);
+	void setTargetBuffers(std::span<const int> attachmentIndices) const;
 	const TEX& getColourTex(int i);
 
 private:

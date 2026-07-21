@@ -4,18 +4,14 @@
 #include "shaders/shaderi.h"
 #include "glm/glm.hpp"
 
-class TerrainRenderer;
+class TerrainImageSet;
 class Cubemap;
+class PlaneGPU;
 
 class ShaderChunk : public ShaderI {
 public:
 	ShaderChunk(const std::string& vertPath, const std::string& fragPath);
-	void setRenderData(const TerrainRenderer& terrainRenderer, float planeWidth, int instanceCount, const Cubemap& skybox);
-	virtual void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const;
-	int getInstanceCount() const;
-
-protected:
-	int mInstanceCount{};
+	virtual void render(const FramebufferI* const framebuffer, const PlaneGPU& plane, const TerrainImageSet& terrainImageSet, float planeWidth, int instanceCount, const Cubemap& skybox) const;
 };
 
 #endif

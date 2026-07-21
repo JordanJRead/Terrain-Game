@@ -2,7 +2,7 @@
 #include "_headeruniformbuffers.glsl"
 in vec2 texCoord;
 
-out vec4 FragColor;
+out vec4 FragColour;
 
 uniform sampler2D source;
 uniform sampler2D noise;
@@ -21,6 +21,6 @@ void main() {
 	float noiseValue = texture(noise, noiseSamplePos).r * (1 / 256.0 - 1 / 512.0) * 3;
 	color = color + vec3(noiseValue);
 
-	FragColor = vec4(color, 1);
+	FragColour = vec4(color, 1);
 
 }

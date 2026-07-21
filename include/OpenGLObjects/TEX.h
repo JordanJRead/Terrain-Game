@@ -12,7 +12,8 @@ public:
 	~TEX() { if (mIsOwner) glDeleteTextures(1, &mID); }
 	operator unsigned int() const { return mID; }
 	void bind(int target, int unit) const {
-		glActiveTexture(GL_TEXTURE0 + unit);
+		if (unit >= 0)
+			glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(target, mID);
 	}
 

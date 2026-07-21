@@ -13,7 +13,7 @@ FramebufferColour::FramebufferColour(int colourTextureCount, int width, int heig
 
 	// Colour textures
 	if (mColourTextureCount > 0) {
-		std::vector<unsigned int> attachments;
+		std::vector<GLenum> attachments;
 		attachments.reserve(mColourTextureCount);
 		for (int i{ 0 }; i < mColourTextureCount; ++i) {
 			mColourTextures.emplace_back();
@@ -64,4 +64,13 @@ void FramebufferColour::updateDimensions(int index, int width, int height) {
 
 const TEX& FramebufferColour::getColourTex(int i) {
 	return mColourTextures[i];
+}
+
+void FramebufferColour::setTargetBuffers(std::span<const int> attachmentIndices) const {
+	use();
+	std::vector<GLenum> attachments(attachmentIndices.size());
+	for (size_t i{ 0 }; i < attachmentIndices.size(); ++i) {
+		attachments[i] = GL_COLOR_ATTACHMENT0 + attachmentIndices[i];
+	}
+	glDrawBuffers(attachments.size(), attachments.data());
 }

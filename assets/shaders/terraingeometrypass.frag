@@ -7,9 +7,10 @@ in VertOut {
 	float shellProgress;
 } fragIn;
 
-layout(location=0) out vec4 OutGroundWorldPosShellProgress;
-layout(location=1) out vec4 OutWorldPosMountain;
-layout(location=2) out vec4 OutNormalDoesTexelExist;
+layout(location=0) out vec4 OutTerrainGroundWorldPos;
+layout(location=1) out vec4 OutTerrainWorldPos;
+layout(location=2) out vec4 OutTerrainNormal;
+layout(location=3) out vec4 OutShellProgressMountainDoesTexelExist;
 
 #include "_headermath.glsl"
 #include "_headeruniformbuffers.glsl"
@@ -18,11 +19,13 @@ layout(location=2) out vec4 OutNormalDoesTexelExist;
 // Per plane
 
 void main() {
+	OutTerrainWorldPos = vec4(fragIn.worldPos, 1);
+	OutTerrainGroundWorldPos = vec4(fragIn.groundWorldPos, 1);
+
 	vec2 flatWorldPos = fragIn.groundWorldPos.xz;
 	vec4 terrainInfo = getTerrainInfo(flatWorldPos, false);
 	float mountain = terrainInfo.a;
 
-	OutWorldPosMountain = vec4(fragIn.worldPos, mountain);
 	
 	bool isShell = fragIn.shellProgress > 0;
 
@@ -34,7 +37,6 @@ void main() {
 	float actualSnowHeight = artisticParams.snowHeight + normToNegPos(perlin(flatWorldPos * artisticParams.snowLineNoiseScale, 0).x) * artisticParams.snowLineNoiseAmplitude;
 	bool isSnow = actualSnowHeight < groundHeight && mountain > artisticParams.mountainSnowCutoff;
 	bool isGrass = !isSnow;
-	OutGroundWorldPosShellProgress = vec4(fragIn.groundWorldPos, fragIn.shellProgress);
 
 	// Shell blade height
 	float shellScale = isGrass ? artisticParams.grassNoiseScale : artisticParams.snowNoiseScale;
@@ -85,5 +87,6 @@ void main() {
 	bool doesShellExist = shallowEnough && randomTexelHeight >= shellCutoff && wet == 0; // one of these - 1
 	if (isShell && !doesShellExist)
 		discard;
-	OutNormalDoesTexelExist = vec4(isGrass && isShell ? shellNormal : normal, doesShellExist);
+	OutTerrainNormal = vec4(isGrass && isShell ? shellNormal : normal, 1);
+	OutShellProgressMountainDoesTexelExist = vec4(fragIn.shellProgress, mountain, doesShellExist, 1);
 }

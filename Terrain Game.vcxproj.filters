@@ -87,13 +87,13 @@
     <ClCompile Include="src\cameracascaded.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\shaders\shaderdeferred.cpp">
+    <ClCompile Include="src\shaders\shaderterraindeferred.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\shaders\shadergamma.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\shaders\shaderphysics.cpp">
+    <ClCompile Include="src\shaders\shaderplane.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\shaders\shaderskybox.cpp">
@@ -142,6 +142,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\interval.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shaders\shaderwaterdeferred.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shaders\shaderskyfog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -242,13 +248,13 @@
     <ClInclude Include="include\OpenGLObjects\VAO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\shaders\shaderdeferred.h">
+    <ClInclude Include="include\shaders\shaderterraindeferred.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\shaders\shadergamma.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\shaders\shaderphysics.h">
+    <ClInclude Include="include\shaders\shaderplane.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\shaders\shaderskybox.h">
@@ -308,14 +314,26 @@
     <ClInclude Include="include\interval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\vertexarrayscreenquad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shaders\shaderchunkgeometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shaders\shaderwaterdeferred.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shaders\shaderskyfog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\_headermath.glsl" />
     <None Include="assets\shaders\_headershadows.glsl" />
     <None Include="assets\shaders\_headerterraininfo.glsl" />
     <None Include="assets\shaders\_headeruniformbuffers.glsl" />
-    <None Include="assets\shaders\deferredshader.frag" />
-    <None Include="assets\shaders\deferredshader.vert" />
+    <None Include="assets\shaders\deferred.frag" />
+    <None Include="assets\shaders\deferred.vert" />
     <None Include="assets\shaders\gamma.frag" />
     <None Include="assets\shaders\gamma.vert" />
     <None Include="assets\shaders\grid.frag" />
@@ -326,19 +344,21 @@
     <None Include="assets\shaders\physics.vert" />
     <None Include="assets\shaders\skybox.frag" />
     <None Include="assets\shaders\skybox.vert" />
-    <None Include="assets\shaders\terrain.frag" />
-    <None Include="assets\shaders\terrain.vert" />
+    <None Include="assets\shaders\terrainforward.frag" />
+    <None Include="assets\shaders\terrainforward.vert" />
     <None Include="assets\shaders\terraindepth.frag" />
     <None Include="assets\shaders\terraindepth.vert" />
     <None Include="assets\shaders\terraingeometrypass.frag" />
     <None Include="assets\shaders\terraingeometrypass.vert" />
     <None Include="assets\shaders\terrainimage.frag" />
     <None Include="assets\shaders\terrainimage.vert" />
-    <None Include="assets\shaders\water.frag" />
-    <None Include="assets\shaders\water.vert" />
+    <None Include="assets\shaders\waterforward.frag" />
+    <None Include="assets\shaders\waterforward.vert" />
     <None Include="assets\shaders\waterdepth.frag" />
     <None Include="assets\shaders\waterdepth.vert" />
     <None Include="assets\shaders\watergeometrypass.frag" />
     <None Include="assets\shaders\watergeometrypass.vert" />
+    <None Include="assets\shaders\terraindeferred.frag" />
+    <None Include="assets\shaders\terraindeferred.vert" />
   </ItemGroup>
 </Project>

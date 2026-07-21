@@ -6,8 +6,8 @@
 #include "imgui_impl_glfw.h"
 #include "terrainrenderer.h"
 #include "framebuffercolour.h"
-#include "vertexarray.h"
-#include "shaders/shaderphysics.h"
+#include "vertexarrayscreenquad.h"
+#include "shaders/shaderplane.h"
 #include "shaders/shadergamma.h"
 #include "interval.h"
 
@@ -26,10 +26,10 @@ private:
 	CameraPlayer mCamera;
 	TerrainRenderer mTerrainRenderer;
 	GLFWwindow* mWindow;
-	ShaderPhysics mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
+	ShaderPlane mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
 	ShaderGamma mGammaShader{ "assets/shaders/gamma.vert", "assets/shaders/gamma.frag" };
 	FramebufferColour mFramebuffer;
-	VertexArray mScreenQuad;
+	VertexArrayScreenQuad mScreenQuad;
 	bool mIsCursorHidden{ true };
 	bool mShowPhysicsPlane{ false };
 

@@ -3,6 +3,7 @@
 
 #include "OpenGLObjects/FBO.h"
 #include <iostream>
+#include <glm/glm.hpp>
 
 class FramebufferI {
 public:
@@ -13,6 +14,11 @@ public:
 	void use() const {
 		glBindFramebuffer(GL_FRAMEBUFFER, mFBO);
 		glViewport(0, 0, mWidth, mHeight);
+	}
+	void clear(const glm::vec4 colour, GLbitfield mask) const {
+		use();
+		glClearColor(colour.x, colour.y, colour.z, colour.w);
+		glClear(mask);
 	}
 
 protected:

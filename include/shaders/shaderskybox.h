@@ -4,14 +4,12 @@
 #include "shaders/shaderi.h"
 
 class Cubemap;
+class CubeVertices;
 
 class ShaderSkybox : public ShaderI {
 public:
 	ShaderSkybox(const std::string& vertPath, const std::string& fragPath);
-
-	void setRenderData(const Cubemap& cubemap);
-
-	void render(const FramebufferI& framebuffer, const VertexArray& vertexArray) const override;
+	void render(const FramebufferI* const framebuffer, const CubeVertices& cube, const Cubemap& cubemap) const;
 };
 
 #endif

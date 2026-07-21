@@ -79,24 +79,20 @@ void ChunkManager::populateBuffers(const CameraI& camera, bool skipShells, bool 
 	}
 }
 
-std::optional<std::pair<const VertexArray&, int>> ChunkManager::flushSomeTerrain() {
+std::optional<std::pair<const PlaneGPU&, int>> ChunkManager::flushSomeTerrain() {
 	if (mCurrentTerrainQualityIndex >= mTerrainPlanes.getPlaneCount()) {
 		mCurrentTerrainQualityIndex = 0;
 		return std::nullopt;
 	}
-	const VertexArray& planeVertexArray{ mTerrainPlanes.getPlaneAtIndex(mCurrentTerrainQualityIndex).getVertexArray() };
 	int instanceCount{ mTerrainChunkBuffers[mCurrentTerrainQualityIndex].flushChunks(mChunkDataBuffer) };
-	mCurrentTerrainQualityIndex++;
-	return std::pair<const VertexArray&, int>{ planeVertexArray, instanceCount };
+	return std::pair<const PlaneGPU&, int>{ mTerrainPlanes.getPlaneAtIndex(mCurrentTerrainQualityIndex++), instanceCount };
 }
 
-std::optional<std::pair<const VertexArray&, int>> ChunkManager::flushSomeWater() {
+std::optional<std::pair<const PlaneGPU&, int>> ChunkManager::flushSomeWater() {
 	if (mCurrentWaterQualityIndex >= mWaterPlanes.getPlaneCount()) {
 		mCurrentWaterQualityIndex = 0;
 		return std::nullopt;
 	}
-	const VertexArray& planeVertexArray{ mWaterPlanes.getPlaneAtIndex(mCurrentWaterQualityIndex).getVertexArray() };
 	int instanceCount{ mWaterChunkBuffers[mCurrentWaterQualityIndex].flushChunks(mChunkDataBuffer) };
-	mCurrentWaterQualityIndex++;
-	return std::pair<const VertexArray&, int>{ planeVertexArray, instanceCount };
+	return std::pair<const PlaneGPU&, int > { mWaterPlanes.getPlaneAtIndex(mCurrentWaterQualityIndex++), instanceCount };
 }

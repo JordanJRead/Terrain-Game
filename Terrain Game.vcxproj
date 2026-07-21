@@ -248,11 +248,13 @@
     <ClCompile Include="src\planeunit.cpp" />
     <ClCompile Include="src\shaders\shaderchunk.cpp" />
     <ClCompile Include="src\shaders\shaderi.cpp" />
-    <ClCompile Include="src\shaders\shaderdeferred.cpp" />
+    <ClCompile Include="src\shaders\shaderskyfog.cpp" />
+    <ClCompile Include="src\shaders\shaderterraindeferred.cpp" />
     <ClCompile Include="src\shaders\shadergamma.cpp" />
-    <ClCompile Include="src\shaders\shaderphysics.cpp" />
+    <ClCompile Include="src\shaders\shaderplane.cpp" />
     <ClCompile Include="src\shaders\shaderskybox.cpp" />
     <ClCompile Include="src\shaders\shaderterrainimage.cpp" />
+    <ClCompile Include="src\shaders\shaderwaterdeferred.cpp" />
     <ClCompile Include="src\starmanager.cpp" />
     <ClCompile Include="src\terrainimage.cpp" />
     <ClCompile Include="src\terrainimageset.cpp" />
@@ -274,6 +276,7 @@
     <ClInclude Include="include\noise.h" />
     <ClInclude Include="include\openglbuffer.h" />
     <ClInclude Include="include\shaders\shaderchunk.h" />
+    <ClInclude Include="include\shaders\shaderchunkgeometry.h" />
     <ClInclude Include="include\shaders\shaderortho.h" />
     <ClInclude Include="include\shaders\shaderskybox.h" />
     <ClInclude Include="include\aabb.h" />
@@ -300,10 +303,12 @@
     <ClInclude Include="include\random.h" />
     <ClInclude Include="include\shaders\shaderi.h" />
     <ClInclude Include="include\shaderheader.h" />
-    <ClInclude Include="include\shaders\shaderdeferred.h" />
+    <ClInclude Include="include\shaders\shaderskyfog.h" />
+    <ClInclude Include="include\shaders\shaderterraindeferred.h" />
     <ClInclude Include="include\shaders\shadergamma.h" />
-    <ClInclude Include="include\shaders\shaderphysics.h" />
+    <ClInclude Include="include\shaders\shaderplane.h" />
     <ClInclude Include="include\shaders\shaderterrainimage.h" />
+    <ClInclude Include="include\shaders\shaderwaterdeferred.h" />
     <ClInclude Include="include\shadowmapper.h" />
     <ClInclude Include="include\shellqualityset.h" />
     <ClInclude Include="include\starmanager.h" />
@@ -315,11 +320,12 @@
     <ClInclude Include="include\texture.h" />
     <ClInclude Include="include\uniformbuffer.h" />
     <ClInclude Include="include\vertexarray.h" />
+    <ClInclude Include="include\vertexarrayscreenquad.h" />
     <ClInclude Include="include\volumes.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\deferredshader.frag" />
-    <None Include="assets\shaders\deferredshader.vert" />
+    <None Include="assets\shaders\deferred.frag" />
+    <None Include="assets\shaders\deferred.vert" />
     <None Include="assets\shaders\gamma.frag" />
     <None Include="assets\shaders\gamma.vert" />
     <None Include="assets\shaders\grid.frag" />
@@ -330,16 +336,18 @@
     <None Include="assets\shaders\physics.vert" />
     <None Include="assets\shaders\skybox.frag" />
     <None Include="assets\shaders\skybox.vert" />
-    <None Include="assets\shaders\terrain.frag" />
-    <None Include="assets\shaders\terrain.vert" />
+    <None Include="assets\shaders\terraindeferred.frag" />
+    <None Include="assets\shaders\terraindeferred.vert" />
+    <None Include="assets\shaders\terrainforward.frag" />
+    <None Include="assets\shaders\terrainforward.vert" />
     <None Include="assets\shaders\terraindepth.frag" />
     <None Include="assets\shaders\terraindepth.vert" />
     <None Include="assets\shaders\terraingeometrypass.frag" />
     <None Include="assets\shaders\terraingeometrypass.vert" />
     <None Include="assets\shaders\terrainimage.frag" />
     <None Include="assets\shaders\terrainimage.vert" />
-    <None Include="assets\shaders\water.frag" />
-    <None Include="assets\shaders\water.vert" />
+    <None Include="assets\shaders\waterforward.frag" />
+    <None Include="assets\shaders\waterforward.vert" />
     <None Include="assets\shaders\waterdepth.frag" />
     <None Include="assets\shaders\waterdepth.vert" />
     <None Include="assets\shaders\watergeometrypass.frag" />

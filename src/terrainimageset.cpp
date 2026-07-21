@@ -1,6 +1,6 @@
 #include "terrainimageset.h"
 #include <array>
-#include "vertexarray.h"
+#include "vertexarrayscreenquad.h"
 #include "shaders/shaderterrainimage.h"
 #include "imgui/imgui.h"
 /*
@@ -11,7 +11,7 @@
 { 5000, 300, cameraPos, mArtisticParams.mValue.terrainScale }
 */
 
-TerrainImageSet::TerrainImageSet(int imageCount, const glm::vec3& cameraPos, float terrainScale, const VertexArray& screenQuad, const ShaderTerrainImage& imageShader) {
+TerrainImageSet::TerrainImageSet(int imageCount, const glm::vec3& cameraPos, float terrainScale, const VertexArrayScreenQuad& screenQuad, const ShaderTerrainImage& imageShader) {
 	static std::array<int, 5>   defaultDimensions{ {2500, 2500, 2500, 5000, 5000} };
 	static std::array<float, 5> defaultWorldSizes{ {1, 4, 12, 64, 300} };
 
@@ -32,7 +32,7 @@ const TerrainImage& TerrainImageSet::getImage(size_t i) const {
 	return mImages[i];
 }
 
-void TerrainImageSet::renderUIAndUpdate(bool hasTerrainParamsChanged, const glm::vec3& cameraPos, float terrainScale, const VertexArray& screenQuad, const ShaderTerrainImage& terrainImageShader, bool renderUI) {
+void TerrainImageSet::renderUIAndUpdate(bool hasTerrainParamsChanged, const glm::vec3& cameraPos, float terrainScale, const VertexArrayScreenQuad& screenQuad, const ShaderTerrainImage& terrainImageShader, bool renderUI) {
 	// UI
 	for (int i{ 0 }; i < mImages.size(); ++i) {
 		std::string label{ "Image " };

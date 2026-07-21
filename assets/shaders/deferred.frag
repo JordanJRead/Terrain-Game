@@ -1,11 +1,12 @@
 #version 430 core
 
 in vec2 texCoord;
-out vec4 FragColor;
+out vec4 FragColour;
 
 #include "_headeruniformbuffers.glsl"
 #include "_headerterraininfo.glsl"
 #include "_headershadows.glsl"
+#include "_headervolumetrics.glsl"
 
 vec3 getWaterAlbedo(vec3 worldPos) {
 	// Water / terrain info
@@ -78,78 +79,6 @@ vec4 getTerrainAlbedoWet(vec3 groundWorldPos, float shellProgress, float mountai
 	}
 
 	return vec4(albedo, wet);
-}
-
-vec3 getAtmosphereCenter() {
-	return vec3(perFrameInfo.cameraPos.x, atmosphereInfo.centerY, perFrameInfo.cameraPos.z);
-	//return vec3(0, 50, 0);
-}
-
-vec2 rayAtmosphereIntersection(vec3 pos, vec3 dir) {
-	vec3 atmosphereCenter = getAtmosphereCenter();
-	float a = dot(dir, dir);
-	float b = 2 * (dot(dir, (pos - atmosphereCenter)));
-	float c = dot((pos - atmosphereCenter), (pos - atmosphereCenter)) - pow(atmosphereInfo.maxRadius, 2);
-	float disc = b * b - 4 * a * c;
-	if (disc > 0) {
-		vec2 ts = vec2((-b + sqrt(disc)) / (2 * a), (-b - sqrt(disc)) / (2 * a));
-		ts = vec2(min(ts.x, ts.y), max(ts.x, ts.y));
-		if (ts.x < 0)
-			ts.x = 0;
-		return ts;
-	}
-	return vec2(-1, -1);
-}
-
-bool isPointInAtmosphere(vec3 pos) {
-	vec3 atmosphereCenter = getAtmosphereCenter();
-	return length(pos - atmosphereCenter) <= atmosphereInfo.maxRadius;
-}
-
-float rayleighDensityAtPoint(vec3 pos) {
-	vec3 atmosphereCenter = getAtmosphereCenter();
-	float distFromCenter = length(atmosphereCenter - pos);
-	if (distFromCenter < atmosphereInfo.minRadius) {
-		return atmosphereInfo.rayleighDensity;
-	}
-	if (distFromCenter > atmosphereInfo.maxRadius) {
-		return 0;
-	}
-	float norm = (distFromCenter - atmosphereInfo.minRadius) / (atmosphereInfo.maxRadius - atmosphereInfo.minRadius);
-	return exp(-atmosphereInfo.rayleighDensityFalloff * norm) * (1 - norm) * atmosphereInfo.rayleighDensity;
-}
-
-float mieDensityAtPoint(vec3 pos) {
-	vec3 atmosphereCenter = getAtmosphereCenter();
-	float distFromCenter = length(atmosphereCenter - pos);
-	if (distFromCenter < atmosphereInfo.minRadius) {
-		return atmosphereInfo.mieDensity;
-	}
-	if (distFromCenter > atmosphereInfo.maxRadius) {
-		return 0;
-	}
-	float norm = (distFromCenter - atmosphereInfo.minRadius) / (atmosphereInfo.maxRadius - atmosphereInfo.minRadius);
-	return exp(-atmosphereInfo.mieDensityFalloff * norm) * (1 - norm) * atmosphereInfo.mieDensity;
-}
-
-float opticalDepth(vec3 pos, vec3 dir, bool isRayleigh) {
-	vec2 ts = rayAtmosphereIntersection(pos, dir);
-	if (ts.x == -1) {
-		return 0;
-	}
-	
-	int stepCount = atmosphereInfo.raySunStepCount;
-	float totalDistance = ts.y - ts.x;
-	float dx = totalDistance / stepCount;
-	vec3 samplePos = pos;
-
-	float depth = 0;
-	for (int i = 0; i < stepCount; ++i) {
-		float density = isRayleigh ? rayleighDensityAtPoint(samplePos) : mieDensityAtPoint(samplePos);
-		depth += density * dx;
-		samplePos += dir * dx;
-	}
-	return depth;
 }
 
 float phase(float cosTheta, float g) {
@@ -254,7 +183,7 @@ bool isStarVisibleInSplit(vec3 dir, int i) {
 	return false;
 }
 
- vec3 getStarColor(vec3 dir) {
+ vec3 getStarColour(vec3 dir) {
 	float theta = -perFrameInfo.dayTime * PI;
 	vec3 rotatedDir = mat3(perFrameInfo.starRotationMatrix) * dir;
 
@@ -311,12 +240,12 @@ void main() {
 	cameraRayDir = normalize(cameraRayDir);
 	cameraRayDir = inverse(mat3(perFrameInfo.viewMatrix)) * cameraRayDir;
 	
-	vec3 starColour = getStarColor(cameraRayDir);
+	vec3 starColour = getStarColour(cameraRayDir);
 
 	vec3 skyColour = lightReceived(perFrameInfo.cameraPos, cameraRayDir, true, vec3(0), starColour);
 	
 	if (isSky) {
-		FragColor = vec4(skyColour, 1);
+		FragColour = vec4(skyColour, 1);
 	}
 	else {
 		if (isWater) {
@@ -333,7 +262,7 @@ void main() {
 			// Reflections
 			float fresnel = pow(1 - dot(viewDir, normal), 3.0);
 			vec3 reflectDir = normalize(reflect(-viewDir, normal));
-			vec3 reflectStarColor = getStarColor(reflectDir);
+			vec3 reflectStarColor = getStarColour(reflectDir);
 			vec3 reflectColour = lightReceived(worldPos, reflectDir, true, vec3(0), reflectStarColor, vec3(0), false);
 			fresnel = clamp(fresnel, 0.0, 1.0);
 			objectColour = fresnel * reflectColour + (1 - fresnel) * objectColour;
@@ -351,11 +280,11 @@ void main() {
 				fogStrength = (distFromCamera - fogStart) / artisticParams.fogEncroach;
 
 			if (fogStrength == 0)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal, true, true), 1);
+				FragColour = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal, true, true), 1);
 			else if (fogStrength == 1)
-				FragColor = vec4(skyColour, 1);
+				FragColour = vec4(skyColour, 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal, true, true) * (1 - fogStrength) + skyColour * fogStrength, 1);
+				FragColour = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal, true, true) * (1 - fogStrength) + skyColour * fogStrength, 1);
 		}
 		else {
 			vec4 terrainAlbedoWet = getTerrainAlbedoWet(groundWorldPosShellProgress.xyz, groundWorldPosShellProgress.w, worldPosMountain.w, bool(normalDoesTexelExist.w));
@@ -383,11 +312,11 @@ void main() {
 				fogStrength = quinticInterpolationF((distFromCamera - fogStart) / artisticParams.fogEncroach);
 
 			if (fogStrength == 0)
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
+				FragColour = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal), 1);
 			else if (fogStrength == 1)
-				FragColor = vec4(skyColour, 1);
+				FragColour = vec4(skyColour, 1);
 			else
-				FragColor = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + skyColour * fogStrength, 1);
+				FragColour = vec4(lightReceived(perFrameInfo.cameraPos, cameraRayDir, false, worldPos, objectColour, normal) * (1 - fogStrength) + skyColour * fogStrength, 1);
 		}
 	}
 }
