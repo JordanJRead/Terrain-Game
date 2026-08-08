@@ -15,6 +15,7 @@ ShaderWaterDeferred::ShaderWaterDeferred(const std::string& vertPath, const std:
 	setInt("GBuffer_ShellProgressMountainDoesTexelExist", textureUnit++);
 	setInt("GBuffer_WaterWorldPos", textureUnit++);
 	setInt("GBuffer_WaterNormal", textureUnit++);
+	setIVector2("debugFragCoord", { -1, -1 });
 
 	setInt("sceneSource", textureUnit++);
 
@@ -32,8 +33,10 @@ ShaderWaterDeferred::ShaderWaterDeferred(const std::string& vertPath, const std:
 }
 
 void ShaderWaterDeferred::render(const FramebufferI* const framebuffer, const VertexArrayScreenQuad& screenQuad, const TEX& sourceSceneTexture, const FramebufferColour& geometryBuffer, const Noise& noiseTexture,
-	const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon) const
+	const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon, const glm::ivec2& debugFragPos) const
 {
+	use();
+	setIVector2("debugFragCoord", debugFragPos);
 	int textureUnit{ 0 };
 
 	geometryBuffer.bindColourTexture(0, textureUnit++);

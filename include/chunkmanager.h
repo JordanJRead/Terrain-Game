@@ -16,7 +16,7 @@ class CameraI;
 
 class ChunkManager {
 public:
-	ChunkManager(int qualityCount, int bufferBindingIndex, float terrainSpan, int chunkCount, const CommonBufferTypes::TerrainParams& terrainParams);
+	ChunkManager(int bufferBindingIndex, int qualityCount, float terrainSpan, int chunkCount, const CommonBufferTypes::TerrainParams& terrainParams);
 	void renderUI();
 
 	float getChunkWidth() const { return mTerrainSpan / mChunkCount; }

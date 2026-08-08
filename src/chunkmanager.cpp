@@ -6,7 +6,7 @@
 #include "heightfunction.h"
 #include <iostream>
 
-ChunkManager::ChunkManager(int qualityCount, int bufferBindingIndex, float terrainSpan, int chunkCount, const CommonBufferTypes::TerrainParams& terrainParams)
+ChunkManager::ChunkManager(int bufferBindingIndex, int qualityCount, float terrainSpan, int chunkCount, const CommonBufferTypes::TerrainParams& terrainParams)
 	: mTerrainSpan{ terrainSpan }
 	, mChunkCount{ chunkCount }
 	, mTerrainPlanes{ 2.125f, std::array{0.16f, 0.059f}, std::array{ 256.0f, 1000.0f }, terrainSpan / chunkCount }

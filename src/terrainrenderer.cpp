@@ -191,6 +191,18 @@ void TerrainRenderer::updateAndRenderUI(const glm::vec3& cameraPos, bool renderU
 		ImGui::End();
 		mColourParams.updateGPU();
 
+		ImGui::Begin("SSR");
+			ImGui::DragFloat("Max world distance", &mScreenSpaceReflectionParams.mValue.maxWorldDistance, 1.0f, 0);
+			ImGui::DragInt("Step count", &mScreenSpaceReflectionParams.mValue.stepCount, 1, 1, 1000);
+			ImGui::DragInt("Binary search steps", &mScreenSpaceReflectionParams.mValue.binarySearchSteps, 1, 1, 20);
+			//ImGui::DragFloat("Depth accuracy", &mScreenSpaceReflectionParams.mValue.minimumDepthAccuracy, 0.05f, 0, 5);
+			ImGui::Checkbox("Fade out camera", &mScreenSpaceReflectionParams.mValue.fadeOutTowardsCamera);
+			ImGui::Checkbox("Fade out depth", &mScreenSpaceReflectionParams.mValue.fadeOutDepth);
+			ImGui::Checkbox("Fade out distance", &mScreenSpaceReflectionParams.mValue.fadeOutDistance);
+			ImGui::Checkbox("Enforce depth check", &mScreenSpaceReflectionParams.mValue.enforceDepthCheck);
+		ImGui::End();
+		mScreenSpaceReflectionParams.updateGPU();
+
 		ImGui::Begin("Star Parameters");
 
 			StarParameters starParams{ mStarManager.getPrevParametersCopy() };
@@ -312,7 +324,7 @@ public:
 	}
 };
 
-void TerrainRenderer::render(const CameraPlayer& camera, float time, const FramebufferColour& targetFramebuffer) {
+void TerrainRenderer::render(const CameraPlayer& camera, float time, const FramebufferColour& targetFramebuffer, const glm::ivec2& debugFragPos) {
 	glm::vec3 dirToSun{ MathHelper::getDirToSun(mDayTime) };
 
 	std::ranges::copy(mTerrainImageSet.getImagePositions(), mTerrainImagesInfo.mValue.imagePositions.begin());
@@ -364,10 +376,10 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 		//const CameraI* currCamera{ uiManager.mCurrCamera.data() == -1 ? pCamera : (uiManager.mCurrCamera.data() == 0 ? pCamera0 : (uiManager.mCurrCamera.data() == 1 ? pCamera1 : (pCamera2))) };
 		const CameraI* currCamera{ &camera };
 
+		mDeferredRenderer.clearGeometryBuffers();
 		glEnable(GL_CULL_FACE);
 		{
 			ScopedDebugGroup d{ "Geometry Pass" };
-			mDeferredRenderer.clearGeometryBuffers();
 			renderTerrain(mDeferredRenderer.mGeometryFramebuffer, *currCamera, camera.getPosition(), mDeferredRenderer.mShaderTerrainGeometry, mDeferredRenderer.mShaderWaterGeometry, dirToSun, time);
 		}
 		glDisable(GL_CULL_FACE);
@@ -376,7 +388,7 @@ void TerrainRenderer::render(const CameraPlayer& camera, float time, const Frame
 		mPerFrameInfo.updateGPU();
 		{
 			ScopedDebugGroup d{ "Deferred Pass" };
-			mDeferredRenderer.doDeferredShading(&targetFramebuffer, mTerrainImageSet, mScreenQuad, mShadowMapperSun, mShadowMapperMoon);
+			mDeferredRenderer.doDeferredShading(&targetFramebuffer, mTerrainImageSet, mScreenQuad, mShadowMapperSun, mShadowMapperMoon, debugFragPos);
 		}
 	}
 	else {

@@ -55,6 +55,54 @@ namespace CommonBufferTypes {
 		}
 	};
 
+	struct ScreenSpaceReflectionParams {
+		float maxWorldDistance{};
+		int stepCount{};
+		int binarySearchSteps{};
+		bool fadeOutTowardsCamera{};
+		bool fadeOutDepth{};
+		bool enforceDepthCheck{};
+		bool fadeOutDistance{};
+
+		bool operator==(const ScreenSpaceReflectionParams&) const = default;
+
+		static ScreenSpaceReflectionParams getDefaultValue() {
+			return ScreenSpaceReflectionParams{
+				.maxWorldDistance = 1100,
+				.stepCount = 20,
+				.binarySearchSteps = 4,
+				.fadeOutTowardsCamera = true,
+				.fadeOutDepth = true,
+				.fadeOutDistance = true,
+			};
+		}
+	};
+
+	struct DebugData {
+		bool hasData;
+		glm::vec3 worldStart;
+		glm::vec3 worldEnd;
+		int maxPointCount;
+		int currentPointCount;
+		float tCurrent;
+		float tVisible;
+		std::array<glm::vec4, 1000> pointLine;
+		std::array<glm::vec4, 1000> pointScene;
+		std::array<glm::vec2, 1000> pointUV;
+
+		bool operator==(const DebugData&) const = default;
+
+		static DebugData getDefaultValue() {
+			DebugData value;
+			value.hasData = false;
+			value.worldStart = {};
+			value.worldEnd = {};
+			value.maxPointCount = 1000;
+			value.currentPointCount = 0;
+			return value;
+		}
+	};
+
 	struct ArtisticParams {
 		float terrainScale{};
 		float maxViewDistance{};

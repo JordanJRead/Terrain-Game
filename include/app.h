@@ -9,6 +9,8 @@
 #include "vertexarrayscreenquad.h"
 #include "shaders/shaderplane.h"
 #include "shaders/shadergamma.h"
+#include "shaders/shaderline.h"
+#include "shaders/shadercircle.h"
 #include "interval.h"
 
 class App {
@@ -28,15 +30,26 @@ private:
 	GLFWwindow* mWindow;
 	ShaderPlane mPhysicsShader{ "assets/shaders/physics.vert", "assets/shaders/physics.frag" };
 	ShaderGamma mGammaShader{ "assets/shaders/gamma.vert", "assets/shaders/gamma.frag" };
+	ShaderLine mLineShader{ "assets/shaders/line.vert", "assets/shaders/line.frag" };
+	ShaderCircle mCircleShader{ "assets/shaders/circle.vert", "assets/shaders/circle.frag" };
 	FramebufferColour mFramebuffer;
 	VertexArrayScreenQuad mScreenQuad;
 	bool mIsCursorHidden{ true };
 	bool mShowPhysicsPlane{ false };
+	glm::ivec2 mDebugFragPos{ -1, -1 };
 
-	static void mouseCallback(GLFWwindow* window, double xPos, double yPos) {
+	static void mousePositionCallback(GLFWwindow* window, double xPos, double yPos) {
 		App& app{ *static_cast<App*>(glfwGetWindowUserPointer(window)) };
 		app.mCamera.mouseCallback(window, xPos, yPos, app.mIsCursorHidden);
 		ImGui_ImplGlfw_CursorPosCallback(window, xPos, yPos);
+	}
+
+	static void mouseClickCallback(GLFWwindow* window, int button, int action, int mods) {
+		App& app{ *static_cast<App*>(glfwGetWindowUserPointer(window)) };
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+		app.mDebugFragPos = { (int)x, app.mScreenHeight - (int)y };
+		ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 	}
 
 	static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {

@@ -140,4 +140,26 @@ layout(std430, binding = 9) buffer StarData {
 	vec4 stars[]; // (x dir, y dir, z dir, size in deg)
 } starData;
 
+layout(std140, binding = 10) uniform ScreenSpaceReflectionParams {
+	float maxWorldDistance;
+	int stepCount;
+	int binarySearchStepCount;
+	bool fadeOutTowardsCamera;
+	bool fadeOutDepth;
+	bool fadeOutDistance;
+} screenSpaceReflectionParams;
+
+layout(std430, binding = 11) buffer DebugData {
+	bool hasData;
+	vec3 worldStart;
+	vec3 worldEnd;
+	int maxPointCount;
+	int currentPointCount;
+	float tCurrent;
+	float tVisible;
+	vec4 pointLine[1000];
+	vec4 pointScene[1000];
+	vec2 pointUV[1000];
+} debugData;
+
 #endif

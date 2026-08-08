@@ -73,7 +73,7 @@ ShaderI::ShaderI(const std::string& vertPath, const std::string& fragPath) {
     free(fragSource);
 }
 
-void ShaderI::internalRender(const FramebufferI* const framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount) const {
+void ShaderI::internalRender(const FramebufferI* const framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount, GLenum mode) const {
     use();
     if (framebuffer)
         framebuffer->use();
@@ -87,9 +87,9 @@ void ShaderI::internalRender(const FramebufferI* const framebuffer, const Vertex
         glDisable(GL_DEPTH_TEST);
 
     if (instanceCount == -1)
-        glDrawElements(GL_TRIANGLES, (GLsizei)vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0);
+        glDrawElements(mode, (GLsizei)vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0);
     else
-        glDrawElementsInstanced(GL_TRIANGLES, (GLsizei)vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0, instanceCount);
+        glDrawElementsInstanced(mode, (GLsizei)vertexArray.getIndexCount(), GL_UNSIGNED_INT, 0, instanceCount);
         
     if (!depth)
         glEnable(GL_DEPTH_TEST);

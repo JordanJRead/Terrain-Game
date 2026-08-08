@@ -150,6 +150,12 @@
     <ClCompile Include="src\shaders\shaderskyfog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\shaders\shaderline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shaders\shadercircle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="libraries\glfw3dll.lib" />
@@ -326,6 +332,15 @@
     <ClInclude Include="include\shaders\shaderskyfog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\shaders\shaderline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shaders\shadercircle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\shaders\inputspace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\_headermath.glsl" />
@@ -362,5 +377,11 @@
     <None Include="assets\shaders\terraindeferred.vert" />
     <None Include="assets\shaders\waterdeferred.vert" />
     <None Include="assets\shaders\waterdeferred.frag" />
+    <None Include="assets\shaders\circle.frag" />
+    <None Include="assets\shaders\circle.vert" />
+    <None Include="assets\shaders\_headervolumetrics.glsl" />
+    <None Include="assets\shaders\_headerwaterinfo.glsl" />
+    <None Include="assets\shaders\line.frag" />
+    <None Include="assets\shaders\line.vert" />
   </ItemGroup>
 </Project>

@@ -17,7 +17,7 @@ public:
 	void bindGBufferTexture(int i, int unit) const;
 	void clearGeometryBuffers() const;
 	void bindNoiseTexture(int unit) const { mBlueNoise.use(unit); }
-	void doDeferredShading(const FramebufferColour* const targetFramebuffer, const TerrainImageSet& terrainImageSet, const VertexArrayScreenQuad& screenQuad, const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon);
+	void doDeferredShading(const FramebufferColour* const targetFramebuffer, const TerrainImageSet& terrainImageSet, const VertexArrayScreenQuad& screenQuad, const ShadowMapper<CascadeCount>& shadowMapperSun, const ShadowMapper<CascadeCount>& shadowMapperMoon, const glm::ivec2& debugFragPos);
 	const Noise& getNoise() const { return mBlueNoise; }
 
 	ShaderChunkGeometry mShaderTerrainGeometry;

@@ -30,7 +30,8 @@ public:
 	TerrainRenderer(int screenWidth, int screenHeight, const glm::vec3& cameraPos);
 
 	void updateAndRenderUI(const glm::vec3& cameraPos, bool renderUI);
-	void render(const CameraPlayer& camera, float time, const FramebufferColour& targetFramebuffer);
+	void render(const CameraPlayer& camera, float time, const FramebufferColour& targetFramebuffer, const glm::ivec2& debugFragPos = { -1, -1 });
+	CommonBufferTypes::DebugData getDebugData() const { return mDebugData.readGPU(); }
 
 	void bindTerrainImage(int i, int unit) const;
 	const DeferredRenderer& getDeferredRenderer() const;
@@ -44,15 +45,19 @@ private:
 	void renderTerrain(const FramebufferI& targetFramebuffer, const CameraI& camera, const glm::vec3& playerCameraPosition, ShaderChunk& terrainShader, ShaderChunk& waterShader, const glm::vec3& dirToSun, float time, bool depthPass = false, bool forceLowQuality = false);
 
 private:
-	OpenGLBuffer<CommonBufferTypes::TerrainParams>      mTerrainParams{ 0, BufferTypes::uniform, CommonBufferTypes::TerrainParams::getDefaultValue() };
-	OpenGLBuffer<CommonBufferTypes::ArtisticParams>     mArtisticParams   { 1, BufferTypes::uniform, CommonBufferTypes::ArtisticParams::getDefaultValue() };
-	OpenGLBuffer<CommonBufferTypes::WaterParams>        mWaterParams      { 2, BufferTypes::uniform, CommonBufferTypes::WaterParams::getDefaultValue() };
-	OpenGLBuffer<CommonBufferTypes::ColourParams>       mColourParams     { 3, BufferTypes::uniform, CommonBufferTypes::ColourParams::getDefaultValue() };
-	OpenGLBuffer<CommonBufferTypes::PerFrameInfo>       mPerFrameInfo     { 4, BufferTypes::uniform };
-	OpenGLBuffer<CommonBufferTypes::TerrainImagesInfo>  mTerrainImagesInfo{ 5, BufferTypes::ssbo };
-	OpenGLBuffer<CommonBufferTypes::AtmosphereInfo>     mAtmosphereInfo   { 6, BufferTypes::uniform, CommonBufferTypes::AtmosphereInfo::getDefaultValue() };
-	OpenGLBuffer<CommonBufferTypes::ShadowInfo>         mShadowInfo       { 7, BufferTypes::ssbo, CommonBufferTypes::ShadowInfo::getDefaultValue() };
-	StarManager mStarManager{ 9 };
+	// GPU buffers
+	OpenGLBuffer<CommonBufferTypes::TerrainParams>               mTerrainParams              { 0, BufferTypes::uniform, CommonBufferTypes::TerrainParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::ArtisticParams>              mArtisticParams             { 1, BufferTypes::uniform, CommonBufferTypes::ArtisticParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::WaterParams>                 mWaterParams                { 2, BufferTypes::uniform, CommonBufferTypes::WaterParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::ColourParams>                mColourParams               { 3, BufferTypes::uniform, CommonBufferTypes::ColourParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::PerFrameInfo>                mPerFrameInfo               { 4, BufferTypes::uniform };
+	OpenGLBuffer<CommonBufferTypes::TerrainImagesInfo>           mTerrainImagesInfo          { 5, BufferTypes::ssbo };
+	OpenGLBuffer<CommonBufferTypes::AtmosphereInfo>              mAtmosphereInfo             { 6, BufferTypes::uniform, CommonBufferTypes::AtmosphereInfo::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::ShadowInfo>                  mShadowInfo                 { 7, BufferTypes::ssbo, CommonBufferTypes::ShadowInfo::getDefaultValue() };
+	ChunkManager                                                 mChunkManager               { 8, 3, 5000.0f, 205, mTerrainParams.mValue };
+	StarManager                                                  mStarManager                { 9 };
+	OpenGLBuffer<CommonBufferTypes::ScreenSpaceReflectionParams> mScreenSpaceReflectionParams{ 10, BufferTypes::uniform, CommonBufferTypes::ScreenSpaceReflectionParams::getDefaultValue() };
+	OpenGLBuffer<CommonBufferTypes::DebugData>                   mDebugData                  { 11, BufferTypes::ssbo, CommonBufferTypes::DebugData::getDefaultValue() };
 
 	float mMinTerrainHeight;
 	float mMaxTerrainHeight;
@@ -68,7 +73,6 @@ private:
 	DeferredRenderer mDeferredRenderer;
 	ShadowMapper<CascadeCount> mShadowMapperSun;
 	ShadowMapper<CascadeCount> mShadowMapperMoon;
-	ChunkManager mChunkManager{ 3, 8, 5000.0f, 205, mTerrainParams.mValue };
 
 	VertexArrayScreenQuad mScreenQuad;
 	int mShellCount{ 30 };

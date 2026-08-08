@@ -24,7 +24,7 @@ public:
 protected:
 	unsigned int mID;
 
-	void internalRender(const FramebufferI* const framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = -1) const;
+	void internalRender(const FramebufferI* const framebuffer, const VertexArray& vertexArray, bool depth, int instanceCount = -1, GLenum mode = GL_TRIANGLES) const;
 
 	void use() const { glUseProgram(mID); }
 	void setMatrix4(std::string_view name, const glm::mat4& mat4) const {
@@ -35,6 +35,9 @@ protected:
 	}
 	void setVector2(std::string_view name, const glm::vec2& v) const {
 		glUniform2fv(glGetUniformLocation(mID, name.data()), 1, glm::value_ptr(v));
+	}
+	void setIVector2(std::string_view name, const glm::ivec2& v) const {
+		glUniform2iv(glGetUniformLocation(mID, name.data()), 1, glm::value_ptr(v));
 	}
 	void setFloat(std::string_view name, float f) const {
 		glUniform1f(glGetUniformLocation(mID, name.data()), f);

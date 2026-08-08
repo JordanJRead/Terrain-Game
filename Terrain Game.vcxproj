@@ -247,7 +247,9 @@
     <ClCompile Include="src\planephysics.cpp" />
     <ClCompile Include="src\planeunit.cpp" />
     <ClCompile Include="src\shaders\shaderchunk.cpp" />
+    <ClCompile Include="src\shaders\shadercircle.cpp" />
     <ClCompile Include="src\shaders\shaderi.cpp" />
+    <ClCompile Include="src\shaders\shaderline.cpp" />
     <ClCompile Include="src\shaders\shaderskyfog.cpp" />
     <ClCompile Include="src\shaders\shaderterraindeferred.cpp" />
     <ClCompile Include="src\shaders\shadergamma.cpp" />
@@ -275,8 +277,11 @@
     <ClInclude Include="include\heightfunction.h" />
     <ClInclude Include="include\noise.h" />
     <ClInclude Include="include\openglbuffer.h" />
+    <ClInclude Include="include\shaders\inputspace.h" />
     <ClInclude Include="include\shaders\shaderchunk.h" />
     <ClInclude Include="include\shaders\shaderchunkgeometry.h" />
+    <ClInclude Include="include\shaders\shadercircle.h" />
+    <ClInclude Include="include\shaders\shaderline.h" />
     <ClInclude Include="include\shaders\shaderortho.h" />
     <ClInclude Include="include\shaders\shaderskybox.h" />
     <ClInclude Include="include\aabb.h" />
@@ -324,12 +329,16 @@
     <ClInclude Include="include\volumes.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\shaders\circle.frag" />
+    <None Include="assets\shaders\circle.vert" />
     <None Include="assets\shaders\deferred.frag" />
     <None Include="assets\shaders\deferred.vert" />
     <None Include="assets\shaders\gamma.frag" />
     <None Include="assets\shaders\gamma.vert" />
     <None Include="assets\shaders\grid.frag" />
     <None Include="assets\shaders\grid.vert" />
+    <None Include="assets\shaders\line.frag" />
+    <None Include="assets\shaders\line.vert" />
     <None Include="assets\shaders\ortho.frag" />
     <None Include="assets\shaders\ortho.vert" />
     <None Include="assets\shaders\physics.frag" />
@@ -358,6 +367,8 @@
     <None Include="assets\shaders\_headershadows.glsl" />
     <None Include="assets\shaders\_headerterraininfo.glsl" />
     <None Include="assets\shaders\_headeruniformbuffers.glsl" />
+    <None Include="assets\shaders\_headervolumetrics.glsl" />
+    <None Include="assets\shaders\_headerwaterinfo.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
