@@ -20,6 +20,12 @@ uniform sampler2D GBuffer_WaterNormal;
 uniform sampler2D sceneSource;
 uniform ivec2 debugFragCoord;
 
+vec3 fresnelColour(vec3 normal, vec3 direction) {
+	float n = 1.333;
+	float f0 = pow((n - 1) / (n + 1), 5.0);
+	return vec3(f0 + (1 - f0) * pow(max(1 - dot(normal, direction), 0), 5.0));
+}
+
 void main() {
 	vec3 waterWorldPos = texture(GBuffer_WaterWorldPos, texCoord).xyz;
 	vec3 waterNormal = normalize(texture(GBuffer_WaterNormal, texCoord).xyz);
@@ -72,5 +78,10 @@ void main() {
 	vec3 skyColour = lightReceived(waterWorldPos, reflectedDirection, true, vec3(0), starColour);
 
 	vec3 reflectedColour = mix(skyColour, texture(sceneSource, reflectedUV).rgb, ssrConfidence);
-	FragColour = vec4(reflectedColour, 1);
+
+	vec3 fresnel = fresnelColour(waterNormal, reflectedDirection);
+
+	vec3 finalColour = reflectedColour * fresnel + colours.waterColour * (vec3(1) - fresnel);
+
+	FragColour = vec4(finalColour, 1);
 }
