@@ -363,7 +363,9 @@
     <None Include="assets\shaders\waterdepth.vert" />
     <None Include="assets\shaders\watergeometrypass.frag" />
     <None Include="assets\shaders\watergeometrypass.vert" />
+    <None Include="assets\shaders\_headeratmosphere.glsl" />
     <None Include="assets\shaders\_headermath.glsl" />
+    <None Include="assets\shaders\_headerscreenmarch.glsl" />
     <None Include="assets\shaders\_headershadows.glsl" />
     <None Include="assets\shaders\_headerterraininfo.glsl" />
     <None Include="assets\shaders\_headeruniformbuffers.glsl" />

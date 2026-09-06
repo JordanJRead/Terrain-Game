@@ -383,5 +383,7 @@
     <None Include="assets\shaders\_headerwaterinfo.glsl" />
     <None Include="assets\shaders\line.frag" />
     <None Include="assets\shaders\line.vert" />
+    <None Include="assets\shaders\_headerscreenmarch.glsl" />
+    <None Include="assets\shaders\_headeratmosphere.glsl" />
   </ItemGroup>
 </Project>

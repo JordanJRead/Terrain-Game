@@ -14,6 +14,8 @@ int taxicabDist(ivec2 p1, ivec2 p2) {
 }
 
 float sampleShadowMapSun(vec2 sampleCoord, int i, float currDepth, bool blur = false) {
+	if (sampleCoord.x > 1 || sampleCoord.x < 0 || sampleCoord.y > 1 || sampleCoord.y < 0)
+		return 0;
 	if (!blur) {
 		return (currDepth > texture(shadowMapsSun[i], sampleCoord).r) ? 1 : 0.0;
 	}
@@ -26,7 +28,7 @@ float sampleShadowMapSun(vec2 sampleCoord, int i, float currDepth, bool blur = f
 			vec2 sampleOffset = gridPixelTexSize * vec2(x, y) - vec2(shadowInfo.blurQuality / 2);
 			float weight = shadowInfo.blurQuality - taxicabDist(ivec2(x, y), ivec2(shadowInfo.blurQuality / 2));
 			weight /= shadowInfo.blurGridSum;
-			float shadowDepth = texture(shadowMapsSun[i], sampleCoord + vec2(x, y) * gridPixelTexSize).r; 
+			float shadowDepth = texture(shadowMapsSun[i], sampleCoord + vec2(x, y) * gridPixelTexSize).r;
 			shadow += (currDepth > shadowDepth) ? weight : 0.0;
 		}
 	}
@@ -58,7 +60,7 @@ float isPointInSunShadow(vec3 pos, vec3 normal, bool blur = false) {
 			//float shadowDepth = texture(shadowMaps[i], (orthoPos.xy + vec2(1)) / 2).r;
 			return sampleShadowMapSun((orthoPos.xy + vec2(1)) / 2, i, currDepth, blur);
 		}
-	}	
+	}
 	return 0;
 }
 
@@ -75,7 +77,7 @@ float sampleShadowMapMoon(vec2 sampleCoord, int i, float currDepth, bool blur = 
 			vec2 sampleOffset = gridPixelTexSize * vec2(x, y) - vec2(shadowInfo.blurQuality / 2);
 			float weight = shadowInfo.blurQuality - taxicabDist(ivec2(x, y), ivec2(shadowInfo.blurQuality / 2));
 			weight /= shadowInfo.blurGridSum;
-			float shadowDepth = texture(shadowMapsMoon[i], sampleCoord + vec2(x, y) * gridPixelTexSize).r; 
+			float shadowDepth = texture(shadowMapsMoon[i], sampleCoord + vec2(x, y) * gridPixelTexSize).r;
 			shadow += (currDepth > shadowDepth) ? weight : 0.0;
 		}
 	}
@@ -107,7 +109,7 @@ float isPointInMoonShadow(vec3 pos, vec3 normal, bool blur = false) {
 			//float shadowDepth = texture(shadowMaps[i], (orthoPos.xy + vec2(1)) / 2).r;
 			return sampleShadowMapMoon((orthoPos.xy + vec2(1)) / 2, i, currDepth, blur);
 		}
-	}	
+	}
 	return 0;
 }
 
